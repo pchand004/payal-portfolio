@@ -4,33 +4,76 @@ import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 
 const impactStats = [
-  {
-    value: '10s → 4s',
-    label: 'Measured outcome',
-    caption: 'Reduced interaction hesitation for novice users.',
-  },
-  {
-    value: '50+',
-    label: 'Process scale',
-    caption: 'Novice students iterated with to eliminate comprehension gaps.',
-  },
-  {
-    value: '10+',
-    label: 'Reach',
-    caption: 'EVAM modules powered by the shipped interaction system.',
-  },
+  { value: '10s → 4s', caption: 'Reduced interaction hesitation for novice users.' },
+  { value: '50+', caption: 'Students iterated with to eliminate comprehension gaps.' },
+  { value: '10+', caption: 'EVAM modules powered by the shipped interaction system.' },
+];
+
+const fieldBullets = [
+  'Interview analysis — think-aloud sessions during task-based VR interaction, followed by post-task interviews',
+  'Field visits to rural schools in Assam — observing students engage with VR in their actual learning environment',
+  'Data synthesis — clustering patterns across novice and intermediate user behaviours',
 ];
 
 const beforeBullets = [
   'Passive observation',
-  'Redundant interactions across settings',
+  'Redundancy across settings',
   'Visual feedback only',
 ];
 
 const afterBullets = [
   'Active investigation per planet',
-  'Progression that builds on prior knowledge',
+  'Progression building on prior knowledge',
   'Multi-modal feedback (visual, haptic, audio)',
+];
+
+const flowSteps = [
+  { n: '01', name: 'Earth Departure', desc: 'Start in spaceship.' },
+  { n: '02', name: 'Planet Selection', desc: 'Mars, Venus, or Jupiter.' },
+  { n: '03', name: 'Gravity Interaction', desc: 'Observe gravitational effects.' },
+  { n: '04', name: 'Earth Return', desc: 'Findings summary displayed.' },
+];
+
+const constraints = [
+  {
+    n: '01',
+    title: 'Why not include all planets?',
+    body:
+      "More options didn't improve learning. The team focused on Mars, Venus, and Jupiter for stronger gravitational contrast against Earth.",
+  },
+  {
+    n: '02',
+    title: 'Why limit objects?',
+    body:
+      'Too many options diluted attention. A small curated set of familiar objects (marble, ball, bottle) encouraged deeper experimentation.',
+  },
+  {
+    n: '03',
+    title: 'Make gravity actionable',
+    body:
+      'Experience > observation. Every gravity moment had to be felt through interaction, not passively watched.',
+  },
+];
+
+const showupCols = [
+  {
+    title: 'Successful action',
+    body: 'Synchronised sound and motion confirms the state change.',
+    color: '#C9D5B0',
+    caption: '[Successful action image]',
+  },
+  {
+    title: 'Incorrect attempt',
+    body: 'Visual and audio feedback signal a retry without breaking flow.',
+    color: '#F0DCA0',
+    caption: '[Incorrect attempt image]',
+  },
+  {
+    title: 'User hesitation',
+    body: 'Ghost-hand animation reappears as gentle guidance.',
+    color: '#F0C5C5',
+    caption: '[Hesitation image]',
+  },
 ];
 
 const phases = [
@@ -54,24 +97,21 @@ const phases = [
   },
 ];
 
-const moments = [
+const interactions = [
   {
+    color: '#C9D5B0',
     title: 'Object selection on Mars',
-    body:
-      'Three familiar objects mapped to small, medium, and large size ranges. The same size logic carries across planets with equivalent objects, so students can compare gravity, not guess at scale.',
-    placeholder: '[Object selection on Mars]',
+    body: 'Users choose between 3 familiar objects mapped to small, medium, and large sizes.',
   },
   {
+    color: '#F0DCA0',
     title: 'Guided grab and release',
-    body:
-      'Ghost-hand animation and a short voice prompt walk first-time VR users through the action. Identification and comprehension are handled before performance is asked of them.',
-    placeholder: '[Guided grab and release]',
+    body: 'Ghost-hand animation and a short voice prompt guide first-time VR users through the action.',
   },
   {
+    color: '#F0C5C5',
     title: 'Visualised gravity comparison',
-    body:
-      'Color-coded trails — green for Earth, purple for the selected planet — make the difference in gravity immediately legible. The physics becomes the visual.',
-    placeholder: '[Visualised gravity comparison]',
+    body: 'Color-coded trails (green for Earth, purple for the selected planet) make differences in gravity immediately visible.',
   },
 ];
 
@@ -84,7 +124,7 @@ const findings = [
   {
     n: '02',
     body:
-      'Color-coded gravity trails made physics differences immediately legible.',
+      'Color-coded gravity trails (green for Earth, purple for selected planet) made physics differences immediately legible.',
   },
   {
     n: '03',
@@ -95,87 +135,102 @@ const findings = [
 ---
 
 <Layout
-  title="Gravity's Grip — Payal Chand · VR physics for grades 8-12"
-  description="Students were familiar with gravity through textbooks; this project focused on how that understanding changes when the same concept is encountered through embodied interaction in VR."
+  title="Gravity's Grip — Payal Chand · VR physics for grades 8–12"
+  description="A VR learning module exploring how immersive interaction can complement classroom teaching by making abstract physics — like gravity — experiential, action-led, and learnable."
 >
   <Nav />
 
   <article class="gg">
-    {/* ───── 1 · Hero — video first, title block below ───── */}
-    <section class="gg-hero">
+    {/* ───── Hero ───── */}
+    <section class="pt-12 pb-2 md:pt-16">
+      <div class="gg-prose gg-hero-grid">
+        <div class="gg-hero-left">
+          <p class="gg-eyebrow">N°04 · Case Study</p>
+          <h1 class="gg-h1">Gravity's Grip</h1>
+          <p class="gg-subtitle">VR physics for grades 8–12 · 2024</p>
+        </div>
+        <div class="gg-hero-right">
+          <p class="gg-body">
+            A VR learning module exploring how immersive interaction can complement
+            classroom teaching by making abstract physics — like gravity — experiential,
+            action-led, and learnable. Students were familiar with gravity through
+            textbooks; this project focused on how that understanding changes when the same
+            concept is encountered through embodied interaction in VR.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Metadata strip ───── */}
+    <section class="gg-meta">
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
+        <div>
+          <p class="gg-meta-label">Role</p>
+          <p class="gg-meta-value">Spatial UX Designer · Interaction Designer</p>
+        </div>
+        <div>
+          <p class="gg-meta-label">Year</p>
+          <p class="gg-meta-value">2024</p>
+        </div>
+        <div>
+          <p class="gg-meta-label">Read more</p>
+          <p class="gg-meta-value">
+            <a
+              href="https://docs.google.com/document/d/1hZfoCJG71Ps13HAgGCSjbk14iZQiXjZI3oLx3add2xM/edit?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="gg-link"
+            >
+              Full documentation ↗
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Cover video ───── */}
+    <section class="mt-6 md:mt-8">
       <div class="gg-video">
         <iframe
-          src="https://www.youtube.com/embed/pg1b5vzepG8?autoplay=1&mute=1&loop=1&playlist=pg1b5vzepG8&controls=1&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3"
+          src="https://www.youtube.com/embed/pg1b5vzepG8?rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&playsinline=1"
           title="Gravity's Grip — VR physics module"
           class="h-full w-full"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
-          loading="eager"
+          loading="lazy"
         ></iframe>
       </div>
+      <p class="gg-caption gg-prose">
+        Gravity's Grip — a VR module letting students feel how gravity changes across
+        planets.
+      </p>
+    </section>
 
-      <div class="gg-hero-title">
-        <p class="gg-eyebrow">N°04 · Case Study</p>
-        <h1 class="gg-h1">Gravity's Grip</h1>
-        <p class="gg-lede">
-          Students were familiar with gravity through textbooks; this project focused on
-          how that understanding changes when the same concept is encountered through
-          embodied interaction in VR.
-        </p>
-
-        <div class="gg-meta-row">
-          <div class="gg-meta-cell">
-            <p class="gg-meta-label">Role</p>
-            <p class="gg-meta-value">Spatial UX Designer · Interaction Designer</p>
-          </div>
-          <div class="gg-meta-cell">
-            <p class="gg-meta-label">Year</p>
-            <p class="gg-meta-value">2024</p>
-          </div>
-          <div class="gg-meta-cell">
-            <p class="gg-meta-label">Documentation</p>
-            <p class="gg-meta-value">
-              <a
-                href="https://docs.google.com/document/d/1hZfoCJG71Ps13HAgGCSjbk14iZQiXjZI3oLx3add2xM/edit?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="gg-link"
-              >
-                Full documentation ↗
-              </a>
-            </p>
-          </div>
+    {/* ───── Impact stats ───── */}
+    <section class="gg-block">
+      <div class="gg-prose gg-impact">
+        <p class="gg-impact-label">Impact</p>
+        <div class="gg-impact-grid">
+          {impactStats.map((s) => (
+            <div>
+              <p class="gg-impact-num">{s.value}</p>
+              <p class="gg-impact-caption">{s.caption}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
 
-    {/* ───── 2 · Impact — the page's first peak ───── */}
-    <section class="gg-impact-section">
-      <div class="gg-impact-grid">
-        {impactStats.map((s) => (
-          <div class="gg-impact-cell">
-            <p class="gg-impact-num">{s.value}</p>
-            <p class="gg-impact-sublabel">{s.label}</p>
-            <p class="gg-impact-caption">{s.caption}</p>
-          </div>
-        ))}
-      </div>
-      <p class="gg-impact-foot">
-        Additionally — shipped production-ready behaviour logic in collaboration with Unity
-        engineers.
-      </p>
-    </section>
-
-    {/* ───── 3 · Pull quote — thesis statement, alone with whitespace ───── */}
+    {/* ───── Pull quote ───── */}
     <section class="gg-quote-section">
-      <blockquote class="gg-quote">
+      <blockquote class="gg-quote gg-prose">
         Making gravity learnable by reducing cognitive friction through embodied VR
         interaction.
       </blockquote>
     </section>
 
-    {/* ───── 4 · Context ───── */}
+    {/* ───── Context ───── */}
     <section class="gg-block">
       <div class="gg-prose">
         <h2 class="gg-h2">Context</h2>
@@ -192,51 +247,59 @@ const findings = [
       </div>
     </section>
 
-    {/* ───── 5 · Research ───── */}
+    {/* ───── Hypothesis ───── */}
     <section class="gg-block">
       <div class="gg-prose">
-        <h2 class="gg-h2">Research</h2>
-        <p class="gg-subhead">
-          Before refining interactions, the work focused on understanding how students
-          actually experience VR learning.
-        </p>
+        <h2 class="gg-h2">Hypothesis</h2>
+        <p class="gg-subhead">The question we started with.</p>
         <p class="gg-body gg-body--mt-md">
-          I started with one question: how does a student's understanding of gravity change
-          when the same concept is encountered through embodied, action-led interaction
-          rather than passive observation?
+          How does a student's understanding of gravity change when the same concept is
+          encountered through embodied, action-led interaction rather than passive
+          observation?
         </p>
         <p class="gg-body gg-body--mt-sm">
-          To answer it, I ran think-aloud sessions during task-based VR interaction, visited
-          rural schools in Assam to observe students engaging with VR in their actual
-          learning environment, and clustered patterns across novice and intermediate
-          users.
+          This question shaped every interaction decision that followed.
         </p>
       </div>
-      <figure class="gg-figure gg-figure--lg">
-        <div class="gg-image-slot">
-          <span class="gg-image-slot-label">[Field research — rural school, Assam]</span>
-        </div>
-      </figure>
     </section>
 
-    {/* ───── 6 · What the research surfaced — comparison ───── */}
+    {/* ───── Field research ───── */}
     <section class="gg-block">
       <div class="gg-prose">
-        <h2 class="gg-h2">What the research surfaced</h2>
+        <h2 class="gg-h2">Field research</h2>
         <p class="gg-subhead">
-          The biggest pattern: engagement had to come from interaction depth, not
-          environmental spectacle.
+          Before refining interactions, the work focused on understanding how students
+          experience VR learning in real classroom conditions.
         </p>
+        <p class="gg-body gg-body--mt-md">What we explored:</p>
+        <ul class="gg-bullets">
+          {fieldBullets.map((b) => <li>{b}</li>)}
+        </ul>
+        <p class="gg-body gg-body--mt-md gg-body--italic-muted">
+          Insights from this phase fed directly into the design recommendations that
+          followed.
+        </p>
+      </div>
+      <div class="gg-image gg-image--mt" style="background-color: #F5C9B4;">
+        [Field research photo — rural school, Assam]
+      </div>
+    </section>
+
+    {/* ───── Early exploration ───── */}
+    <section class="gg-block">
+      <div class="gg-prose">
+        <h2 class="gg-h2">Early exploration</h2>
+        <p class="gg-subhead">What we started with vs where we ended up.</p>
 
         <div class="gg-compare-grid">
           <div class="gg-compare-card gg-compare-card--before">
-            <p class="gg-compare-header">Started with</p>
+            <p class="gg-compare-header">❌ Started with</p>
             <ul class="gg-compare-list">
               {beforeBullets.map((b) => <li>{b}</li>)}
             </ul>
           </div>
           <div class="gg-compare-card gg-compare-card--after">
-            <p class="gg-compare-header">Ended up with</p>
+            <p class="gg-compare-header">✅ Ended up with</p>
             <ul class="gg-compare-list">
               {afterBullets.map((b) => <li>{b}</li>)}
             </ul>
@@ -244,106 +307,135 @@ const findings = [
         </div>
 
         <p class="gg-compare-closing">
-          That reframed the problem. The interaction itself had to teach gravity, not the
-          visuals around it.
+          Engagement had to come from interaction depth, not environmental spectacle.
         </p>
       </div>
     </section>
 
-    {/* ───── 7 · Interaction model — three phases with display-size numbers ───── */}
+    {/* ───── Experience flow ───── */}
     <section class="gg-block">
       <div class="gg-prose">
-        <h2 class="gg-h2">The interaction model</h2>
-        <p class="gg-subhead">
-          Three phases that scaffolded a first-time VR user through each gravity moment.
-        </p>
+        <h2 class="gg-h2">Experience flow</h2>
+        <p class="gg-subhead">A clear, sequential journey to reduce cognitive load.</p>
 
-        <ul class="gg-bignum-list">
-          {phases.map((p) => (
-            <li class="gg-bignum-row">
-              <span class="gg-bignum">{p.n}</span>
-              <div class="gg-bignum-body">
-                <p class="gg-bignum-label">{p.name}</p>
-                <p class="gg-bignum-desc">{p.body}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-
-    {/* ───── 8 · Three moments — stacked, image-led ───── */}
-    <section class="gg-block">
-      <div class="gg-prose">
-        <h2 class="gg-h2">Three moments where the model held</h2>
-        <p class="gg-subhead">
-          Each one tested a different part of the framework — identification, comprehension,
-          performance — in a single interaction.
-        </p>
-      </div>
-
-      <div class="gg-moments">
-        {moments.map((m) => (
-          <figure class="gg-moment">
-            <div class="gg-image-slot gg-image-slot--moment">
-              <span class="gg-image-slot-label">{m.placeholder}</span>
+        <div class="gg-flow-grid">
+          {flowSteps.map((s) => (
+            <div class="gg-flow-step">
+              <p class="gg-flow-num">{s.n}</p>
+              <p class="gg-flow-name">{s.name}</p>
+              <p class="gg-flow-desc">{s.desc}</p>
             </div>
-            <figcaption class="gg-moment-caption gg-prose">
-              <h3 class="gg-moment-title">{m.title}</h3>
-              <p class="gg-moment-body">{m.body}</p>
-            </figcaption>
-          </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Key constraints & decisions ───── */}
+    <section class="gg-block">
+      <div class="gg-prose gg-hero-grid">
+        <div>
+          <h2 class="gg-h2">Key constraints &amp; decisions</h2>
+          <p class="gg-subhead">Three decisions that shaped Gravity Grip.</p>
+        </div>
+        <div>
+          <ul class="gg-list">
+            {constraints.map((c) => (
+              <li class="gg-row">
+                <span class="gg-num gg-num--principle">{c.n}</span>
+                <div class="flex-1">
+                  <p class="gg-row-name">{c.title}</p>
+                  <p class="gg-row-desc">{c.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Interaction logic & system feedback ───── */}
+    <section class="gg-block">
+      <div class="gg-prose">
+        <h2 class="gg-h2">Interaction logic &amp; system feedback</h2>
+        <p class="gg-body gg-body--mt-md">
+          Three responses to user behaviour shaped the interaction model:
+        </p>
+      </div>
+      <div class="gg-showup-grid">
+        {showupCols.map((c) => (
+          <div class="gg-showup-cell">
+            <h3 class="gg-showup-title">{c.title}</h3>
+            <p class="gg-showup-body">{c.body}</p>
+            <div class="gg-showup-image" style={`background-color: ${c.color};`}>
+              {c.caption}
+            </div>
+          </div>
         ))}
       </div>
     </section>
 
-    {/* ───── 9 · A key decision ───── */}
+    {/* ───── Designing for sequential learning ───── */}
     <section class="gg-block">
       <div class="gg-prose">
-        <h2 class="gg-h2">A key decision: felt, not watched</h2>
-        <p class="gg-body gg-body--mt-md">
-          Early prototypes leaned toward observation — students would watch a ball fall on
-          Mars, then on Jupiter, and read the difference. Testing showed comprehension
-          stayed shallow.
-        </p>
-        <p class="gg-body gg-body--mt-sm">
-          Every gravity moment had to be felt through interaction, not passively watched.
-          Two smaller decisions followed: limiting planet choice to Mars, Venus, and Jupiter
-          for stronger gravitational contrast against Earth, and curating a small set of
-          familiar objects (marble, ball, bottle) so attention deepened instead of
-          scattering.
-        </p>
-      </div>
-    </section>
-
-    {/* ───── 10 · What testing showed ───── */}
-    <section class="gg-block">
-      <div class="gg-prose">
-        <h2 class="gg-h2">What testing showed</h2>
+        <h2 class="gg-h2">Designing for sequential learning</h2>
         <p class="gg-subhead">
-          Field testing across Indian schools surfaced three patterns:
+          Each interaction was broken into three phases to support novice users.
         </p>
 
-        <ul class="gg-bignum-list">
-          {findings.map((f) => (
-            <li class="gg-bignum-row">
-              <span class="gg-bignum">{f.n}</span>
-              <div class="gg-bignum-body">
-                <p class="gg-bignum-finding">{f.body}</p>
+        <ul class="gg-list gg-list--mt">
+          {phases.map((p) => (
+            <li class="gg-row">
+              <span class="gg-num gg-num--principle">{p.n}</span>
+              <div class="flex-1">
+                <p class="gg-row-name">{p.name}</p>
+                <p class="gg-row-desc">{p.body}</p>
               </div>
             </li>
           ))}
         </ul>
-
-        <p class="gg-takeaway">
-          The biggest takeaway: in immersive learning, restraint is a design tool. Fewer
-          objects, fewer planets, fewer modalities at once — each constraint made the
-          physics easier to feel, not harder.
-        </p>
       </div>
     </section>
 
-    {/* ───── 11 · Closing ───── */}
+    {/* ───── Key interactions ───── */}
+    <section class="gg-block">
+      <div class="gg-prose">
+        <h2 class="gg-h2">Key interactions</h2>
+        <p class="gg-body gg-body--mt-md">
+          Three moments from the experience that demonstrate the interaction system in
+          action.
+        </p>
+      </div>
+      <div class="gg-cards-grid">
+        {interactions.map((i) => (
+          <div class="gg-card">
+            <div class="gg-card-fill" style={`background-color: ${i.color};`}></div>
+            <p class="gg-card-title">{i.title}</p>
+            <p class="gg-card-body">{i.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ───── What testing showed ───── */}
+    <section class="gg-block">
+      <div class="gg-prose">
+        <h2 class="gg-h2">What testing showed</h2>
+        <p class="gg-body gg-body--mt-md">
+          Field testing across Indian schools surfaced three patterns:
+        </p>
+
+        <ul class="gg-list gg-list--mt">
+          {findings.map((f) => (
+            <li class="gg-row">
+              <span class="gg-num gg-num--finding">{f.n}</span>
+              <p class="gg-row-finding">{f.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    {/* ───── Closing footer links (above site footer) ───── */}
     <section class="gg-closing">
       <p class="gg-caption gg-prose">
         Full research and development documentation:{' '}
@@ -357,7 +449,7 @@ const findings = [
         </a>
       </p>
       <p class="gg-prose gg-back">
-        <a href="/" class="gg-link">← Back to all work</a>
+        <a href="/work" class="gg-link">← Back to all work</a>
       </p>
     </section>
   </article>
@@ -366,75 +458,75 @@ const findings = [
 </Layout>
 
 <style>
-  /* ───── Width helpers ───── */
+  /* ───── Width helpers — text column 960 max, left-aligned. Media fills. ───── */
   .gg-prose {
-    max-width: 760px;
+    max-width: 960px;
     margin: 0;
   }
 
-  /* ───── Headings — Inter (override the global Fraunces default) ───── */
+  /* ───── Inter for all headings (override the global Fraunces default) ───── */
   .gg h1,
   .gg h2,
   .gg h3 {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
   }
 
-  /* ───── Type ───── */
+  /* ───── Type scale ───── */
   .gg-eyebrow {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: #4105DB;
+    letter-spacing: 0.06em;
+    color: #6B6354;
   }
 
   .gg-h1 {
-    font-size: clamp(40px, 8vw, 88px);
+    font-size: 36px;
     font-weight: 700;
     color: #2C2620;
-    line-height: 1.02;
-    letter-spacing: -0.025em;
-    margin-top: 16px;
+    line-height: 1.1;
+    margin-top: 24px;
+  }
+  @media (min-width: 768px) {
+    .gg-h1 {
+      font-size: 56px;
+    }
   }
 
-  .gg-lede {
-    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
-    font-size: clamp(18px, 2vw, 22px);
-    font-style: italic;
+  .gg-subtitle {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: normal;
     font-weight: 400;
-    color: #2C2620;
-    line-height: 1.45;
-    max-width: 680px;
-    margin-top: 24px;
+    color: #6B6354;
+    margin-top: 12px;
+  }
+  @media (min-width: 768px) {
+    .gg-subtitle {
+      font-size: 14px;
+    }
   }
 
   .gg-h2 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     color: #2C2620;
-    line-height: 1.2;
+    line-height: 1.25;
   }
   @media (min-width: 768px) {
     .gg-h2 {
-      font-size: 32px;
+      font-size: 28px;
     }
   }
 
   .gg-subhead {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-style: italic;
     color: #6B6354;
-    line-height: 1.55;
-    margin-top: 12px;
-    max-width: 640px;
-  }
-  @media (min-width: 768px) {
-    .gg-subhead {
-      font-size: 15px;
-    }
+    margin-top: 8px;
   }
 
   .gg-body {
@@ -449,11 +541,59 @@ const findings = [
       font-size: 17px;
     }
   }
-  .gg-body--mt-md {
-    margin-top: 24px;
+  .gg-body--mt-md { margin-top: 24px; }
+  .gg-body--mt-sm { margin-top: 16px; }
+  .gg-body--italic-muted {
+    font-style: italic;
+    color: #6B6354;
   }
-  .gg-body--mt-sm {
-    margin-top: 16px;
+
+  .gg-bullets {
+    margin-top: 12px;
+    margin-bottom: 0;
+    padding-left: 22px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    color: #2C2620;
+    line-height: 1.6;
+    list-style: disc;
+  }
+  @media (min-width: 768px) {
+    .gg-bullets {
+      font-size: 16px;
+    }
+  }
+  .gg-bullets > li + li {
+    margin-top: 8px;
+  }
+
+  .gg-quote {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    color: #4105DB;
+    line-height: 1.45;
+    border-left: 4px solid #4105DB;
+    padding-left: 20px;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .gg-quote {
+      font-size: 22px;
+    }
+  }
+
+  /* Pull-quote bridge — sits between Impact and Context. */
+  .gg-quote-section {
+    margin-top: 48px;
+  }
+  .gg-quote-section + .gg-block {
+    margin-top: 48px;
+  }
+  @media (min-width: 768px) {
+    .gg-quote-section { margin-top: 64px; }
+    .gg-quote-section + .gg-block { margin-top: 64px; }
   }
 
   .gg-caption {
@@ -462,6 +602,30 @@ const findings = [
     font-style: italic;
     color: #6B6354;
     line-height: 1.55;
+    margin-top: 12px;
+    max-width: 720px;
+  }
+
+  /* ───── Metadata strip ───── */
+  .gg-meta {
+    margin-top: 32px;
+    padding: 20px 0;
+    border-top: 0.5px solid #E8E4E0;
+    border-bottom: 0.5px solid #E8E4E0;
+  }
+  .gg-meta-label {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4105DB;
+  }
+  .gg-meta-value {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: #2C2620;
+    margin-top: 6px;
   }
 
   /* ───── Links ───── */
@@ -473,452 +637,338 @@ const findings = [
     color: #5B2EE8;
   }
 
-  /* ───── Section block spacing — generous, with Impact + Quote getting more ───── */
+  /* ───── Section block spacing ───── */
   .gg-block {
-    margin-top: 96px;
+    margin-top: 64px;
   }
   @media (min-width: 768px) {
     .gg-block {
-      margin-top: 144px;
+      margin-top: 96px;
     }
   }
 
-  /* ───── 1 · Hero ───── */
-  .gg-hero {
-    padding-top: 32px;
-  }
-  @media (min-width: 768px) {
-    .gg-hero {
-      padding-top: 48px;
-    }
-  }
-
+  /* ───── Cover video ───── */
   .gg-video {
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 8px;
     background: #000;
   }
 
-  .gg-hero-title {
-    margin-top: 56px;
-  }
-  @media (min-width: 768px) {
-    .gg-hero-title {
-      margin-top: 72px;
-    }
-  }
-
-  .gg-meta-row {
-    margin-top: 40px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding-top: 24px;
-    border-top: 0.5px solid #E8E4E0;
-  }
-  @media (min-width: 768px) {
-    .gg-meta-row {
-      grid-template-columns: 2fr 1fr 1.4fr;
-      gap: 32px;
-      align-items: start;
-    }
-  }
-  .gg-meta-cell + .gg-meta-cell {
-    padding-top: 0;
-  }
-  .gg-meta-label {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: #4105DB;
-  }
-  .gg-meta-value {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
-    color: #2C2620;
-    line-height: 1.5;
-    margin-top: 6px;
-  }
-
-  /* ───── 2 · Impact — page's first peak. Generous padding, display-size nums. ───── */
-  .gg-impact-section {
-    margin-top: 128px;
-    padding: 96px 0;
-    border-top: 0.5px solid #E8E4E0;
-    border-bottom: 0.5px solid #E8E4E0;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-section {
-      margin-top: 192px;
-      padding: 144px 0;
-    }
-  }
-
-  .gg-impact-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 56px;
-    align-items: end;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-grid {
-      grid-template-columns: 1.3fr 1fr 1fr;
-      gap: 64px;
-    }
-  }
-
-  .gg-impact-cell {
+  /* ───── Inline image (full-width placeholder, 21:9) ───── */
+  .gg-image {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    border-radius: 8px;
     display: flex;
-    flex-direction: column;
-  }
-
-  .gg-impact-num {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: clamp(64px, 12vw, 144px);
-    font-weight: 700;
-    color: #4105DB;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    margin: 0;
-  }
-
-  .gg-impact-sublabel {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: #6B6354;
-    margin-top: 24px;
-  }
-
-  .gg-impact-caption {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
-    color: #2C2620;
-    line-height: 1.5;
-    margin-top: 8px;
-    max-width: 28ch;
-  }
-
-  .gg-impact-foot {
+    align-items: center;
+    justify-content: center;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 13px;
     font-style: italic;
+    color: rgba(44, 38, 32, 0.6);
+  }
+  .gg-image--mt {
+    margin-top: 24px;
+  }
+
+  /* ───── Hero 2-column grid (40/60) ───── */
+  .gg-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  @media (min-width: 768px) {
+    .gg-hero-grid {
+      grid-template-columns: 2fr 3fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .gg-hero-right {
+      padding-top: 43px;
+    }
+  }
+
+  /* ───── Impact stats ───── */
+  .gg-impact {
+    padding: 24px 0;
+    border-top: 0.5px solid #E8E4E0;
+    border-bottom: 0.5px solid #E8E4E0;
+  }
+  .gg-impact-label {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4105DB;
+    margin: 0 0 16px;
+  }
+  .gg-impact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    .gg-impact-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .gg-impact-num {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #4105DB;
+    line-height: 1.1;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .gg-impact-num {
+      font-size: 32px;
+    }
+  }
+  .gg-impact-caption {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    color: #2C2620;
+    line-height: 1.45;
+    margin-top: 8px;
+  }
+
+  /* ───── Numbered list (constraints, phases, findings) ───── */
+  .gg-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gg-list--mt { margin-top: 24px; }
+
+  .gg-row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+  }
+  .gg-row + .gg-row {
+    border-top: 0.5px solid #E8E4E0;
+  }
+
+  .gg-num {
+    min-width: 32px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-style: italic;
+    font-weight: 600;
+    color: #4105DB;
+    flex-shrink: 0;
+  }
+  .gg-num--principle { font-size: 14px; }
+  .gg-num--finding { font-size: 13px; }
+
+  .gg-row-name {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2620;
+  }
+  .gg-row-desc {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
     color: #6B6354;
     line-height: 1.55;
-    margin-top: 56px;
-    max-width: 640px;
+    margin-top: 4px;
   }
-  @media (min-width: 768px) {
-    .gg-impact-foot {
-      margin-top: 72px;
-    }
-  }
-
-  /* ───── 3 · Pull quote — sits alone with significant whitespace ───── */
-  .gg-quote-section {
-    margin-top: 128px;
-    margin-bottom: 32px;
-  }
-  @media (min-width: 768px) {
-    .gg-quote-section {
-      margin-top: 192px;
-      margin-bottom: 48px;
-    }
-  }
-  /* Override .gg-block top margin when it follows the quote, so the rhythm
-     stays balanced rather than doubled. */
-  .gg-quote-section + .gg-block {
-    margin-top: 96px;
-  }
-  @media (min-width: 768px) {
-    .gg-quote-section + .gg-block {
-      margin-top: 144px;
-    }
-  }
-
-  .gg-quote {
-    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
-    font-size: clamp(26px, 3.6vw, 42px);
-    font-style: italic;
-    font-weight: 400;
+  .gg-row-finding {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
     color: #2C2620;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    border-left: 2px solid #4105DB;
-    padding-left: 28px;
-    margin: 0;
-    max-width: 880px;
+    line-height: 1.55;
   }
 
-  /* ───── 6 · Comparison cards ───── */
+  /* ───── Two-column comparison ───── */
   .gg-compare-grid {
-    margin-top: 32px;
+    margin-top: 24px;
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
-    align-items: stretch;
+    align-items: start;
   }
   @media (min-width: 768px) {
     .gg-compare-grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
     }
   }
   .gg-compare-card {
-    border-radius: 12px;
-    padding: 28px;
+    border-radius: 8px;
+    padding: 20px;
   }
-  .gg-compare-card--before {
-    background-color: #F8EEEE;
-  }
-  .gg-compare-card--after {
-    background-color: #EEF3E5;
-  }
+  .gg-compare-card--before { background-color: #FCEBEB; }
+  .gg-compare-card--after { background-color: #EAF3DE; }
   .gg-compare-header {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.06em;
     margin: 0;
   }
-  .gg-compare-card--before .gg-compare-header {
-    color: #A33D3D;
-  }
-  .gg-compare-card--after .gg-compare-header {
-    color: #4A7421;
-  }
+  .gg-compare-card--before .gg-compare-header { color: #A32D2D; }
+  .gg-compare-card--after .gg-compare-header { color: #3B6D11; }
   .gg-compare-list {
-    margin-top: 16px;
+    margin-top: 12px;
     margin-bottom: 0;
-    padding-left: 18px;
+    padding-left: 20px;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     color: #2C2620;
-    line-height: 1.6;
+    line-height: 1.55;
     list-style: disc;
   }
-  .gg-compare-list > li + li {
-    margin-top: 6px;
-  }
+  .gg-compare-list > li + li { margin-top: 4px; }
   .gg-compare-closing {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
     font-style: italic;
     color: #6B6354;
-    line-height: 1.55;
-    margin-top: 32px;
-    max-width: 640px;
-  }
-  @media (min-width: 768px) {
-    .gg-compare-closing {
-      font-size: 15px;
-    }
+    margin-top: 24px;
   }
 
-  /* ───── 7 + 10 · Big-number rows (shared) ───── */
-  .gg-bignum-list {
-    list-style: none;
-    padding: 0;
-    margin: 32px 0 0;
-  }
-  .gg-bignum-row {
+  /* ───── Experience flow — 4 cards ───── */
+  .gg-flow-grid {
+    margin-top: 24px;
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
-    padding: 32px 0;
-    border-top: 0.5px solid #E8E4E0;
     align-items: start;
   }
-  .gg-bignum-row:last-child {
-    border-bottom: 0.5px solid #E8E4E0;
-  }
   @media (min-width: 768px) {
-    .gg-bignum-row {
-      grid-template-columns: 140px 1fr;
-      gap: 40px;
-      padding: 44px 0;
+    .gg-flow-grid {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
-
-  .gg-bignum {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: clamp(56px, 8vw, 88px);
-    font-weight: 700;
-    color: #4105DB;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    display: block;
+  .gg-flow-step {
+    background-color: #FAF7F0;
+    border-radius: 8px;
+    padding: 16px 12px;
   }
-
-  .gg-bignum-body {
-    padding-top: 4px;
-  }
-  @media (min-width: 768px) {
-    .gg-bignum-body {
-      padding-top: 14px;
-    }
-  }
-
-  .gg-bignum-label {
+  .gg-flow-num {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 11px;
+    font-style: italic;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
+    color: #4105DB;
+    margin: 0;
+  }
+  .gg-flow-name {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
     color: #2C2620;
+    margin-top: 6px;
+  }
+  .gg-flow-desc {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    color: #6B6354;
+    line-height: 1.4;
+    margin-top: 4px;
   }
 
-  .gg-bignum-desc {
+  /* ───── Showup grid — 3 columns, image-aligned cells ───── */
+  .gg-showup-grid {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    .gg-showup-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .gg-showup-cell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .gg-showup-title {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #4105DB;
+    margin: 0;
+    padding: 0;
+  }
+  .gg-showup-body {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 15px;
-    color: #6B6354;
-    line-height: 1.6;
-    margin-top: 12px;
-    max-width: 56ch;
-  }
-  @media (min-width: 768px) {
-    .gg-bignum-desc {
-      font-size: 16px;
-    }
-  }
-
-  .gg-bignum-finding {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 16px;
     color: #2C2620;
-    line-height: 1.6;
-    max-width: 56ch;
-  }
-  @media (min-width: 768px) {
-    .gg-bignum-finding {
-      font-size: 17px;
-    }
-  }
-
-  .gg-takeaway {
-    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
-    font-size: 18px;
-    font-style: italic;
-    color: #6B6354;
     line-height: 1.55;
-    margin-top: 56px;
-    max-width: 720px;
+    margin-top: 12px;
+    flex: 1;
   }
-  @media (min-width: 768px) {
-    .gg-takeaway {
-      font-size: 20px;
-      margin-top: 72px;
-    }
-  }
-
-  /* ───── 5 + 8 · Image slots — neutral placeholder, demands a real image ───── */
-  .gg-figure {
-    margin: 48px 0 0;
-  }
-  @media (min-width: 768px) {
-    .gg-figure {
-      margin-top: 64px;
-    }
-  }
-  .gg-figure--lg {
-    margin-top: 56px;
-  }
-  @media (min-width: 768px) {
-    .gg-figure--lg {
-      margin-top: 80px;
-    }
-  }
-
-  .gg-image-slot {
+  .gg-showup-image {
+    margin-top: 16px;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    background-color: #FAF7F0;
-    border: 0.5px solid #E8E4E0;
-    border-radius: 12px;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  .gg-image-slot--moment {
-    border-radius: 14px;
-  }
-  .gg-image-slot-label {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 13px;
     font-style: italic;
-    color: rgba(44, 38, 32, 0.45);
-    letter-spacing: 0.01em;
+    color: rgba(44, 38, 32, 0.6);
   }
 
-  /* ───── 8 · Three moments — stacked, image-led ───── */
-  .gg-moments {
-    margin-top: 56px;
+  /* ───── Cards grid — 3 cards, colored fill on top, title + body below ───── */
+  .gg-cards-grid {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    .gg-cards-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .gg-card {
     display: flex;
     flex-direction: column;
-    gap: 96px;
   }
-  @media (min-width: 768px) {
-    .gg-moments {
-      margin-top: 80px;
-      gap: 144px;
-    }
+  .gg-card-fill {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+  }
+  .gg-card-title {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2620;
+    margin-top: 14px;
+  }
+  .gg-card-body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: #6B6354;
+    line-height: 1.55;
+    margin-top: 6px;
   }
 
-  .gg-moment {
-    margin: 0;
-  }
-  .gg-moment-caption {
-    margin-top: 28px;
-  }
-  @media (min-width: 768px) {
-    .gg-moment-caption {
-      margin-top: 36px;
-    }
-  }
-  .gg-moment-title {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #2C2620;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-  @media (min-width: 768px) {
-    .gg-moment-title {
-      font-size: 24px;
-    }
-  }
-  .gg-moment-body {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 16px;
-    color: #2C2620;
-    line-height: 1.6;
-    margin-top: 12px;
-    max-width: 640px;
-  }
-  @media (min-width: 768px) {
-    .gg-moment-body {
-      font-size: 17px;
-    }
-  }
-
-  /* ───── 11 · Closing ───── */
+  /* ───── Closing footer links ───── */
   .gg-closing {
-    margin-top: 96px;
+    margin-top: 64px;
     padding-top: 48px;
-    padding-bottom: 24px;
+    padding-bottom: 16px;
     border-top: 0.5px solid #E8E4E0;
   }
   @media (min-width: 768px) {
     .gg-closing {
-      margin-top: 144px;
+      margin-top: 96px;
     }
   }
   .gg-back {
