@@ -1,0 +1,51 @@
+---
+/**
+ * Site-wide footer. Two-column layout: italic quote + copyright on the left,
+ * social links + colophon on the right. Used on the homepage and on case
+ * study pages so the closing area is consistent across the site.
+ */
+---
+
+<footer class="mt-20 grid grid-cols-1 gap-10 pb-12 pt-20 md:grid-cols-[1.4fr_1fr] md:gap-12">
+  {/* Left — quote + copyright */}
+  <div>
+    <p class="max-w-[36ch] font-serif italic leading-[1.4] text-text text-[20px] md:text-[22px]">
+      Designing technology that stays out of the way, so people can stay present.
+    </p>
+    <p class="mt-4 text-xs text-muted">© 2026 Payal Chand · London</p>
+  </div>
+
+  {/* Right — social links + colophon */}
+  <div>
+    <ul class="flex flex-col gap-3 text-sm">
+      <li>
+        <a href="#" class="footer-link group inline-flex items-baseline text-accent transition-colors duration-200 hover:text-accent-hover">
+          <span>LinkedIn</span>
+          <span aria-hidden="true" class="ml-1 transition-transform duration-200 group-hover:translate-x-0.5">↗</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="footer-link group inline-flex items-baseline text-accent transition-colors duration-200 hover:text-accent-hover">
+          <span>Behance</span>
+          <span aria-hidden="true" class="ml-1 transition-transform duration-200 group-hover:translate-x-0.5">↗</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="footer-link group inline-flex items-baseline text-accent transition-colors duration-200 hover:text-accent-hover">
+          <span>Read.cv</span>
+          <span aria-hidden="true" class="ml-1 transition-transform duration-200 group-hover:translate-x-0.5">↗</span>
+        </a>
+      </li>
+      <li>
+        <a href="mailto:chandpayal3011@gmail.com" class="footer-link group inline-flex items-baseline text-accent transition-colors duration-200 hover:text-accent-hover">
+          <span>Email</span>
+          <span aria-hidden="true" class="ml-1 transition-transform duration-200 group-hover:translate-x-0.5">↗</span>
+        </a>
+      </li>
+    </ul>
+
+    <p class="mt-4 text-[11px] leading-[1.5] text-muted">
+      Set in Fraunces, Inter &amp; Pacifico. Built in Astro with Claude Code.
+    </p>
+  </div>
+</footer>

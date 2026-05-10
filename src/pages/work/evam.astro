@@ -1,0 +1,714 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const principles = [
+  {
+    n: '01',
+    name: 'Intuition over instruction',
+    body: 'Interactions should feel obvious without tutorials.',
+  },
+  {
+    n: '02',
+    name: 'Clarity over novelty',
+    body: 'VR should reduce confusion, not add spectacle.',
+  },
+  {
+    n: '03',
+    name: 'Progressive disclosure',
+    body: 'One concept, one action, one cue at a time.',
+  },
+];
+
+const processCards = [
+  {
+    n: '01',
+    title: 'Literature & Expert Study',
+    body:
+      'Investigating, identifying, and refining module contents to finalise learning outcomes for the user group.',
+  },
+  {
+    n: '02',
+    title: 'Idea Generation',
+    body:
+      'Brainstorming, ideation, and concept generation to formulate concepts based on selected modules and content.',
+  },
+  {
+    n: '03',
+    title: 'Wireframes & Prototyping',
+    body:
+      'Based on the finalised concept and accounting for comfort, peripheral zones, curiosity zones, and ergonomics of the x-y-z axes.',
+  },
+  {
+    n: '04',
+    title: 'Deployment & Testing',
+    body:
+      'Usability testing and evaluation by user groups, followed by focus group discussions to surface their experiences.',
+  },
+];
+
+const showupCols = [
+  {
+    title: 'Navigation Guidance',
+    body:
+      'Perceptual cues, motion, and spatial placement to guide attention naturally.',
+    color: '#C9D5B0',
+    caption: '[Navigation Guidance image]',
+  },
+  {
+    title: 'Cognitive Load',
+    body:
+      'Carefully managed and optimised by sequencing information and pacing transitions.',
+    color: '#F0DCA0',
+    caption: '[Cognitive Load image]',
+  },
+  {
+    title: 'Focused Interpretation',
+    body:
+      'Allowing students to focus on understanding concepts rather than figuring out the interface.',
+    color: '#F0C5C5',
+    caption: '[Focused Interpretation image]',
+  },
+];
+
+const findings = [
+  {
+    n: '01',
+    body: 'Students developed a clearer understanding of abstract phenomena when they could interact with them directly rather than rely on verbal or visual explanation alone.',
+  },
+  {
+    n: '02',
+    body: 'Immediate embodied feedback (visual, spatial, haptic) helped students recognise whether an action was meaningful, supporting sense-making during exploration.',
+  },
+  {
+    n: '03',
+    body: 'Cause-effect interactions improved learning more than passive observation.',
+  },
+  {
+    n: '04',
+    body: 'Consistent interaction patterns across modules reduced confusion and let students focus on the concept rather than the interface.',
+  },
+];
+---
+
+<Layout
+  title="EVAM — Payal Chand · India's first VR classroom"
+  description="EVAM is a VR-based science education initiative developed at IIT Guwahati and deployed in government schools."
+>
+  <Nav />
+
+  <article class="evam">
+    {/* ───── Hero ───── */}
+    <section class="pt-12 pb-2 md:pt-16">
+      <div class="evam-prose evam-hero-grid">
+        <div class="evam-hero-left">
+          <p class="evam-eyebrow">N°03 · Case Study</p>
+          <h1 class="evam-h1">EVAM</h1>
+          <p class="evam-subtitle">India's first VR classroom · 2023</p>
+        </div>
+        <div class="evam-hero-right">
+          <p class="evam-body">
+            EVAM is a VR-based science education initiative developed at IIT Guwahati and
+            deployed in government schools — एवं in Devanagari, meaning 'and.'
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Metadata strip ───── */}
+    <section class="evam-meta">
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
+        <div>
+          <p class="evam-meta-label">Role</p>
+          <p class="evam-meta-value">Experience · Interaction · Concept Designer</p>
+        </div>
+        <div>
+          <p class="evam-meta-label">Duration</p>
+          <p class="evam-meta-value">Aug 2023 – May 2024</p>
+        </div>
+        <div>
+          <p class="evam-meta-label">Live at</p>
+          <p class="evam-meta-value">
+            <a
+              href="https://www.evamvr.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="evam-link"
+            >
+              evamvr.com ↗
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── Cover video — tighter gap from metadata strip (24/32) ───── */}
+    <section class="mt-6 md:mt-8">
+      <div class="evam-video">
+        <iframe
+          src="https://www.youtube.com/embed/AAOy388IRQs?rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&playsinline=1"
+          title="Falltopia — EVAM VR"
+          class="h-full w-full"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+      <p class="evam-caption evam-prose">
+        Falltopia: a theatrical experience where one experiments with objects falling
+        through environments with different air densities.
+      </p>
+    </section>
+
+    {/* ───── Pull quote — bridge between cover video and Context ───── */}
+    <section class="evam-quote-section">
+      <blockquote class="evam-quote evam-prose">
+        When you hand a child in rural Assam a VR headset, what shocks you isn't the
+        technology — it's how naturally physical and digital interactions can merge when
+        the wonder is real.
+      </blockquote>
+    </section>
+
+    {/* ───── Context ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">Context</h2>
+        <p class="evam-body evam-body--mt-md">
+          Prior research and classroom observations highlighted four recurring issues:
+          difficulty mentally simulating invisible processes, passive learning with
+          limited cause-effect exploration, delayed feedback on actions, and dependence on
+          teaching style.
+        </p>
+        <p class="evam-body evam-body--mt-sm">
+          The brief became less about technology and more about cognition.
+        </p>
+      </div>
+      <div class="evam-image evam-image--mt" style="background-color: #F5C9B4;">
+        [Context image]
+      </div>
+    </section>
+
+    {/* ───── Process — tighter gap from Context image (48/64) ───── */}
+    <section class="mt-12 md:mt-16">
+      <div class="evam-prose">
+        <h2 class="evam-h2">Process</h2>
+        <p class="evam-body evam-body--mt-md">
+          The work moved through four phases — literature review → idea generation →
+          wireframes & prototyping → deployment & testing. Each phase grounded the next in
+          field-tested insight rather than assumption.
+        </p>
+      </div>
+      <div class="evam-process-grid">
+        {processCards.map((c) => (
+          <div class="evam-process-card">
+            <p class="evam-process-num">{c.n}</p>
+            <h3 class="evam-process-card-title">{c.title}</h3>
+            <p class="evam-process-card-body">{c.body}</p>
+          </div>
+        ))}
+      </div>
+      <div class="evam-prose">
+        <p class="evam-body evam-body--mt-md">
+          My role centred on designing the interaction systems and feedback loops — making
+          sure every action a student took inside VR produced a clear, immediate, embodied
+          response.
+        </p>
+      </div>
+    </section>
+
+    {/* ───── How I thought about the work ───── */}
+    <section class="evam-block">
+      <div class="evam-prose evam-hero-grid">
+        <div>
+          <h2 class="evam-h2">How I thought about the work</h2>
+          <p class="evam-subhead">Three principles that guided every decision.</p>
+        </div>
+        <div>
+          <ul class="evam-list">
+            {principles.map((p) => (
+              <li class="evam-row">
+                <span class="evam-num evam-num--principle">{p.n}</span>
+                <div class="flex-1">
+                  <p class="evam-row-name">{p.name}</p>
+                  <p class="evam-row-desc">{p.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* ───── What I optimised for ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">What I optimised for</h2>
+        <p class="evam-body evam-body--mt-md">
+          Through play-tests and iteration, three things became the focus:{' '}
+          <strong style="color: #4105DB; font-weight: 600;">navigation guidance</strong>{' '}
+          (perceptual cues, motion, and spatial placement to direct attention naturally),{' '}
+          <strong style="color: #4105DB; font-weight: 600;">cognitive load</strong>{' '}
+          (sequencing information and pacing transitions to avoid overwhelm), and{' '}
+          <strong style="color: #4105DB; font-weight: 600;">focused interpretation</strong>{' '}
+          (letting students think about the concept rather than the interface).
+        </p>
+        <p class="evam-body evam-body--mt-sm">
+          Why this mattered: students were learning a new science concept and a new medium
+          at the same time. Designing for behavioural clarity reduced the friction of one
+          so they could engage with the other.
+        </p>
+      </div>
+    </section>
+
+    {/* ───── How this showed up in design ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">How this showed up in design</h2>
+        <p class="evam-body evam-body--mt-md">
+          By setting aside assumptions and through constant play-tests &amp; iterations,
+          the focus narrowed to three things:
+        </p>
+      </div>
+      <div class="evam-showup-grid">
+        {showupCols.map((c) => (
+          <div>
+            <h3 class="evam-showup-title">{c.title}</h3>
+            <p class="evam-showup-body">{c.body}</p>
+            <div class="evam-showup-image" style={`background-color: ${c.color};`}>
+              {c.caption}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ───── A key decision ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">A key decision: making cause &amp; effect explicit</h2>
+        <p class="evam-body evam-body--mt-md">
+          Visual change alone was often missed inside VR. Students would perform an action
+          and not register that it had succeeded — breaking the cause-effect loop the
+          whole experience depended on.
+        </p>
+        <p class="evam-body evam-body--mt-sm">
+          We paired controller input with synchronised haptic feedback so the action could
+          be felt, not just seen. After this change, recognition of successful actions
+          improved noticeably across testing sessions.
+        </p>
+      </div>
+      <div class="evam-video evam-video--mt">
+        <iframe
+          src="https://www.youtube.com/embed/cJPF6dq34zw?rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&playsinline=1"
+          title="Controller feedback — EVAM VR"
+          class="h-full w-full"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+    </section>
+
+    {/* ───── What the study showed ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">What the study showed</h2>
+        <p class="evam-body evam-body--mt-md">
+          The EVAM study for the friction & gravity module showed that immersive,
+          interactive learning environments can shift how students understand abstract
+          science concepts:
+        </p>
+
+        <ul class="evam-list evam-list--mt">
+          {findings.map((f) => (
+            <li class="evam-row">
+              <span class="evam-num evam-num--finding">{f.n}</span>
+              <p class="evam-row-finding">{f.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+  </article>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ───── Width helpers ─────
+     evam-prose: text column at 960 max, left-aligned (margin: 0 — NOT centred).
+     Media and metadata fill the article container's full width. */
+  .evam-prose {
+    max-width: 960px;
+    margin: 0;
+  }
+
+  /* ───── Inter for all headings (override the global Fraunces default) ───── */
+  .evam h1,
+  .evam h2 {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* ───── Type scale ───── */
+  .evam-eyebrow {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6B6354;
+  }
+
+  .evam-h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #2C2620;
+    line-height: 1.1;
+    margin-top: 24px;
+  }
+  @media (min-width: 768px) {
+    .evam-h1 {
+      font-size: 56px;
+    }
+  }
+
+  .evam-subtitle {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    color: #6B6354;
+    margin-top: 12px;
+  }
+  @media (min-width: 768px) {
+    .evam-subtitle {
+      font-size: 14px;
+    }
+  }
+
+  .evam-h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2C2620;
+    line-height: 1.25;
+  }
+  @media (min-width: 768px) {
+    .evam-h2 {
+      font-size: 28px;
+    }
+  }
+
+  .evam-subhead {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #6B6354;
+    margin-top: 8px;
+  }
+
+  .evam-body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #2C2620;
+    line-height: 1.65;
+  }
+  @media (min-width: 768px) {
+    .evam-body {
+      font-size: 17px;
+    }
+  }
+  .evam-body--mt-md {
+    margin-top: 24px;
+  }
+  .evam-body--mt-sm {
+    margin-top: 16px;
+  }
+
+  .evam-quote {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    color: #4105DB;
+    line-height: 1.45;
+    border-left: 4px solid #4105DB;
+    padding-left: 20px;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .evam-quote {
+      font-size: 22px;
+    }
+  }
+
+  /* Pull-quote bridge — sits between cover video and Context.
+     Uses 48px/64px margins so it reads as a transitional beat,
+     and overrides the next .evam-block's standard 64/96 margin
+     so the gap below the quote matches the gap above it. */
+  .evam-quote-section {
+    margin-top: 48px;
+  }
+  .evam-quote-section + .evam-block {
+    margin-top: 48px;
+  }
+  @media (min-width: 768px) {
+    .evam-quote-section {
+      margin-top: 64px;
+    }
+    .evam-quote-section + .evam-block {
+      margin-top: 64px;
+    }
+  }
+
+  .evam-caption {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #6B6354;
+    line-height: 1.55;
+    margin-top: 12px;
+  }
+
+  /* ───── Metadata strip — full container width, tight gap from pull quote ───── */
+  .evam-meta {
+    margin-top: 32px;
+    padding: 20px 0;
+    border-top: 0.5px solid #E8E4E0;
+    border-bottom: 0.5px solid #E8E4E0;
+  }
+
+  .evam-meta-label {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4105DB;
+  }
+
+  .evam-meta-value {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: #2C2620;
+    margin-top: 6px;
+  }
+
+  /* ───── Links ───── */
+  .evam-link {
+    color: #4105DB;
+    transition: color 200ms ease;
+  }
+  .evam-link:hover {
+    color: #5B2EE8;
+  }
+
+  /* ───── Section block spacing — 64px mobile, 96px desktop ───── */
+  .evam-block {
+    margin-top: 64px;
+  }
+  @media (min-width: 768px) {
+    .evam-block {
+      margin-top: 96px;
+    }
+  }
+
+  /* ───── Video & image — full container width ───── */
+  .evam-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #000;
+  }
+  .evam-video--mt {
+    margin-top: 32px;
+  }
+
+  .evam-image {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(44, 38, 32, 0.6);
+  }
+  .evam-image--mt {
+    margin-top: 24px;
+  }
+
+  /* ───── Numbered list (principles + findings) ───── */
+  .evam-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .evam-list--mt {
+    margin-top: 24px;
+  }
+
+  .evam-row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+  }
+  .evam-row + .evam-row {
+    border-top: 0.5px solid #E8E4E0;
+  }
+
+  .evam-num {
+    min-width: 32px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-style: italic;
+    font-weight: 600;
+    color: #4105DB;
+    flex-shrink: 0;
+  }
+  .evam-num--principle {
+    font-size: 14px;
+  }
+  .evam-num--finding {
+    font-size: 13px;
+  }
+
+  .evam-row-name {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2620;
+  }
+
+  .evam-row-desc {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: #6B6354;
+    line-height: 1.55;
+    margin-top: 4px;
+  }
+
+  .evam-row-finding {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    color: #2C2620;
+    line-height: 1.55;
+  }
+
+  /* ───── Hero 2-column grid (40/60 split) ───── */
+  .evam-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  @media (min-width: 768px) {
+    .evam-hero-grid {
+      grid-template-columns: 2fr 3fr;
+      gap: 48px;
+      align-items: start;
+    }
+    /* Push description down so its top edge sits at EVAM's top edge.
+       Calc: eyebrow rendered height (12px × 1.6 line-height = 19.2px) +
+       .evam-h1 margin-top (24px) = ~43px above EVAM in the left column. */
+    .evam-hero-right {
+      padding-top: 43px;
+    }
+  }
+
+  /* ───── Process 4-card grid ───── */
+  .evam-process-grid {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    .evam-process-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .evam-process-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E4E0;
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .evam-process-num {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 600;
+    color: #4105DB;
+  }
+
+  .evam-process-card-title {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2C2620;
+    margin-top: 8px;
+  }
+
+  .evam-process-card-body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    color: #2C2620;
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+
+  /* ───── How this showed up — 3-column grid ───── */
+  .evam-showup-grid {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    .evam-showup-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .evam-showup-title {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #4105DB;
+    margin: 0;
+    padding: 0;
+  }
+
+  .evam-showup-body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    color: #2C2620;
+    line-height: 1.55;
+    margin-top: 12px;
+  }
+
+  .evam-showup-image {
+    margin-top: 16px;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(44, 38, 32, 0.6);
+  }
+
+</style>

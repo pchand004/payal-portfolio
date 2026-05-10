@@ -1,0 +1,45 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const projects = [
+  { n: 'N°01', name: 'Hume', year: '2025', tagline: 'voice AI that knows when to listen', href: '/work/hume' },
+  { n: 'N°02', name: 'EVAM', year: '2024', tagline: "India's first VR classroom", href: '/work/evam' },
+  { n: 'N°03', name: 'Gravity Grip', year: '2024', tagline: 'embodied physics learning', href: '/work/gravity-grip' },
+  { n: 'N°04', name: 'AutoVRse', year: '2023', tagline: 'XR enterprise training', href: '/work/autovrse' },
+  { n: 'N°05', name: 'HelloFresh', year: '2024', tagline: 'mixed-methods food study', href: '/work/hellofresh' },
+];
+---
+
+<Layout title="Work — Payal Chand">
+  <div class="py-16 md:py-24">
+    <p class="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-muted">Work</p>
+    <h1 class="font-serif text-4xl font-normal leading-tight tracking-tight md:text-6xl">
+      Selected Work
+    </h1>
+    <p class="mt-6 font-serif text-lg italic text-muted md:text-xl">
+      Coming soon — fuller case studies in progress.
+    </p>
+
+    <ul class="mt-16" style="border-top: 0.5px solid var(--divider);">
+      {projects.map((p) => (
+        <li style="border-bottom: 0.5px solid var(--divider);">
+          <a
+            href={p.href}
+            class="group flex items-baseline gap-4 px-2 py-6 transition-colors duration-300 hover:bg-[rgba(216,90,48,0.04)] md:gap-8 md:py-7"
+          >
+            <span class="w-12 shrink-0 font-serif text-sm italic text-muted md:w-16 md:text-base">{p.n}</span>
+            <h2 class="flex-1 font-serif text-xl font-normal leading-snug md:text-2xl">
+              {p.name} <span class="text-muted">({p.year})</span>
+              <span class="ml-1 font-sans text-base italic font-normal text-muted md:text-lg"> — {p.tagline}</span>
+            </h2>
+            <span aria-hidden="true" class="text-base text-muted transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent md:text-lg">↗</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="mt-16 text-sm">
+      <a href="/" class="text-muted transition-colors duration-200 hover:text-accent">← Back to desk</a>
+    </p>
+  </div>
+</Layout>

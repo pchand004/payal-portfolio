@@ -1,0 +1,55 @@
+---
+/**
+ * Site-wide top nav. Pacifico "payal" wordmark on the left, About · Resume ·
+ * Contact on the right.
+ *
+ * variant:
+ *   "overlay" — absolutely positioned at the top of a relative parent
+ *     (e.g. the homepage hero). Provides its own max-width + horizontal
+ *     padding because it sits outside the Layout's content container.
+ *   "inline"  — sits in normal document flow inside the Layout's content
+ *     container, which already provides max-width + horizontal padding,
+ *     so the inner div skips them to avoid double-constraint.
+ */
+interface Props {
+  variant?: 'overlay' | 'inline';
+}
+
+const { variant = 'inline' } = Astro.props;
+---
+
+<nav
+  class:list={[
+    variant === 'overlay' && 'absolute inset-x-0 top-0 z-30',
+    /* Pull inline nav up to cancel Layout's py-8/md:py-12 wrapper padding,
+       so it sits at the same y-position as the homepage's overlay nav. */
+    variant === 'inline' && '-mt-8 md:-mt-12',
+  ]}
+>
+  <div
+    class:list={[
+      'flex items-center justify-between py-5 md:py-6',
+      variant === 'overlay' && 'mx-auto max-w-[1200px] px-6 md:px-10',
+    ]}
+  >
+    <a
+      href="/"
+      class="font-signature text-2xl text-accent transition-colors duration-200 hover:text-accent-hover"
+    >
+      payal
+    </a>
+    <ul class="flex items-center gap-2 text-xs text-muted md:gap-3 md:text-sm">
+      <li>
+        <a href="/about" class="transition-colors duration-200 hover:text-accent">About</a>
+      </li>
+      <li aria-hidden="true" class="opacity-50">·</li>
+      <li>
+        <a href="/resume.pdf" class="transition-colors duration-200 hover:text-accent">Resume</a>
+      </li>
+      <li aria-hidden="true" class="opacity-50">·</li>
+      <li>
+        <a href="mailto:chandpayal3011@gmail.com" class="transition-colors duration-200 hover:text-accent">Contact</a>
+      </li>
+    </ul>
+  </div>
+</nav>

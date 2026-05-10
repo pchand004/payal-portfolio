@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #FFFFFF;
+  --text: #2C2620;
+  --accent: #4105DB;
+  --accent-hover: #5B2EE8;
+  --muted: #6B6354;
+  --divider: #E8E4E0;
+  --row-hover: #F5F0FF;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-text: var(--text);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-muted: var(--muted);
+  --color-divider: var(--divider);
+  --color-row-hover: var(--row-hover);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.font-signature {
+  font-family: 'Pacifico', cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+}
