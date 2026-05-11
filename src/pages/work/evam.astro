@@ -333,6 +333,24 @@ const findings = [
       </div>
     </section>
 
+    {/* ───── Closing ───── */}
+    <section class="evam-closing">
+      <p class="evam-prose evam-closing-doc">
+        Full research and development documentation:{' '}
+        <a
+          href="https://docs.google.com/document/d/15XTgBWmn0PO8ke5H5QOYRkmobOZ8TmX9WhLiYs6BO7U/edit?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="evam-link"
+        >
+          EVAM ↗
+        </a>
+      </p>
+      <p class="evam-prose evam-back">
+        <a href="/" class="evam-link">← Back to all work</a>
+      </p>
+    </section>
+
   </article>
 
   <Footer />
@@ -711,4 +729,51 @@ const findings = [
     color: rgba(44, 38, 32, 0.6);
   }
 
+  /* ───── Closing — sits below the last content section, above the site footer.
+     Mirrors the closing block on the Gravity Grip case study so both pages
+     share the same end-of-page treatment. */
+  .evam-closing {
+    margin-top: 64px;
+    padding-top: 48px;
+    padding-bottom: 40px;
+    border-top: 0.5px solid #E8E4E0;
+  }
+  @media (min-width: 768px) {
+    .evam-closing {
+      margin-top: 48px;
+      padding-bottom: 56px;
+    }
+  }
+
+  /* Neutralise the shared <Footer>'s top breathing room on this page only.
+     The selector matches only when the preceding article has class "evam",
+     so Gravity Grip (article.gg) and the homepage (no article wrapper) are unaffected. */
+  :global(article.evam + footer) {
+    margin-top: 0;
+    padding-top: 0;
+  }
+  /* Documentation line — non-italic so the link reads as plain prose. */
+  .evam-closing-doc {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    color: #6B6354;
+    line-height: 1.55;
+  }
+  @media (min-width: 768px) {
+    .evam-closing-doc {
+      font-size: 14px;
+    }
+  }
+  .evam-back {
+    margin-top: 24px;
+  }
+  .evam-back a {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+  }
+  @media (min-width: 768px) {
+    .evam-back a {
+      font-size: 14px;
+    }
+  }
 </style>
