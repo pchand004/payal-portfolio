@@ -37,27 +37,6 @@ const constraints = [
   },
 ];
 
-const showupCols = [
-  {
-    title: 'Successful action',
-    body: 'Synchronised sound and motion confirms the state change.',
-    color: '#C9D5B0',
-    caption: '[Successful action image]',
-  },
-  {
-    title: 'Incorrect attempt',
-    body: 'Visual and audio feedback signal a retry without breaking flow.',
-    color: '#F0DCA0',
-    caption: '[Incorrect attempt image]',
-  },
-  {
-    title: 'User hesitation',
-    body: 'Ghost-hand animation reappears as gentle guidance.',
-    color: '#F0C5C5',
-    caption: '[Hesitation image]',
-  },
-];
-
 const phases = [
   {
     n: '01',
@@ -81,17 +60,20 @@ const phases = [
 
 const interactions = [
   {
-    color: '#C9D5B0',
+    image: '/images/gg-object-selection.jpg',
+    alt: 'Object selection on Mars — users choose between three familiar objects.',
     caption: 'Object selection on Mars',
     desc: 'Users choose between 3 familiar objects mapped to small, medium, and large sizes.',
   },
   {
-    color: '#F0DCA0',
+    image: '/images/gg-grab-release.jpg',
+    alt: 'Guided grab and release with ghost-hand animation guiding first-time VR users.',
     caption: 'Guided grab and release',
     desc: 'Ghost-hand animation and a short voice prompt guide first-time VR users through the action.',
   },
   {
-    color: '#F0C5C5',
+    image: '/images/gg-gravity-comparison.jpg',
+    alt: 'Visualised gravity comparison with color-coded trails.',
     caption: 'Visualised gravity comparison',
     desc: 'Color-coded trails (green for Earth, purple for the selected planet) make differences in gravity immediately visible.',
   },
@@ -222,9 +204,12 @@ const findings = [
             encountered through embodied, action-led interaction rather than passive
             observation?
           </p>
-          <div class="gg-context-image" style="background-color: #F5C9B4;">
-            [Field research photo — rural school, Assam]
-          </div>
+          <img
+            src="/images/gg-field-research.jpg"
+            alt="Field research with novice VR users in a rural school in Assam."
+            class="gg-context-image"
+            loading="lazy"
+          />
           <p class="gg-context-foot">
             Field research with novice VR users in rural Assam shaped the design decisions
             that followed.
@@ -291,16 +276,27 @@ const findings = [
           Three responses to user behaviour shaped the interaction model:
         </p>
       </div>
+
+      <img
+        src="/images/gg-successful-action.jpg"
+        alt="The interaction system responding to a successful user action."
+        class="gg-interaction-image"
+        loading="lazy"
+      />
+
       <div class="gg-showup-grid">
-        {showupCols.map((c) => (
-          <div class="gg-showup-cell">
-            <h3 class="gg-showup-title">{c.title}</h3>
-            <p class="gg-showup-body">{c.body}</p>
-            <div class="gg-showup-image" style={`background-color: ${c.color};`}>
-              {c.caption}
-            </div>
-          </div>
-        ))}
+        <div class="gg-showup-cell">
+          <h3 class="gg-showup-title">Successful action</h3>
+          <p class="gg-showup-body">Synchronised sound and motion confirms the state change.</p>
+        </div>
+        <div class="gg-showup-cell">
+          <h3 class="gg-showup-title">Incorrect attempt</h3>
+          <p class="gg-showup-body">Visual and audio feedback signal a retry without breaking flow.</p>
+        </div>
+        <div class="gg-showup-cell">
+          <h3 class="gg-showup-title">User hesitation</h3>
+          <p class="gg-showup-body">Ghost-hand animation reappears as gentle guidance.</p>
+        </div>
       </div>
     </section>
 
@@ -338,7 +334,7 @@ const findings = [
       <div class="gg-gallery-grid">
         {interactions.map((i) => (
           <div class="gg-gallery-cell">
-            <div class="gg-gallery-image" style={`background-color: ${i.color};`}></div>
+            <img src={i.image} alt={i.alt} class="gg-gallery-image" loading="lazy" />
             <p class="gg-gallery-caption">{i.caption}</p>
             <p class="gg-gallery-desc">{i.desc}</p>
           </div>
@@ -632,19 +628,10 @@ const findings = [
   .gg-context-image {
     width: 100%;
     aspect-ratio: 4 / 3;
+    object-fit: cover;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    color: rgba(44, 38, 32, 0.6);
+    display: block;
     margin-top: 24px;
-  }
-  @media (min-width: 768px) {
-    .gg-context-image {
-      font-size: 14px;
-    }
   }
   .gg-context-foot {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -972,22 +959,16 @@ const findings = [
       font-size: 16px;
     }
   }
-  .gg-showup-image {
-    margin-top: 16px;
+  /* Hero image above the showup-grid in Interaction logic — single full-width
+     image followed by 3-column text describing the system's three responses. */
+  .gg-interaction-image {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    color: rgba(44, 38, 32, 0.6);
-  }
-  @media (min-width: 768px) {
-    .gg-showup-image {
-      font-size: 14px;
-    }
+    display: block;
+    margin-top: 32px;
+    margin-bottom: 32px;
   }
 
   /* ───── Key interactions gallery — 3 image cards with caption + desc ───── */
@@ -1010,7 +991,9 @@ const findings = [
   .gg-gallery-image {
     width: 100%;
     aspect-ratio: 4 / 3;
+    object-fit: cover;
     border-radius: 8px;
+    display: block;
   }
   .gg-gallery-caption {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

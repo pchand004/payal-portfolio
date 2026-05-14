@@ -55,6 +55,8 @@ const showupCols = [
       'Perceptual cues, motion, and spatial placement to guide attention naturally.',
     color: '#C9D5B0',
     caption: '[Navigation Guidance image]',
+    image: '/images/evam-navigation-guidance.jpg',
+    alt: 'Navigation Guidance — perceptual cues, motion, and spatial placement.',
   },
   {
     title: 'Cognitive Load',
@@ -62,6 +64,8 @@ const showupCols = [
       'Carefully managed and optimised by sequencing information and pacing transitions.',
     color: '#F0DCA0',
     caption: '[Cognitive Load image]',
+    image: '/images/evam-cognitive-load.jpg',
+    alt: 'Cognitive Load — managing information density and pace.',
   },
   {
     title: 'Focused Interpretation',
@@ -69,6 +73,8 @@ const showupCols = [
       'Allowing students to focus on understanding concepts rather than figuring out the interface.',
     color: '#F0C5C5',
     caption: '[Focused Interpretation image]',
+    image: '/images/evam-showup-3.jpg',
+    alt: 'The third design dimension covered in the showup section.',
   },
 ];
 
@@ -185,9 +191,12 @@ const findings = [
           The brief became less about technology and more about cognition.
         </p>
       </div>
-      <div class="evam-image evam-image--mt" style="background-color: #F5C9B4;">
-        [Context image]
-      </div>
+      <img
+        src="/images/evam-process.jpg"
+        alt="EVAM process visual."
+        class="evam-image evam-image--mt"
+        loading="lazy"
+      />
     </section>
 
     {/* ───── Process — tighter gap from Context image (48/64) ───── */}
@@ -276,9 +285,7 @@ const findings = [
           <div>
             <h3 class="evam-showup-title">{c.title}</h3>
             <p class="evam-showup-body">{c.body}</p>
-            <div class="evam-showup-image" style={`background-color: ${c.color};`}>
-              {c.caption}
-            </div>
+            <img src={c.image} alt={c.alt} class="evam-showup-image" loading="lazy" />
           </div>
         ))}
       </div>
@@ -551,14 +558,9 @@ const findings = [
   .evam-image {
     width: 100%;
     aspect-ratio: 21 / 9;
+    object-fit: cover;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    font-style: italic;
-    color: rgba(44, 38, 32, 0.6);
+    display: block;
   }
   .evam-image--mt {
     margin-top: 24px;
@@ -719,14 +721,9 @@ const findings = [
     margin-top: 16px;
     width: 100%;
     aspect-ratio: 4 / 3;
+    object-fit: cover;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    font-style: italic;
-    color: rgba(44, 38, 32, 0.6);
+    display: block;
   }
 
   /* ───── Closing — sits below the last content section, above the site footer.

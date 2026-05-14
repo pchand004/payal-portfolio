@@ -251,7 +251,7 @@ const explorations = [
             href={p.href}
             target={p.external ? '_blank' : undefined}
             rel={p.external ? 'noopener noreferrer' : undefined}
-            class="group block px-2 py-4 transition-colors duration-300 hover:bg-row-hover md:px-3 md:py-6"
+            class="work-row group block px-2 py-4 hover:bg-row-hover md:px-3 md:py-6"
           >
             <div class="flex items-baseline gap-4 md:gap-8">
               <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">
@@ -293,10 +293,10 @@ const explorations = [
           href={e.href}
           target="_blank"
           rel="noopener noreferrer"
-          class="exploration-card group block transition-transform duration-300 hover:-translate-y-0.5"
+          class="exploration-card group block"
         >
           <div
-            class="aspect-[16/10] w-full rounded-lg shadow-[0_1px_2px_rgba(44,38,32,0.06)] transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-[0_8px_24px_rgba(44,38,32,0.10)]"
+            class="card-inner-visual aspect-[16/10] w-full rounded-lg"
             style={`background-color: ${e.color};`}
           ></div>
           <div class="mt-4">
@@ -328,6 +328,33 @@ const explorations = [
   }
   .brand-strip:hover .brand-strip-img {
     opacity: 1;
+  }
+
+  /* ───── Selected Work rows — lift + shadow on hover ───── */
+  .work-row {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out;
+  }
+  .work-row:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(44, 38, 32, 0.06);
+  }
+
+  /* ───── Explorations cards — lift + shadow on the card, scale the inner visual ───── */
+  .exploration-card {
+    transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+    overflow: hidden;
+  }
+  .exploration-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(44, 38, 32, 0.08);
+  }
+  .exploration-card img,
+  .exploration-card .card-inner-visual {
+    transition: transform 350ms ease-out;
+  }
+  .exploration-card:hover img,
+  .exploration-card:hover .card-inner-visual {
+    transform: scale(1.03);
   }
 
   /* ───── Custom circle cursor — fine pointers only, homepage scoped ─────

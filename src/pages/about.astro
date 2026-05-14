@@ -1,16 +1,334 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="About — Payal Chand">
-  <div class="py-24 md:py-40">
-    <p class="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-muted">About</p>
-    <h1 class="font-serif text-4xl font-normal leading-tight tracking-tight md:text-6xl">
-      About
-    </h1>
-    <p class="mt-6 font-serif text-xl italic text-muted md:text-2xl">Coming soon.</p>
-    <p class="mt-12 text-sm">
-      <a href="/" class="text-muted transition-colors duration-200 hover:text-accent">← Back to desk</a>
-    </p>
-  </div>
+<Layout
+  title="About — Payal Chand"
+  description="Payal Chand is an interaction and behaviour designer working across VR, voice AI, and emerging interfaces."
+>
+  <Nav />
+
+  <main class="about">
+    {/* ───── 1 · Zig-zag scattered photo row (top) ───── */}
+    <div class="about-photos-row" id="aboutPhotosRow" aria-hidden="true">
+      <img
+        src="/images/about-1.jpg"
+        alt="Payal"
+        class="about-photo about-photo--1"
+        loading="lazy"
+        draggable="false"
+      />
+      <img
+        src="/images/about-2.jpg"
+        alt="Payal"
+        class="about-photo about-photo--2"
+        loading="lazy"
+        draggable="false"
+      />
+      <img
+        src="/images/about-3.jpg"
+        alt="Payal"
+        class="about-photo about-photo--3"
+        loading="lazy"
+        draggable="false"
+      />
+      <img
+        src="/images/about-4.jpg"
+        alt="Payal"
+        class="about-photo about-photo--4"
+        loading="lazy"
+        draggable="false"
+      />
+    </div>
+
+    {/* ───── 2 · Greeting ───── */}
+    <div class="about-greeting">
+      <p>Hello! Hiiiii!!! Heyyyyyyyyyy</p>
+      <p>Namaste 🙏🏼🙏🏼🙏🏼🙏🏼</p>
+    </div>
+
+    {/* ───── 3 · Availability indicator — sits centred under the greeting ───── */}
+    <div class="about-available">
+      <span class="about-dot" aria-hidden="true"></span>
+      <span class="about-available-text">Available for work</span>
+    </div>
+
+    {/* ───── 4 · Hero — strikethrough correction ───── */}
+    <div class="about-hero">
+      <p class="about-hero-strike">I start with analysing.</p>
+      <p class="about-hero-real">I start with how people make sense of things.</p>
+    </div>
+
+    {/* ───── 5 · Design philosophy paragraphs ───── */}
+    <div class="about-philosophy">
+      <p>
+        I'm interested in moments where users hesitate, misinterpret, or feel unsure
+        because that's usually where design actually matters. I like breaking those
+        moments down and rebuilding them into interactions that feel natural, instinctive,
+        and a little bit playful.
+      </p>
+      <p>
+        Most of my work lives at the intersection of behaviour, interaction, and
+        immersive systems. I've designed VR classrooms, industrial safety training, and
+        healthcare experiences but the common thread isn't the medium, it's the intent:
+        helping people understand by doing, not by being told.
+      </p>
+    </div>
+
+    {/* ───── 6 · Outside work ───── */}
+    <section class="about-outside">
+      <h2 class="about-outside-heading">Outside work ⬇️</h2>
+      <p class="about-outside-body">
+        I'm often found experimenting with quirky Instagram shortcut recipes, folding
+        intricate origami designs, doodling my way to clarity and calm, or balancing my
+        time between catching up on badminton, gym, and parkour training! I'm an avid
+        reader drawn to emotionally rich narratives and reflective nonfiction, favorites
+        include Unaccustomed Earth, A Thousand Splendid Suns, When Breath Becomes Air, and
+        Brave NUI World. These books, like my hobbies, feed my curiosity about people,
+        patterns, and the hidden stories that shape our world.
+      </p>
+    </section>
+
+    {/* ───── 7 · Closing line ───── */}
+    <p class="about-closing">Open to full-time opportunities</p>
+
+    {/* ───── 8 · Closing image ───── */}
+    <img
+      src="/images/about-collage.jpg"
+      alt="A collage capturing Payal's life outside of work — origami, doodling, badminton, books, recipes."
+      class="about-closing-image"
+      loading="lazy"
+    />
+  </main>
+
+  <Footer />
 </Layout>
+
+<style>
+  /* ───── Page wrapper — sits below the shared nav ───── */
+  .about {
+    margin-top: 32px;
+  }
+  @media (min-width: 768px) {
+    .about {
+      margin-top: 64px;
+    }
+  }
+
+  /* ───── 1 · Zig-zag photo row ───── */
+  .about-photos-row {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    margin: 0 0 80px;
+    display: block;
+  }
+
+  .about-photo {
+    position: absolute;
+    width: 200px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(44, 38, 32, 0.15);
+    transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+    user-select: none;
+    -webkit-user-drag: none;
+    z-index: 10;
+  }
+
+  /* Zig-zag desktop positions — rotation stored in --rotation so :hover can
+     compose translate + scale on top of it without losing the tilt. */
+  .about-photo--1 { left: 4%;  top: 20px; --rotation: -4deg; transform: rotate(var(--rotation)); }
+  .about-photo--2 { left: 26%; top: 70px; --rotation:  3deg; transform: rotate(var(--rotation)); }
+  .about-photo--3 { left: 48%; top: 10px; --rotation: -2deg; transform: rotate(var(--rotation)); }
+  .about-photo--4 { left: 70%; top: 80px; --rotation:  5deg; transform: rotate(var(--rotation)); }
+
+  .about-photo:hover {
+    transform: rotate(var(--rotation)) translateY(-8px) scale(1.01);
+    box-shadow: 0 16px 36px rgba(44, 38, 32, 0.22);
+    z-index: 20;
+  }
+
+  /* Mobile fallback — horizontal scroll strip, no drag */
+  @media (max-width: 767px) {
+    .about-photos-row {
+      height: auto;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      padding-bottom: 16px;
+      margin-bottom: 48px;
+    }
+    .about-photo {
+      position: relative;
+      display: inline-block;
+      width: 140px;
+      margin-right: 12px;
+      left: auto !important;
+      top: auto !important;
+    }
+    .about-photo--1 { --rotation: -3deg; transform: rotate(var(--rotation)); }
+    .about-photo--2 { --rotation:  2deg; transform: rotate(var(--rotation)); }
+    .about-photo--3 { --rotation: -1deg; transform: rotate(var(--rotation)); }
+    .about-photo--4 { --rotation:  4deg; transform: rotate(var(--rotation)); }
+  }
+
+  /* ───── 3 · Availability indicator — centred caption under the greeting ───── */
+  .about-available {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 24px 0 48px;
+  }
+  .about-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #22C55E;
+    animation: about-pulse 2s ease-in-out infinite;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  @keyframes about-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.6; transform: scale(0.85); }
+  }
+  .about-available-text {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B6354;
+  }
+
+  /* ───── 2 · Greeting — centred editorial moment ───── */
+  .about-greeting {
+    max-width: 900px;
+    margin: 96px auto 0;
+    text-align: center;
+  }
+  .about-greeting p {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: #2C2620;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .about-greeting p {
+      font-size: 56px;
+    }
+  }
+  .about-greeting p + p {
+    margin-top: 16px;
+  }
+
+  /* ───── 4 · Hero — strikethrough correction ───── */
+  .about-hero {
+    margin-bottom: 64px;
+  }
+  .about-hero-strike,
+  .about-hero-real {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .about-hero-strike,
+    .about-hero-real {
+      font-size: 32px;
+    }
+  }
+  .about-hero-strike {
+    text-decoration: line-through;
+    color: #6B6354;
+  }
+  .about-hero-real {
+    color: #2C2620;
+    margin-top: 8px;
+  }
+
+  /* ───── 5 · Design philosophy ───── */
+  .about-philosophy {
+    max-width: 720px;
+    margin-bottom: 96px;
+  }
+  .about-philosophy p {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #2C2620;
+    line-height: 1.65;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .about-philosophy p {
+      font-size: 18px;
+    }
+  }
+  .about-philosophy p + p {
+    margin-top: 24px;
+  }
+
+  /* ───── 6 · Outside work ───── */
+  .about-outside {
+    margin-bottom: 64px;
+  }
+  .about-outside-heading {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C2620;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .about-outside-heading {
+      font-size: 24px;
+    }
+  }
+  .about-outside-body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #2C2620;
+    line-height: 1.65;
+    max-width: 720px;
+    margin: 24px 0 0;
+  }
+  @media (min-width: 768px) {
+    .about-outside-body {
+      font-size: 16px;
+    }
+  }
+
+  /* ───── 7 · Closing line ───── */
+  .about-closing {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #4105DB;
+    margin: 0 0 64px;
+  }
+
+  /* ───── 8 · Closing image ───── */
+  .about-closing-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin-bottom: 96px;
+  }
+</style>
+
