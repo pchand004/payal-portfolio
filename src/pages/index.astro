@@ -6,8 +6,10 @@ import Footer from '../components/Footer.astro';
 import deskHero from '../assets/desk-hero.png';
 import brandLogos from '../assets/brandlogos.png';
 
+// Hotspot regions are % of the desk image so they hold up at any size.
 const hotspots = [
   {
+    // Laptop → Hume Figma deck (new tab)
     href: 'https://www.figma.com/deck/LOyuwMTxibQIe7M6RQYpHN/HumeXPayal?node-id=1-96&t=n23q5ahl0SFd97zI-1',
     label: 'hume',
     target: '_blank',
@@ -16,24 +18,28 @@ const hotspots = [
     labelClass: 'left-1/2 top-full mt-2 -translate-x-1/2',
   },
   {
+    // Mug → mailto
     href: 'mailto:chandpayal3011@gmail.com',
     label: "let's chat",
     style: 'left: 64%; top: 14%; width: 20%; height: 30%;',
     labelClass: 'left-full top-1/2 ml-3 -translate-y-1/2',
   },
   {
+    // Notepad → EVAM case study (same tab)
     href: '/work/evam',
     label: 'evam',
     style: 'left: 12%; top: 56%; width: 30%; height: 38%;',
     labelClass: 'right-full top-1/2 mr-3 -translate-y-1/2',
   },
   {
+    // Books → smooth-scroll to Selected Work
     href: '#selected-work',
     label: 'work',
     style: 'left: 82%; top: 26%; width: 16%; height: 26%;',
     labelClass: 'right-full top-1/2 mr-3 -translate-y-1/2',
   },
   {
+    // Duck → smooth-scroll to Explorations
     href: '#explorations',
     label: 'explorations',
     style: 'left: 60%; top: 58%; width: 32%; height: 38%;',
@@ -46,17 +52,19 @@ const projects = [
     n: 'N°01',
     name: 'Hume',
     year: '2026',
-    tagline: 'voice AI that knows when to listen',
-    finding: "voice agents fail less because they don't understand and more because they don't pause. Silence is not the absence of interaction; it's the heart of it.",
+    tagline: 'Voice AI that knows when to listen',
+    finding:
+      "Voice agents fail less because they can't understand and more because they don't know when to pause. Silence isn't the absence of interaction — it's the heart of it.",
     href: 'https://www.figma.com/deck/LOyuwMTxibQIe7M6RQYpHN/HumeXPayal?node-id=1-96&t=n23q5ahl0SFd97zI-1',
     external: true,
   },
   {
     n: 'N°02',
-    name: 'beneath the Surface',
+    name: 'Beneath the Surface',
     year: '2026',
-    tagline: 'a card game about autistic shutdown',
-    finding: "empathy isn't taught through information; it's built through structured, embodied limits. When you can't speak the words, you have to design the system that lets you.",
+    tagline: 'A card game about autistic shutdown',
+    finding:
+      "Empathy isn't taught through information; it's built through structured, embodied limits. When you can't speak the words, you have to design the system that lets you.",
     href: '/work/beneath-the-surface.pdf',
     external: true,
   },
@@ -65,7 +73,8 @@ const projects = [
     name: 'EVAM',
     year: '2023',
     tagline: "India's first VR classroom",
-    finding: "when you hand a child in rural Assam a VR headset, what shocks you isn't the technology — it's how naturally physical and digital interactions can merge when the wonder is real.",
+    finding:
+      "Hand a child in rural Assam a VR headset and the surprise isn't the technology — it's how effortlessly the physical and digital merge once their curiosity is real.",
     href: '/work/evam',
     external: false,
   },
@@ -73,8 +82,9 @@ const projects = [
     n: 'N°04',
     name: 'Gravity Grip',
     year: '2024',
-    tagline: 'embodied physics learning',
-    finding: "VR fails less because users can't operate it and more because long audio prompts and inconsistent input methods quietly break the illusion of presence.",
+    tagline: 'Embodied physics learning',
+    finding:
+      "In VR, presence rarely breaks because users can't operate it — it breaks quietly, when long audio prompts and inconsistent input methods pull the body out of the moment.",
     href: '/work/gravity-grip',
     external: false,
   },
@@ -83,7 +93,8 @@ const projects = [
     name: 'AutoVRse',
     year: '2024',
     tagline: 'XR enterprise training',
-    finding: "touchless hand-tracking is genuinely engaging, but without synchronised feedback the brain doesn't believe what the hands are doing — and training breaks down.",
+    finding:
+      "Hand-tracking is genuinely engaging, but without synchronised feedback the brain stops believing the hands — and training breaks down.",
     href: 'https://www.figma.com/deck/qPCQlnmCjtWMpJbN8QBcLw/AutoVRse?node-id=11-17&t=7WVUUSpIXixszrnQ-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1',
     external: true,
   },
@@ -91,37 +102,41 @@ const projects = [
 
 const explorations = [
   {
-    name: 'Cross-Culture Buddy System',
-    year: '2026',
-    tagline: 'a behaviour-change intervention designed for first-year Chinese students transitioning into UK universities — addressing the gap between high enrolment and low intercultural connection.',
-    image: '/images/expl-cross-culture-buddy.jpg',
-    alt: 'Cross-Culture Buddy System exploration.',
-    href: '/work/cross-culture-buddy-system.pdf',
-  },
-  {
-    name: 'Artify: Conveying Information Through History',
-    year: '2026',
-    tagline: 'a MATLAB project translating a single photograph through four eras of visual representation — exploring how each system reconstructs the same image. Collaboration with Lisa Pinto.',
-    image: '/images/expl-artify.jpg',
-    alt: 'Artify exploration.',
-    href: '/work/artify-conveying-information.pdf',
-  },
-  {
     name: 'Exploring AI-Initiated Interruptions in Voice AI',
     year: '2026',
-    tagline: 'a mixed-methods study using 30 synthetic LLM-generated participants to investigate the friction point of voice AI interrupting at the wrong time — the same problem that later became the focus of Hume.',
+    tagline:
+      'Mixed-methods study using 30 synthetic LLM-generated participants to investigate the friction point of voice AI interrupting at the wrong time — the same problem that later became the focus of Hume.',
     image: '/images/expl-ai-interruptions.jpg',
     alt: 'AI-Initiated Interruptions in Voice AI exploration.',
     href: '/work/ai-interruptions-study.pdf',
   },
   {
+    name: 'Artify: Conveying Information Through History',
+    year: '2026',
+    tagline:
+      'MATLAB project translating a single photograph through four eras of visual representation — exploring how each system reconstructs the same image. Collaboration with Lisa Pinto.',
+    image: '/images/expl-artify.jpg',
+    alt: 'Artify exploration.',
+    href: '/work/artify-conveying-information.pdf',
+  },
+  {
     name: 'VR Exploration',
     year: '2024',
-    tagline: 'a teardown of 6+ commercial VR titles cataloguing patterns in hand-tracking, diegetic UI, and instructional friction — informing future design choices at AutoVRse.',
+    tagline:
+      'Teardown of 6+ commercial VR titles cataloguing patterns in hand-tracking, diegetic UI, and instructional friction — informing future design choices at AutoVRse.',
     image: '/images/expl-vr-exploration.jpg',
     alt: 'VR Exploration.',
     href: '/work/vr-exploration.pdf',
     imgStyle: 'object-position: center center;',
+  },
+  {
+    name: 'Cross-Culture Buddy System',
+    year: '2026',
+    tagline:
+      'Behaviour-change intervention designed for first-year Chinese students transitioning into UK universities — addressing the gap between high enrolment and low intercultural connection.',
+    image: '/images/expl-cross-culture-buddy.jpg',
+    alt: 'Cross-Culture Buddy System exploration.',
+    href: '/work/cross-culture-buddy-system.pdf',
   },
 ];
 
@@ -129,14 +144,16 @@ const playground = [
   {
     name: 'Margin',
     when: 'May 2026',
-    tagline: 'a feature concept for iOS Photos — surfaces the caption field at the moment of meaning, the second you tap the heart, instead of buried five swipes deep.',
+    tagline:
+      'Feature concept for iOS Photos — surfaces the caption field at the moment of meaning, the second you tap the heart, instead of buried five swipes deep.',
     video: '/videos/playground-margin.mp4',
     href: 'https://remarkable-kitsune-595c1e.netlify.app/',
   },
   {
     name: 'Squeesh',
     when: 'April 2026',
-    tagline: 'a pomodoro timer you squeeze — drag a blob to set time, tap to start. less digital stopwatch, more tactile companion.',
+    tagline:
+      'Pomodoro timer you squeeze — drag a blob to set time, tap to start. Less digital stopwatch, more tactile companion.',
     video: '/videos/playground-squeesh.mp4',
     href: 'https://jovial-mochi-7f3930.netlify.app/',
   },
@@ -144,15 +161,28 @@ const playground = [
 ---
 
 <Layout title="Payal Chand · UX & Interaction Designer">
+  {/* ───── Top nav (overlays the hero) ───── */}
   <Nav variant="overlay" />
 
+  {/*
+    ───── Hero ─────
+    Split layout: name + tagline on the left (40%), desk illustration with
+    hotspots on the right (60%). Stacks single-column on mobile.
+  */}
   <section id="hero" class="relative pt-24 md:pt-32">
     <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-[2fr_3fr] md:gap-16">
+      {/* Left — name + tagline + bio details */}
       <div class="md:pr-4">
-        <h1 data-anim="name" class="font-serif font-semibold leading-[1.02] tracking-tight text-text text-[44px] md:text-[56px] lg:text-[64px]">
+        <h1
+          data-anim="name"
+          class="font-serif font-semibold leading-[1.02] tracking-tight text-text text-[44px] md:text-[56px] lg:text-[64px]"
+        >
           Payal Chand
         </h1>
-        <p data-anim="tagline" class="mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]">
+        <p
+          data-anim="tagline"
+          class="mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
+        >
           Designs experiences rooted in behaviour and interactions.
         </p>
 
@@ -160,9 +190,11 @@ const playground = [
           <dl class="grid grid-cols-[auto_1fr] items-baseline gap-x-10 gap-y-2">
             <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Currently</dt>
             <dd class="text-[15px] leading-relaxed text-text">Student at Imperial College London</dd>
+
             <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Exploring</dt>
             <dd class="text-[15px] leading-relaxed text-text">Human-Agent Interaction in Voice</dd>
           </dl>
+
           <div class="mt-5 space-y-1 overflow-x-auto text-[13px] leading-relaxed text-muted">
             <p class="whitespace-nowrap">MSc Design with Behaviour Science (Imperial College London)</p>
             <p class="whitespace-nowrap">Previously UX &amp; Interaction Designer at IIT Guwahati and AutoVRse</p>
@@ -171,6 +203,7 @@ const playground = [
         </div>
       </div>
 
+      {/* Right — desk illustration + hotspots */}
       <div data-anim="desk" id="desk-stage" class="relative w-full">
         <Image
           src={deskHero}
@@ -182,6 +215,7 @@ const playground = [
           draggable={false}
         />
 
+        {/* Hotspots — floating label on hover */}
         {hotspots.map((h) => (
           <a
             href={h.href}
@@ -191,18 +225,30 @@ const playground = [
             style={h.style}
             aria-label={h.label}
           >
-            <span class:list={['pointer-events-none absolute whitespace-nowrap font-serif text-sm italic text-muted opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0', h.labelClass]}>
+            <span
+              class:list={[
+                'pointer-events-none absolute whitespace-nowrap font-serif text-sm italic text-muted opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0',
+                h.labelClass,
+              ]}
+            >
               {h.label}
             </span>
           </a>
         ))}
       </div>
     </div>
+
   </section>
 
-  <section class="brand-strip mt-16 border-y py-20 md:mt-24 md:py-24" style="border-color: var(--divider);">
+  {/* ───── Designed for — brand logos strip ───── */}
+  <section
+    class="brand-strip mt-16 border-y py-20 md:mt-24 md:py-24"
+    style="border-color: var(--divider);"
+  >
     <div class="mx-auto w-full max-w-[1100px]">
-      <p class="text-center text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Designed for</p>
+      <p class="text-center text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+        Designed for
+      </p>
       <div class="mt-6 flex justify-center">
         <Image
           src={brandLogos}
@@ -217,8 +263,11 @@ const playground = [
     </div>
   </section>
 
+  {/* ───── Selected Work (5) ───── */}
   <section id="selected-work" class="mt-16 scroll-mt-20 md:mt-24">
-    <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">Selected Work</p>
+    <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">
+      Selected Work
+    </p>
     <ul style="border-top: 0.5px solid var(--divider);">
       {projects.map((p) => (
         <li style="border-bottom: 0.5px solid var(--divider);">
@@ -229,17 +278,24 @@ const playground = [
             class="work-row group block px-2 py-4 hover:bg-row-hover md:px-3 md:py-6"
           >
             <div class="flex items-baseline gap-4 md:gap-8">
-              <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">{p.n}</span>
+              <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">
+                {p.n}
+              </span>
               <div class="flex-1">
                 <h2 class="font-serif text-xl font-medium leading-snug md:text-2xl lg:text-[1.65rem]">
                   {p.name} <span class="text-muted">({p.year})</span>
                   <span class="ml-1 font-sans text-base italic font-normal text-muted md:text-lg"> — {p.tagline}</span>
                 </h2>
                 <p class="mt-2 max-w-2xl font-serif text-[15px] italic leading-relaxed text-accent md:text-base">
-                  Finding: {p.finding}
+                  {p.finding}
                 </p>
               </div>
-              <span aria-hidden="true" class="self-center text-base text-text transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent md:text-lg">↗</span>
+              <span
+                aria-hidden="true"
+                class="self-center text-base text-text transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent md:text-lg"
+              >
+                ↗
+              </span>
             </div>
           </a>
         </li>
@@ -247,10 +303,11 @@ const playground = [
     </ul>
   </section>
 
+  {/* ───── Explorations ───── */}
   <section id="explorations" class="mt-24 scroll-mt-20 md:mt-36">
     <h2 class="font-serif text-3xl font-normal text-text md:text-4xl lg:text-5xl">Explorations</h2>
     <p class="mt-3 max-w-[42rem] font-serif text-base italic text-muted md:text-lg">
-      smaller things — university projects, papers, articles, hackathons, side projects.
+      Smaller things — university projects, papers, articles, hackathons, side projects.
     </p>
     <p class="mt-6 text-xs italic text-muted">(more coming soon)</p>
 
@@ -270,7 +327,9 @@ const playground = [
             style={e.imgStyle}
           />
           <div class="mt-4">
-            <h3 class="font-serif text-xl font-medium leading-snug text-text md:text-2xl">{e.name}</h3>
+            <h3 class="font-serif text-xl font-medium leading-snug text-text md:text-2xl">
+              {e.name}
+            </h3>
             <p class="mt-1 text-sm text-muted">{e.year}</p>
             <p class="mt-1 font-serif text-sm italic text-muted md:text-base">{e.tagline}</p>
           </div>
@@ -279,15 +338,21 @@ const playground = [
     </div>
   </section>
 
+  {/* ───── Playground ───── */}
   <section id="playground" class="mt-24 scroll-mt-20 md:mt-36">
     <h2 class="font-serif text-3xl font-normal text-text md:text-4xl lg:text-5xl">Playground</h2>
     <p class="mt-3 max-w-[42rem] font-serif text-base italic text-muted md:text-lg">
-      recent things made for fun — hover to play, click to open.
+      Recent things made for fun — hover to play, click to open.
     </p>
 
     <div class="mt-8 grid grid-cols-1 gap-6 md:mt-10 md:grid-cols-2">
       {playground.map((item) => (
-        <a href={item.href} target="_blank" rel="noopener noreferrer" class={`playground-card playground-card-${item.name.toLowerCase()}`}>
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class:list={['playground-card', `playground-card-${item.name.toLowerCase()}`]}
+        >
           <div class="playground-media">
             <div class="playground-phone">
               <video class="playground-video" src={item.video} muted loop playsinline preload="metadata"></video>
@@ -303,28 +368,127 @@ const playground = [
     </div>
   </section>
 
+  {/* ───── Footer ───── */}
   <Footer />
 
+  {/* ───── Custom circle cursor (fine pointer only) ───── */}
   <div id="cursor-dot" aria-hidden="true">
     <div class="cursor-dot-inner"></div>
   </div>
 </Layout>
 
 <style>
-  .brand-strip-img { opacity: 0.85; transition: opacity 200ms ease; }
-  .brand-strip:hover .brand-strip-img { opacity: 1; }
-
-  .work-row { transition: transform 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out; }
-  .work-row:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(44, 38, 32, 0.06); }
-
-  .exploration-card { transition: transform 250ms ease-out, box-shadow 250ms ease-out; overflow: hidden; }
-  .exploration-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(44, 38, 32, 0.08); }
-  .exploration-image {
-    width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: left center;
-    border-radius: 8px; display: block; transition: transform 350ms ease-out;
+  /* ───── Brand strip — logos fade slightly, restore on hover ───── */
+  .brand-strip-img {
+    opacity: 0.85;
+    transition: opacity 200ms ease;
   }
-  .exploration-card:hover .exploration-image { transform: scale(1.03); }
+  .brand-strip:hover .brand-strip-img {
+    opacity: 1;
+  }
 
+  /* ───── Selected Work rows — lift + shadow on hover ───── */
+  .work-row {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out;
+  }
+  .work-row:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(44, 38, 32, 0.06);
+  }
+
+  /* ───── Explorations cards — lift + shadow on the card, scale the image ───── */
+  .exploration-card {
+    transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+    overflow: hidden;
+  }
+  .exploration-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(44, 38, 32, 0.08);
+  }
+  .exploration-image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: left center;
+    border-radius: 8px;
+    display: block;
+    transition: transform 350ms ease-out;
+  }
+  .exploration-card:hover .exploration-image {
+    transform: scale(1.03);
+  }
+
+  /* ───── Custom circle cursor — fine pointers only, homepage scoped ─────
+     Outer element is positioned via JS (translate3d, no transition for
+     responsive tracking). Inner element handles the hover scale/opacity
+     so transforms don't conflict. */
+  #cursor-dot {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+  }
+  .cursor-dot-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform 200ms ease-out, opacity 200ms ease-out;
+    will-change: transform, opacity;
+  }
+  #cursor-dot.is-hover .cursor-dot-inner {
+    transform: scale(3);
+    opacity: 0.5;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #cursor-dot { display: block; }
+    :global(body),
+    :global(body *) { cursor: none !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor-dot-inner { transition: none; }
+  }
+
+  /* ───── Entrance choreography ─────
+     First-visit only (sessionStorage gate). Stages: name → tagline → desk. */
+  #hero [data-anim] {
+    opacity: 0;
+  }
+  #hero.skip-anim [data-anim] {
+    opacity: 1;
+  }
+  #hero.is-entering [data-anim="name"] {
+    animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 100ms forwards;
+  }
+  #hero.is-entering [data-anim="tagline"] {
+    animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 400ms forwards;
+  }
+  #hero.is-entering [data-anim="bio"] {
+    animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 700ms forwards;
+  }
+  #hero.is-entering [data-anim="desk"] {
+    animation: enter-desk 800ms cubic-bezier(0.2, 0.7, 0.2, 1) 900ms forwards;
+  }
+  @keyframes enter-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes enter-desk {
+    from { opacity: 0; transform: scale(0.98); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* Reduced motion — skip hero entrance animations */
+  @media (prefers-reduced-motion: reduce) {
+    #hero [data-anim] { opacity: 1 !important; animation: none !important; }
+  }
+
+  /* ───── Playground — phone-framed video cards ───── */
   .playground-card { transition: transform 250ms ease-out; }
   .playground-card:hover { transform: translateY(-4px); }
   .playground-media {
@@ -353,7 +517,7 @@ const playground = [
     background: #0a0a0a;
     border-radius: 24px;
     padding: 5px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     overflow: hidden;
     display: flex;
   }
@@ -367,52 +531,50 @@ const playground = [
     border-radius: 20px;
   }
   .playground-overlay {
-    position: absolute; inset: auto 0 0 0; padding: 20px 18px;
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 20px 18px;
     background: linear-gradient(to top, rgba(44, 38, 32, 0.92) 0%, rgba(44, 38, 32, 0.78) 60%, rgba(44, 38, 32, 0) 100%);
-    transform: translateY(100%); transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1); pointer-events: none;
+    transform: translateY(100%);
+    transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
   }
-  .playground-card:hover .playground-overlay { transform: translateY(0); }
+  .playground-card:hover .playground-overlay {
+    transform: translateY(0);
+  }
   .playground-overlay-text {
-    color: #ffffff; font-size: 13px; line-height: 1.5; font-style: italic;
-    font-family: var(--font-fraunces), Georgia, serif; margin: 0;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.5;
+    font-style: italic;
+    font-family: var(--font-fraunces), Georgia, serif;
+    margin: 0;
+  }
+  .playground-name {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    margin: 0.75rem 0 0.25rem;
+  }
+  .playground-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
   }
   @media (max-width: 767px) {
     .playground-overlay { transform: translateY(0); }
   }
-
-  #cursor-dot {
-    position: fixed; left: 0; top: 0; width: 8px; height: 8px; margin: -4px 0 0 -4px;
-    pointer-events: none; z-index: 9999; display: none;
-  }
-  .cursor-dot-inner {
-    width: 100%; height: 100%; border-radius: 50%; background: var(--accent);
-    transition: transform 200ms ease-out, opacity 200ms ease-out; will-change: transform, opacity;
-  }
-  #cursor-dot.is-hover .cursor-dot-inner { transform: scale(3); opacity: 0.5; }
-  @media (hover: hover) and (pointer: fine) {
-    #cursor-dot { display: block; }
-    :global(body), :global(body *) { cursor: none !important; }
-  }
-  @media (prefers-reduced-motion: reduce) { .cursor-dot-inner { transition: none; } }
-
-  #hero [data-anim] { opacity: 0; }
-  #hero.skip-anim [data-anim] { opacity: 1; }
-  #hero.is-entering [data-anim="name"] { animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 100ms forwards; }
-  #hero.is-entering [data-anim="tagline"] { animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 400ms forwards; }
-  #hero.is-entering [data-anim="bio"] { animation: enter-up 600ms cubic-bezier(0.2, 0.7, 0.2, 1) 700ms forwards; }
-  #hero.is-entering [data-anim="desk"] { animation: enter-desk 800ms cubic-bezier(0.2, 0.7, 0.2, 1) 900ms forwards; }
-  @keyframes enter-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes enter-desk { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-  @media (prefers-reduced-motion: reduce) { #hero [data-anim] { opacity: 1 !important; animation: none !important; } }
 </style>
 
 <script>
   function initHero() {
     const hero = document.getElementById('hero');
     if (!hero) return;
+
+    // Entrance: play once per session
     if (sessionStorage.getItem('hero-split-v2') === '1') {
       hero.classList.add('skip-anim');
     } else {
+      // double rAF so initial styles settle before the class flips
       requestAnimationFrame(() => requestAnimationFrame(() => {
         hero.classList.add('is-entering');
         sessionStorage.setItem('hero-split-v2', '1');
@@ -424,27 +586,41 @@ const playground = [
     const dot = document.getElementById('cursor-dot');
     if (!dot) return;
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const interactive = 'a, button, [role="button"], input, textarea, select, summary, label';
     let x = 0;
     let y = 0;
     let raf = 0;
-    function tick() { dot.style.transform = `translate3d(${x}px, ${y}px, 0)`; raf = 0; }
-    function move(e) {
-      x = e.clientX; y = e.clientY;
-      if (reduce) { dot.style.transform = `translate3d(${x}px, ${y}px, 0)`; }
-      else if (!raf) { raf = requestAnimationFrame(tick); }
+
+    function tick() {
+      dot!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      raf = 0;
     }
-    function over(e) {
-      const t = e.target;
-      if (t && t.closest && t.closest(interactive)) { dot.classList.add('is-hover'); }
+    function move(e: MouseEvent) {
+      x = e.clientX;
+      y = e.clientY;
+      if (reduce) {
+        dot!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      } else if (!raf) {
+        raf = requestAnimationFrame(tick);
+      }
     }
-    function out(e) {
-      const t = e.target;
+    function over(e: PointerEvent) {
+      const t = e.target as Element | null;
+      if (t && t.closest && t.closest(interactive)) {
+        dot!.classList.add('is-hover');
+      }
+    }
+    function out(e: PointerEvent) {
+      const t = e.target as Element | null;
       if (!t || !t.closest || !t.closest(interactive)) return;
-      const related = e.relatedTarget;
-      if (!related || !related.closest || !related.closest(interactive)) { dot.classList.remove('is-hover'); }
+      const related = e.relatedTarget as Element | null;
+      if (!related || !related.closest || !related.closest(interactive)) {
+        dot!.classList.remove('is-hover');
+      }
     }
+
     document.addEventListener('mousemove', move);
     document.addEventListener('pointerover', over);
     document.addEventListener('pointerout', out);
@@ -453,13 +629,15 @@ const playground = [
   function initPlayground() {
     if (matchMedia('(pointer: coarse)').matches) return;
     document.querySelectorAll('.playground-card').forEach((card) => {
-      const video = card.querySelector('video');
+      const video = card.querySelector('video') as HTMLVideoElement | null;
       if (!video) return;
       card.addEventListener('mouseenter', () => {
         video.currentTime = 0;
         video.play().catch(() => {});
       });
-      card.addEventListener('mouseleave', () => { video.pause(); });
+      card.addEventListener('mouseleave', () => {
+        video.pause();
+      });
     });
   }
 
@@ -470,5 +648,4 @@ const playground = [
   }
 
   document.addEventListener('astro:page-load', init);
-  document.addEventListener('DOMContentLoaded', init);
 </script>
