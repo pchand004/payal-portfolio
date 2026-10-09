@@ -1,4 +1,6 @@
 ---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
@@ -62,29 +64,19 @@ const hotspots = [
   },
 ];
 
+// A project with no `href` renders as a non-clickable row (e.g. work in progress).
 const projects = [
   {
     n: 'N°01',
-    name: 'Hume',
+    name: 'Crypto Mirror X SDDS',
     year: '2026',
-    tagline: 'Voice AI that knows when to listen',
+    tagline: 'Motivating data donation through self-reflection',
     finding:
-      "Voice agents fail less because they can't understand and more because they don't know when to pause. Silence isn't the absence of interaction — it's the heart of it.",
-    href: 'https://www.figma.com/deck/LOyuwMTxibQIe7M6RQYpHN/HumeXPayal?node-id=1-96&t=n23q5ahl0SFd97zI-1',
-    external: true,
+      'Giving people insight into their trading only motivated donation and drove willingness when it came after the task. The order is the mechanism.',
+    wip: true,
   },
   {
     n: 'N°02',
-    name: 'Beneath the Surface',
-    year: '2026',
-    tagline: 'A card game about autistic shutdown',
-    finding:
-      "Empathy isn't taught through information; it's built through structured, embodied limits. When you can't speak the words, you have to design the system that lets you.",
-    href: '/work/beneath-the-surface.pdf',
-    external: true,
-  },
-  {
-    n: 'N°03',
     name: 'EVAM',
     year: '2023–24',
     tagline: "India's first VR classroom",
@@ -94,7 +86,7 @@ const projects = [
     external: false,
   },
   {
-    n: 'N°04',
+    n: 'N°03',
     name: 'Gravity Grip',
     year: '2023–24',
     tagline: 'Embodied physics learning',
@@ -104,7 +96,7 @@ const projects = [
     external: false,
   },
   {
-    n: 'N°05',
+    n: 'N°04',
     name: 'AutoVRse',
     year: '2024',
     tagline: 'XR enterprise training',
@@ -116,6 +108,15 @@ const projects = [
 ];
 
 const explorations = [
+  {
+    name: 'Hume: Interaction States for Expressive Voice AI',
+    year: '2026',
+    tagline:
+      "Identifying 4 failure modes in Hume EVI-3's turn-taking, and proposing a 3-state floor model so voice AI knows when to listen, wait or respond.",
+    image: '/images/expl-hume.jpg',
+    alt: 'Hume: Interaction States for Expressive Voice AI exploration.',
+    href: 'https://www.figma.com/deck/LOyuwMTxibQIe7M6RQYpHN/HumeXPayal?node-id=1-96&t=n23q5ahl0SFd97zI-1',
+  },
   {
     name: 'Exploring AI-Initiated Interruptions in Voice AI',
     year: '2026',
@@ -154,6 +155,10 @@ const explorations = [
     href: '/work/cross-culture-buddy-system.pdf',
   },
 ];
+
+// Cards whose image file isn't in public/ yet get a quiet placeholder panel
+// instead of a broken image; it switches to the image once the file exists.
+const hasImage = (src: string) => existsSync(join(process.cwd(), 'public', src));
 
 const playground = [
   {
@@ -287,43 +292,64 @@ const playground = [
 
   </section>
 
-  {/* ───── Selected Work (5) ───── */}
+  {/* ───── Selected Work (4) ───── */}
   <section id="selected-work" class="mt-16 scroll-mt-20 md:mt-24">
     <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">
       Selected Work
     </p>
     <ul style="border-top: 0.5px solid var(--divider);">
-      {projects.map((p) => (
-        <li style="border-bottom: 0.5px solid var(--divider);">
-          <a
-            href={p.href}
-            target={p.external ? '_blank' : undefined}
-            rel={p.external ? 'noopener noreferrer' : undefined}
-            class="work-row group block px-2 py-4 hover:bg-row-hover md:px-3 md:py-6"
-          >
-            <div class="flex items-baseline gap-4 md:gap-8">
-              <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">
-                {p.n}
-              </span>
-              <div class="flex-1">
-                <h2 class="font-serif text-xl font-medium leading-snug md:text-2xl lg:text-[1.65rem]">
-                  {p.name} <span class="text-muted">({p.year})</span>
-                  <span class="ml-1 font-sans text-base italic font-normal text-muted md:text-lg"> — {p.tagline}</span>
-                </h2>
-                <p class="mt-2 max-w-2xl font-serif text-[15px] italic leading-relaxed text-accent md:text-base">
-                  {p.finding}
-                </p>
+      {projects.map((p) => {
+        // Rows without a link (work in progress) render as a plain div.
+        const Row = p.href ? 'a' : 'div';
+        const rowProps = p.href
+          ? {
+              href: p.href,
+              target: p.external ? '_blank' : undefined,
+              rel: p.external ? 'noopener noreferrer' : undefined,
+            }
+          : {};
+        return (
+          <li style="border-bottom: 0.5px solid var(--divider);">
+            <Row
+              {...rowProps}
+              class:list={[
+                'group block px-2 py-4 md:px-3 md:py-6',
+                p.href && 'work-row hover:bg-row-hover',
+              ]}
+            >
+              <div class="flex items-baseline gap-4 md:gap-8">
+                <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">
+                  {p.n}
+                </span>
+                <div class="flex-1">
+                  <h2 class="font-serif text-xl font-medium leading-snug md:text-2xl lg:text-[1.65rem]">
+                    {p.name} <span class="text-muted">({p.year})</span>
+                    <span class="ml-1 font-sans text-base italic font-normal text-muted md:text-lg"> — {p.tagline}</span>
+                    {p.wip && (
+                      <span class="wip-tag ml-2 inline-block whitespace-nowrap align-middle font-sans text-[10px] font-semibold uppercase not-italic tracking-[0.16em]">
+                        Work in progress
+                      </span>
+                    )}
+                  </h2>
+                  <p class="mt-2 max-w-2xl font-serif text-[15px] italic leading-relaxed text-accent md:text-base">
+                    {p.finding}
+                  </p>
+                </div>
+                {/* arrow only on rows that go somewhere; the spacer keeps text widths aligned */}
+                <span
+                  aria-hidden="true"
+                  class:list={[
+                    'self-center text-base text-text transition-all duration-300 md:text-lg',
+                    p.href ? 'group-hover:translate-x-1 group-hover:text-accent' : 'invisible',
+                  ]}
+                >
+                  ↗
+                </span>
               </div>
-              <span
-                aria-hidden="true"
-                class="self-center text-base text-text transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent md:text-lg"
-              >
-                ↗
-              </span>
-            </div>
-          </a>
-        </li>
-      ))}
+            </Row>
+          </li>
+        );
+      })}
     </ul>
   </section>
 
@@ -343,13 +369,19 @@ const playground = [
           rel="noopener noreferrer"
           class="exploration-card group block"
         >
-          <img
-            src={e.image}
-            alt={e.alt}
-            class="exploration-image"
-            loading="lazy"
-            style={e.imgStyle}
-          />
+          {hasImage(e.image) ? (
+            <img
+              src={e.image}
+              alt={e.alt}
+              class="exploration-image"
+              loading="lazy"
+              style={e.imgStyle}
+            />
+          ) : (
+            <div class="exploration-image exploration-image-empty" aria-hidden="true">
+              <span>{e.name.split(':')[0]}</span>
+            </div>
+          )}
           <div class="mt-4">
             <h3 class="font-serif text-xl font-medium leading-snug text-text md:text-2xl">
               {e.name}
@@ -445,6 +477,26 @@ const playground = [
   }
   .exploration-card:hover .exploration-image {
     transform: scale(1.03);
+  }
+  /* placeholder shown until the card's image file is added to public/images */
+  .exploration-image-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--row-hover);
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-style: italic;
+    font-size: 2rem;
+    color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  /* "Work in progress" tag on Selected Work rows */
+  .wip-tag {
+    padding: 3px 8px 2px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 999px;
+    color: var(--accent);
+    line-height: 1.4;
   }
 
   /* ───── Custom circle cursor — fine pointers only, homepage scoped ─────
