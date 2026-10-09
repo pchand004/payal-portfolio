@@ -1,7 +1,6 @@
 ---
 import { Font } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
-import '@fontsource/pacifico';
 import '../styles/global.css';
 
 interface Props {
@@ -25,6 +24,7 @@ const {
     <meta name="description" content={description} />
     <Font cssVariable="--font-fraunces" preload />
     <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-tiro-devanagari" preload />
     <ClientRouter />
   </head>
   <body>

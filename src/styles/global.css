@@ -52,8 +52,9 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--bg);
 }
 
-.font-signature {
-  font-family: 'Pacifico', cursive;
+/* Nav logo — पायल in Tiro Devanagari Hindi */
+.font-logo {
+  font-family: var(--font-tiro-devanagari), 'Kohinoor Devanagari', 'Noto Serif Devanagari', serif;
   font-weight: 400;
   letter-spacing: 0;
 }

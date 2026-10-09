@@ -29,5 +29,13 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin'],
     },
+    {
+      provider: fontProviders.google(),
+      name: 'Tiro Devanagari Hindi',
+      cssVariable: '--font-tiro-devanagari',
+      weights: ['400'],
+      styles: ['normal'],
+      subsets: ['devanagari'],
+    },
   ],
 });
