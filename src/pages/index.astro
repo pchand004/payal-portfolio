@@ -183,7 +183,7 @@ const playground = [
           data-anim="tagline"
           class="mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
         >
-          Designs experiences rooted in behaviour and interactions.
+          Designs experiences rooted in <span class="hl">behaviour and interactions</span>.
         </p>
 
         <div data-anim="bio" class="mt-8">
@@ -483,9 +483,36 @@ const playground = [
     to   { opacity: 1; transform: scale(1); }
   }
 
-  /* Reduced motion — skip hero entrance animations */
+  /* ───── Highlighter mark on the tagline ─────
+     A hand-drawn SVG stroke (inline data URI) sits behind the text as a
+     background. It draws in left → right by growing background-size,
+     starting the moment the tagline's entrance finishes (400ms + 600ms). */
+  .hl {
+    white-space: nowrap;
+    padding: 0.08em 0.28em 0.1em 0.22em;
+    margin: 0 -0.28em 0 -0.22em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    background-repeat: no-repeat;
+    background-position: 0 50%;
+    background-size: 0% 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 32' preserveAspectRatio='none'%3E%3Cpath d='M4 6.2 C 38 4.1, 70 7.3, 108 5.4 S 174 3.2, 194 5.6 C 198.4 8.1, 199 13.4, 197.8 18.9 C 196.9 23.2, 194.3 27, 190 27.4 C 150 29.8, 112 25.6, 72 28.1 S 20 30.2, 6.4 27.3 C 2.6 26.2, 1.1 21.5, 1.6 15.8 C 2 11.2, 2.4 7.4, 4 6.2 Z' fill='%23FFD54A' fill-opacity='0.55'/%3E%3C/svg%3E");
+  }
+  #hero.is-entering .hl {
+    animation: hl-draw 600ms cubic-bezier(0.22, 0.61, 0.36, 1) 1000ms forwards;
+  }
+  #hero.skip-anim .hl {
+    background-size: 100% 100%;
+  }
+  @keyframes hl-draw {
+    from { background-size: 0% 100%; }
+    to   { background-size: 100% 100%; }
+  }
+
+  /* Reduced motion — skip hero entrance animations, show the finished mark */
   @media (prefers-reduced-motion: reduce) {
     #hero [data-anim] { opacity: 1 !important; animation: none !important; }
+    .hl { background-size: 100% 100% !important; animation: none !important; }
   }
 
   /* ───── Playground — phone-framed video cards ───── */
