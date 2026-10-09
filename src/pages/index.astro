@@ -4,7 +4,22 @@ import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import deskHero from '../assets/desk-hero.png';
-import brandLogos from '../assets/brandlogos.png';
+import logoAmazon from '../assets/logos/amazon.png';
+import logoAstraZeneca from '../assets/logos/astrazeneca.png';
+import logoGsk from '../assets/logos/gsk.png';
+import logoDuracell from '../assets/logos/duracell.png';
+import logoIit from '../assets/logos/iit-guwahati.png';
+
+// "Designed for" — individual logos (cut from one strip at a shared height,
+// so they sit on a common baseline and can wrap on narrow screens).
+const brands = [
+  { name: 'Amazon', src: logoAmazon },
+  { name: 'AstraZeneca', src: logoAstraZeneca },
+  { name: 'GSK', src: logoGsk },
+  { name: 'Duracell', src: logoDuracell },
+  // IIT's lockup has much smaller lettering than the others, so it runs a little larger
+  { name: 'Indian Institute of Technology Guwahati', src: logoIit, scale: 1.25 },
+];
 
 // Hotspot regions are % of the desk image so they hold up at any size.
 const hotspots = [
@@ -166,10 +181,11 @@ const playground = [
 
   {/*
     ───── Hero ─────
-    Split layout: name + tagline on the left (40%), desk illustration with
-    hotspots on the right (60%). Stacks single-column on mobile.
+    Split layout: name, tagline, bio and "Designed for" logos on the left
+    (40%), desk illustration with hotspots on the right (60%). Stacks
+    single-column on mobile.
   */}
-  <section id="hero" class="relative pt-24 md:pt-32">
+  <section id="hero" class="relative pt-16 md:pt-20">
     <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-[2fr_3fr] md:gap-16">
       {/* Left — name + tagline + bio details */}
       <div class="md:pr-4">
@@ -181,7 +197,7 @@ const playground = [
         </h1>
         <p
           data-anim="tagline"
-          class="relative z-10 mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
+          class="relative z-10 mt-7 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
         >
           {/* "designer" opens four sticky notes on hover / focus / tap.
               Screen readers get the list as hidden text; the notes are decorative. */}
@@ -189,7 +205,7 @@ const playground = [
             ['Product', 'Interaction', 'UX', 'Brand'].map((word, i) => (
               <span class={`dz-note dz-note-${i + 1}`} style={`--i:${i};`}><span class="dz-note-paper">{word}</span></span>
             ))
-          }</span></span>. Notepad hoarder. Currently filling a doodle-a-day, one wobbly sketch at a time.
+          }</span></span>. Notepad hoarder. Filling a doodle-a-day, one wobbly sketch at a time.
         </p>
 
         <div data-anim="bio" class="mt-8">
@@ -205,6 +221,31 @@ const playground = [
             <p class="whitespace-nowrap">MSc Design with Behaviour Science (Imperial College London)</p>
             <p class="whitespace-nowrap">Previously UX &amp; Interaction Designer at IIT Guwahati and AutoVRse</p>
             <p class="whitespace-nowrap">Voice · AI · XR · Web</p>
+          </div>
+
+          {/* Designed for — quiet logo row */}
+          <div class="mt-8">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Designed for</p>
+            <ul class="brand-row mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+              {brands.map((b, i) => (
+                <>
+                  {/* phones: break after the third logo so the row wraps 3 + 2 */}
+                  {i === 3 && <li aria-hidden="true" role="presentation" class="h-0 basis-full sm:hidden"></li>}
+                  <li class="shrink-0">
+                    <Image
+                      src={b.src}
+                      alt={b.name}
+                      height={64}
+                      densities={[1, 2]}
+                      class="brand-logo block w-auto select-none"
+                      style={`height: ${Math.round(26 * (b.scale ?? 1))}px;`}
+                      loading="eager"
+                      draggable={false}
+                    />
+                  </li>
+                </>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
@@ -244,29 +285,6 @@ const playground = [
       </div>
     </div>
 
-  </section>
-
-  {/* ───── Designed for — brand logos strip ───── */}
-  <section
-    class="brand-strip mt-16 border-y py-20 md:mt-24 md:py-24"
-    style="border-color: var(--divider);"
-  >
-    <div class="mx-auto w-full max-w-[1100px]">
-      <p class="text-center text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
-        Designed for
-      </p>
-      <div class="mt-6 flex justify-center">
-        <Image
-          src={brandLogos}
-          alt="Designed for: Amazon, AstraZeneca, GSK, IIT Guwahati"
-          widths={[480, 768, 1100]}
-          sizes="(min-width: 768px) 1000px, 90vw"
-          class="brand-strip-img block h-12 w-auto select-none md:h-14"
-          loading="lazy"
-          draggable={false}
-        />
-      </div>
-    </div>
   </section>
 
   {/* ───── Selected Work (5) ───── */}
@@ -384,13 +402,18 @@ const playground = [
 </Layout>
 
 <style>
-  /* ───── Brand strip — logos fade slightly, restore on hover ───── */
-  .brand-strip-img {
-    opacity: 0.85;
-    transition: opacity 200ms ease;
+  /* ───── "Designed for" logos — greyscale + faded, full colour on hover ───── */
+  .brand-logo {
+    filter: grayscale(1);
+    opacity: 0.55;
+    transition: filter 250ms ease, opacity 250ms ease;
   }
-  .brand-strip:hover .brand-strip-img {
+  .brand-row li:hover .brand-logo {
+    filter: grayscale(0);
     opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .brand-logo { transition: none; }
   }
 
   /* ───── Selected Work rows — lift + shadow on hover ───── */
@@ -491,7 +514,7 @@ const playground = [
 
   /* ───── "designer" sticky notes ─────
      The notes live in an absolutely positioned layer anchored to the word,
-     so they never affect layout. Open state: hover (mouse only), keyboard
+     so they never affect layout. They fan upward, over the gap below the name. Open state: hover (mouse only), keyboard
      focus, or .is-open (set by tap — see initDesignerNotes). */
   .dz {
     position: relative;
@@ -519,7 +542,8 @@ const playground = [
   .dz-notes {
     position: absolute;
     left: -0.3em;
-    top: calc(100% + 1px);
+    /* notes fan upward: anchored a few px inside the top of the word's line box */
+    bottom: calc(100% - 7px);
     width: 0;
     height: 0;
     z-index: 20;
@@ -529,21 +553,21 @@ const playground = [
   /* Outer span: resting position + tilt. Inner "paper": the peel animation. */
   .dz-note {
     position: absolute;
-    top: var(--y);
+    bottom: var(--y);
     left: var(--x);
     transform: rotate(var(--r));
   }
   /* Each note is as wide as its word needs; neighbours overlap by ~6px. */
-  .dz-note-1 { --x: 0px;   --w: 62px; --r: -5deg; --y: 2px; --paper: #FFF1A8; }
-  .dz-note-2 { --x: 56px;  --w: 80px; --r: 3deg;  --y: 5px; --paper: #FAD3E0; }
+  .dz-note-1 { --x: 0px;   --w: 62px; --r: -5deg; --y: 1px; --paper: #FFF1A8; }
+  .dz-note-2 { --x: 56px;  --w: 80px; --r: 3deg;  --y: 4px; --paper: #FAD3E0; }
   .dz-note-3 { --x: 130px; --w: 50px; --r: -4deg; --y: 0px; --paper: #CFE4FA; }
-  .dz-note-4 { --x: 174px; --w: 60px; --r: 5deg;  --y: 4px; --paper: #D4EDC9; }
+  .dz-note-4 { --x: 174px; --w: 60px; --r: 4deg;  --y: 3px; --paper: #D4EDC9; }
   .dz-note-paper {
     display: flex;
     align-items: center;
     justify-content: center;
     width: var(--w);
-    height: 42px;
+    height: 36px;
     padding-top: 3px;
     background:
       linear-gradient(to bottom, rgba(44, 38, 32, 0.07), rgba(44, 38, 32, 0) 9px),
@@ -559,8 +583,8 @@ const playground = [
     color: var(--text);
     /* closed: folded up against the word, like a note still on the pad */
     opacity: 0;
-    transform-origin: 50% 0;
-    transform: translateY(-10px) rotateX(-82deg) scale(0.9);
+    transform-origin: 50% 100%;
+    transform: translateY(10px) rotateX(82deg) scale(0.9);
     transition:
       transform 180ms cubic-bezier(0.4, 0, 1, 1),
       opacity 140ms ease-in;
@@ -575,7 +599,7 @@ const playground = [
   }
   .dz.is-closed-by-user .dz-note-paper {
     opacity: 0 !important;
-    transform: translateY(-10px) rotateX(-82deg) scale(0.9) !important;
+    transform: translateY(10px) rotateX(82deg) scale(0.9) !important;
     transition: transform 180ms cubic-bezier(0.4, 0, 1, 1), opacity 140ms ease-in !important;
   }
   @media (hover: hover) and (pointer: fine) {
