@@ -37,5 +37,13 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['devanagari'],
     },
+    {
+      provider: fontProviders.google(),
+      name: 'Caveat',
+      cssVariable: '--font-caveat',
+      weights: ['600'],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
   ],
 });

@@ -181,9 +181,15 @@ const playground = [
         </h1>
         <p
           data-anim="tagline"
-          class="mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
+          class="relative z-10 mt-6 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
         >
-          A designer. <span class="hl">Notepad hoarder.</span> Currently filling a doodle-a-day, one wobbly sketch at a time.
+          {/* "designer" opens four sticky notes on hover / focus / tap.
+              Screen readers get the list as hidden text; the notes are decorative. */}
+          A <span class="dz" id="designer-notes"><span class="dz-trigger" tabindex="0">designer<span class="sr-only">: product, interaction, UX and brand</span></span><span class="dz-notes" aria-hidden="true">{
+            ['Product', 'Interaction', 'UX', 'Brand'].map((word, i) => (
+              <span class={`dz-note dz-note-${i + 1}`} style={`--i:${i};`}><span class="dz-note-paper">{word}</span></span>
+            ))
+          }</span></span>. Notepad hoarder. Currently filling a doodle-a-day, one wobbly sketch at a time.
         </p>
 
         <div data-anim="bio" class="mt-8">
@@ -483,36 +489,120 @@ const playground = [
     to   { opacity: 1; transform: scale(1); }
   }
 
-  /* ───── Highlighter mark on the tagline ─────
-     A hand-drawn SVG stroke (inline data URI) sits behind the text as a
-     background. It draws in left → right by growing background-size,
-     starting the moment the tagline's entrance finishes (400ms + 600ms). */
-  .hl {
+  /* ───── "designer" sticky notes ─────
+     The notes live in an absolutely positioned layer anchored to the word,
+     so they never affect layout. Open state: hover (mouse only), keyboard
+     focus, or .is-open (set by tap — see initDesignerNotes). */
+  .dz {
+    position: relative;
     white-space: nowrap;
-    padding: 0.08em 0.28em 0.1em 0.22em;
-    margin: 0 -0.28em 0 -0.22em;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-    background-repeat: no-repeat;
-    background-position: 0 50%;
-    background-size: 0% 100%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 32' preserveAspectRatio='none'%3E%3Cpath d='M4 6.2 C 38 4.1, 70 7.3, 108 5.4 S 174 3.2, 194 5.6 C 198.4 8.1, 199 13.4, 197.8 18.9 C 196.9 23.2, 194.3 27, 190 27.4 C 150 29.8, 112 25.6, 72 28.1 S 20 30.2, 6.4 27.3 C 2.6 26.2, 1.1 21.5, 1.6 15.8 C 2 11.2, 2.4 7.4, 4 6.2 Z' fill='%23FFD54A' fill-opacity='0.55'/%3E%3C/svg%3E");
   }
-  #hero.is-entering .hl {
-    animation: hl-draw 600ms cubic-bezier(0.22, 0.61, 0.36, 1) 1000ms forwards;
+  .dz-trigger {
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+    border-radius: 3px;
+    outline: none;
+    transition: color 200ms ease, text-decoration-color 200ms ease;
+    -webkit-tap-highlight-color: transparent;
   }
-  #hero.skip-anim .hl {
-    background-size: 100% 100%;
+  .dz-trigger:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
-  @keyframes hl-draw {
-    from { background-size: 0% 100%; }
-    to   { background-size: 100% 100%; }
+  .dz.is-open .dz-trigger,
+  .dz-trigger:focus-visible {
+    color: var(--text);
+    text-decoration-color: var(--accent);
+  }
+  .dz-notes {
+    position: absolute;
+    left: -0.3em;
+    top: calc(100% + 1px);
+    width: 0;
+    height: 0;
+    z-index: 20;
+    pointer-events: none;
+    perspective: 420px;
+  }
+  /* Outer span: resting position + tilt. Inner "paper": the peel animation. */
+  .dz-note {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    transform: rotate(var(--r));
+  }
+  /* Each note is as wide as its word needs; neighbours overlap by ~6px. */
+  .dz-note-1 { --x: 0px;   --w: 62px; --r: -5deg; --y: 2px; --paper: #FFF1A8; }
+  .dz-note-2 { --x: 56px;  --w: 80px; --r: 3deg;  --y: 5px; --paper: #FAD3E0; }
+  .dz-note-3 { --x: 130px; --w: 50px; --r: -4deg; --y: 0px; --paper: #CFE4FA; }
+  .dz-note-4 { --x: 174px; --w: 60px; --r: 5deg;  --y: 4px; --paper: #D4EDC9; }
+  .dz-note-paper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--w);
+    height: 42px;
+    padding-top: 3px;
+    background:
+      linear-gradient(to bottom, rgba(44, 38, 32, 0.07), rgba(44, 38, 32, 0) 9px),
+      var(--paper);
+    border-radius: 1px 1px 3px 2px;
+    box-shadow: 0 1px 1px rgba(44, 38, 32, 0.12), 0 6px 12px -4px rgba(44, 38, 32, 0.22);
+    font-family: var(--font-caveat), 'Bradley Hand', 'Segoe Print', cursive;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--text);
+    /* closed: folded up against the word, like a note still on the pad */
+    opacity: 0;
+    transform-origin: 50% 0;
+    transform: translateY(-10px) rotateX(-82deg) scale(0.9);
+    transition:
+      transform 180ms cubic-bezier(0.4, 0, 1, 1),
+      opacity 140ms ease-in;
+  }
+  .dz.is-open .dz-note-paper,
+  .dz:has(.dz-trigger:focus-visible) .dz-note-paper {
+    opacity: 1;
+    transform: none;
+    transition:
+      transform 460ms cubic-bezier(0.34, 1.7, 0.5, 1) calc(var(--i) * 60ms),
+      opacity 120ms ease-out calc(var(--i) * 60ms);
+  }
+  .dz.is-closed-by-user .dz-note-paper {
+    opacity: 0 !important;
+    transform: translateY(-10px) rotateX(-82deg) scale(0.9) !important;
+    transition: transform 180ms cubic-bezier(0.4, 0, 1, 1), opacity 140ms ease-in !important;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .dz:hover .dz-trigger {
+      color: var(--text);
+      text-decoration-color: var(--accent);
+    }
+    .dz:hover .dz-note-paper {
+      opacity: 1;
+      transform: none;
+      transition:
+        transform 460ms cubic-bezier(0.34, 1.7, 0.5, 1) calc(var(--i) * 60ms),
+        opacity 120ms ease-out calc(var(--i) * 60ms);
+    }
+  }
+  /* Reduced motion — notes simply fade, no peel, bounce or stagger */
+  @media (prefers-reduced-motion: reduce) {
+    .dz-note-paper,
+    .dz.is-closed-by-user .dz-note-paper {
+      transform: none !important;
+      transition: opacity 200ms ease !important;
+    }
   }
 
-  /* Reduced motion — skip hero entrance animations, show the finished mark */
+  /* Reduced motion — skip hero entrance animations */
   @media (prefers-reduced-motion: reduce) {
     #hero [data-anim] { opacity: 1 !important; animation: none !important; }
-    .hl { background-size: 100% 100% !important; animation: none !important; }
   }
 
   /* ───── Playground — phone-framed video cards ───── */
@@ -609,13 +699,64 @@ const playground = [
     }
   }
 
+  // "designer" sticky notes — tap toggles, tap elsewhere / Escape closes.
+  // Hover and keyboard focus are handled in CSS.
+  let designerNotesBound = false;
+  function initDesignerNotes() {
+    if (designerNotesBound) return;
+    designerNotesBound = true;
+
+    const get = () => document.getElementById('designer-notes');
+    const close = (dz: HTMLElement, blur = false) => {
+      dz.classList.remove('is-open');
+      const trigger = dz.querySelector<HTMLElement>('.dz-trigger');
+      if (blur && trigger) trigger.blur();
+    };
+
+    document.addEventListener('click', (e) => {
+      const dz = get();
+      if (!dz) return;
+      const onTrigger = (e.target as Element | null)?.closest?.('.dz-trigger');
+      if (onTrigger && dz.contains(onTrigger)) {
+        const open = dz.classList.toggle('is-open');
+        if (!open) close(dz, true);
+      } else {
+        close(dz, true);
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      const dz = get();
+      if (!dz) return;
+      if (e.key === 'Escape') {
+        // keep focus on the word, but tuck the notes away until focus moves on
+        dz.classList.remove('is-open');
+        dz.classList.add('is-closed-by-user');
+      } else if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.classList.contains('dz-trigger')) {
+        e.preventDefault();
+        dz.classList.toggle('is-closed-by-user');
+      }
+    });
+    // mouse: notes opened by a click still tuck away when the pointer leaves
+    document.addEventListener('pointerout', (e) => {
+      const dz = get();
+      if (!dz || e.pointerType !== 'mouse') return;
+      const from = e.target as Node | null;
+      const to = e.relatedTarget as Node | null;
+      if (from && dz.contains(from) && !(to && dz.contains(to))) dz.classList.remove('is-open');
+    });
+    document.addEventListener('focusout', (e) => {
+      const dz = get();
+      if (dz && dz.contains(e.target as Node)) dz.classList.remove('is-closed-by-user');
+    });
+  }
+
   function initCursor() {
     const dot = document.getElementById('cursor-dot');
     if (!dot) return;
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const interactive = 'a, button, [role="button"], input, textarea, select, summary, label';
+    const interactive = 'a, button, [role="button"], input, textarea, select, summary, label, .dz-trigger';
     let x = 0;
     let y = 0;
     let raf = 0;
@@ -670,6 +811,7 @@ const playground = [
 
   function init() {
     initHero();
+    initDesignerNotes();
     initCursor();
     initPlayground();
   }
