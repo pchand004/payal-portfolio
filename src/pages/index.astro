@@ -319,17 +319,17 @@ const playground = [
                 decoding="async"
               />
             </div>
-            <h2 class="mt-5 font-serif text-[1.375rem] font-medium leading-snug text-text md:text-2xl lg:text-[1.65rem]">
+            <h2 class="work-card-h font-serif font-medium text-text">
               <span class="work-card-title">{p.title}</span>
             </h2>
-            <p class="mt-2.5 flex items-baseline gap-3 text-[13px] leading-relaxed text-muted">
-              <span class="shrink-0 font-serif text-sm italic text-accent">{p.n}</span>
+            <p class="work-card-meta flex items-baseline gap-2.5 text-muted">
+              <span class="work-card-n shrink-0 font-serif italic text-accent">{p.n}</span>
               <span>{p.meta}</span>
             </p>
-            <p class="mt-2 font-serif text-[15px] italic leading-relaxed text-muted md:text-base">
+            <p class="work-card-line font-serif italic text-muted">
               {p.line}
             </p>
-            <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tags">
+            <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
               {p.tags.map((t) => (
                 <li class="work-tag">{t}</li>
               ))}
@@ -340,7 +340,7 @@ const playground = [
     </ul>
 
     {/* Old rows — only for projects not yet moved to the new fields */}
-    <ul class="mt-14" style="border-top: 0.5px solid var(--divider);">
+    <ul class="mt-10" style="border-top: 0.5px solid var(--divider);">
       {projects.filter((p) => !p.title).map((p) => {
         // Rows without a link (work in progress) render as a plain div.
         const Row = p.href ? 'a' : 'div';
@@ -495,26 +495,71 @@ const playground = [
   .work-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 56px 32px;
+    gap: 40px 32px;
   }
-  @media (min-width: 768px) {
+  /* Two columns from 1024px. Below that a single column keeps the text a
+     comfortable size instead of shrinking it to fit a narrow card. */
+  @media (min-width: 1024px) {
     .work-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 72px 40px;
+      gap: 48px 32px;
     }
   }
+  /* The card is a size container, so its text can scale with the card's own
+     width (cqw) and each sentence stays on one line in the two-column layout. */
+  .work-card {
+    container-type: inline-size;
+  }
+  /* Soft tinted panel: gives white-background screenshots a visible 4:3 edge. */
   .work-card-media {
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: 8px;
-    background: #F6F4F1;
+    background: #F4F1EC;
+    padding: 7% 9% 0;
   }
   .work-card-img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    mix-blend-mode: multiply;
+    transform-origin: 50% 0;
     transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Text block — phones: comfortable sizes, wrapping allowed */
+  .work-card-h {
+    margin-top: 14px;
+    font-size: 21px;
+    line-height: 1.25;
+  }
+  .work-card-meta {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .work-card-n {
+    font-size: 1.08em;
+  }
+  .work-card-line {
+    margin-top: 4px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  /* Two-column layout: sizes follow the card width so each sentence fits one line */
+  @media (min-width: 640px) {
+    .work-card-h { font-size: 24px; }
+  }
+  @media (min-width: 1024px) {
+    .work-card-h {
+      font-size: clamp(19px, 4.25cqw, 25px);
+    }
+    .work-card-meta {
+      font-size: clamp(11px, 2.35cqw, 13px);
+    }
+    .work-card-line {
+      font-size: clamp(12px, 2.6cqw, 15px);
+    }
   }
   /* Pen underline: a wobbly SVG stroke as the title's background, drawn in
      left → right (and line by line when the title wraps) by growing its width. */
