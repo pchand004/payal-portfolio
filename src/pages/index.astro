@@ -62,18 +62,20 @@ const hotspots = [
   },
 ];
 
-// A project with no `href` renders as a non-clickable row (e.g. work in progress).
+// Selected Work. Projects with the new fields (title, meta, line, tags, image)
+// render as image-first cards; the rest still use the old row until they're moved over.
 const projects = [
   {
     n: 'N°01',
-    name: 'Crypto Mirror X SDDS',
-    year: '2026',
-    tagline: 'Motivating data donation through self-reflection',
-    finding:
-      'Giving people insight into their trading only motivated donation and drove willingness when it came after the task. The order is the mechanism.',
+    title: 'Making data donation feel like a fair exchange',
+    meta: 'Crypto Mirror × SDDS · Imperial & University of York · Jul – Sep 2026',
+    line: '11 interviews, 8 test sessions, 5 versions, and one finding: the order is the mechanism.',
+    tags: ['Research', 'Product', 'Mobile'],
+    image: '/images/sdds-images/sdds-hero.jpg',
+    imageAlt: 'Three mobile screens from the Crypto Mirror donation flow.',
+    imagePosition: 'center top',
     href: '/work/sdds',
     external: false,
-    wip: true,
   },
   {
     n: 'N°02',
@@ -297,8 +299,49 @@ const playground = [
     <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">
       Selected Work
     </p>
-    <ul style="border-top: 0.5px solid var(--divider);">
-      {projects.map((p) => {
+    {/* New design: image-first cards, two columns on desktop */}
+    <ul class="work-grid">
+      {projects.filter((p) => p.title).map((p) => (
+        <li>
+          <a
+            href={p.href}
+            target={p.external ? '_blank' : undefined}
+            rel={p.external ? 'noopener noreferrer' : undefined}
+            class="work-card group block"
+          >
+            <div class="work-card-media">
+              <img
+                src={p.image}
+                alt={p.imageAlt}
+                class="work-card-img"
+                style={p.imagePosition ? `object-position: ${p.imagePosition};` : undefined}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <h2 class="mt-5 font-serif text-[1.375rem] font-medium leading-snug text-text md:text-2xl lg:text-[1.65rem]">
+              <span class="work-card-title">{p.title}</span>
+            </h2>
+            <p class="mt-2.5 flex items-baseline gap-3 text-[13px] leading-relaxed text-muted">
+              <span class="shrink-0 font-serif text-sm italic text-accent">{p.n}</span>
+              <span>{p.meta}</span>
+            </p>
+            <p class="mt-2 font-serif text-[15px] italic leading-relaxed text-muted md:text-base">
+              {p.line}
+            </p>
+            <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tags">
+              {p.tags.map((t) => (
+                <li class="work-tag">{t}</li>
+              ))}
+            </ul>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {/* Old rows — only for projects not yet moved to the new fields */}
+    <ul class="mt-14" style="border-top: 0.5px solid var(--divider);">
+      {projects.filter((p) => !p.title).map((p) => {
         // Rows without a link (work in progress) render as a plain div.
         const Row = p.href ? 'a' : 'div';
         const rowProps = p.href
@@ -448,7 +491,80 @@ const playground = [
     .brand-logo { transition: none; }
   }
 
-  /* ───── Selected Work rows — lift + shadow on hover ───── */
+  /* ───── Selected Work cards — image first, two columns on desktop ───── */
+  .work-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 56px 32px;
+  }
+  @media (min-width: 768px) {
+    .work-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 72px 40px;
+    }
+  }
+  .work-card-media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #F6F4F1;
+  }
+  .work-card-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Pen underline: a wobbly SVG stroke as the title's background, drawn in
+     left → right (and line by line when the title wraps) by growing its width. */
+  .work-card-title {
+    padding-bottom: 0.14em;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 0.34em;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6.4 C 18 3.1, 33 8.2, 52 5.3 S 84 2.9, 104 5.9 S 139 8.4, 160 4.8 S 196 3.2, 216 6.3 S 252 7.9, 272 4.6 S 309 3.4, 330 6.1 S 372 7.6, 398 4.4' fill='none' stroke='%234105DB' stroke-width='2.2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    transition: background-size 520ms cubic-bezier(0.3, 0.6, 0.3, 1);
+  }
+  .work-tag {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    padding: 3px 9px 2px;
+    border: 1px solid var(--divider);
+    border-radius: 999px;
+  }
+  .work-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 6px;
+    border-radius: 8px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .work-card:hover .work-card-img,
+    .work-card:focus-visible .work-card-img {
+      transform: scale(1.02);
+    }
+    .work-card:hover .work-card-title,
+    .work-card:focus-visible .work-card-title {
+      background-size: 100% 0.34em;
+    }
+  }
+  /* Reduced motion: no zoom, no scribble — the title simply changes colour */
+  @media (prefers-reduced-motion: reduce) {
+    .work-card-img,
+    .work-card-title {
+      transition: none;
+    }
+    .work-card:hover .work-card-title,
+    .work-card:focus-visible .work-card-title {
+      color: var(--accent);
+    }
+  }
+
+  /* ───── Old Selected Work rows (being replaced) — lift + shadow on hover ───── */
   .work-row {
     transition: transform 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out;
   }
