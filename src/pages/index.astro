@@ -62,48 +62,51 @@ const hotspots = [
   },
 ];
 
-// Selected Work. Projects with the new fields (title, meta, line, tags, image)
-// render as image-first cards; the rest still use the old row until they're moved over.
+// Selected Work — image-first cards.
+// title: the outcome sentence · meta: project · where · when · tags: small labels
+// image: a file under public/ (a tinted placeholder shows until the file exists)
+// imagePanel: true for white-background screenshots, which sit inset on a tinted panel
 const projects = [
   {
     n: 'N°01',
     title: 'Making data donation feel like a fair exchange',
     meta: 'Crypto Mirror × SDDS · Imperial & University of York · Jul – Sep 2026',
-    line: '11 interviews, 8 test sessions, 5 versions, and one finding: the order is the mechanism.',
     tags: ['Research', 'Product', 'Mobile'],
     image: '/images/sdds-images/sdds-hero.jpg',
     imageAlt: 'Three mobile screens from the Crypto Mirror donation flow.',
     imagePosition: 'center top',
+    imagePanel: true,
     href: '/work/sdds',
     external: false,
   },
   {
     n: 'N°02',
-    name: 'EVAM',
-    year: '2023–24',
-    tagline: "India's first VR classroom",
-    finding:
-      "Hand a child in rural Assam a VR headset and the surprise isn't the technology — it's how effortlessly the physical and digital merge once their curiosity is real.",
+    title: "Designing India's first government VR classrooms",
+    meta: 'EVAM · EI Lab, IIT Guwahati · Sep 2023 – May 2024',
+    tags: ['XR', 'Interaction', 'Research'],
+    image: '/images/evam-process.jpg',
+    imageAlt: 'A student wearing a VR headset being guided through an EVAM session.',
     href: '/work/evam',
     external: false,
   },
   {
     n: 'N°03',
-    name: 'Gravity Grip',
-    year: '2023–24',
-    tagline: 'Embodied physics learning',
-    finding:
-      "In VR, presence rarely breaks because users can't operate it — it breaks quietly, when long audio prompts and inconsistent input methods pull the body out of the moment.",
+    title: 'Keeping presence intact in VR physics learning',
+    meta: 'Gravity Grip · 2023–24',
+    tags: ['XR', 'Interaction'],
+    image: '/images/gg-object-selection.jpg',
+    imageAlt: 'A VR scene on a rocky planet with three objects floating above selection pads and two virtual hands.',
     href: '/work/gravity-grip',
     external: false,
   },
   {
     n: 'N°04',
-    name: 'AutoVRse',
-    year: '2024',
-    tagline: 'XR enterprise training',
-    finding:
-      "Hand-tracking is genuinely engaging, but without synchronised feedback the brain stops believing the hands — and training breaks down.",
+    title: 'Cutting VR training storyboarding time 7×',
+    meta: 'AutoVRse · Bengaluru · Jun – Nov 2024',
+    tags: ['XR', 'Learning design', 'Systems'],
+    image: '/images/work-autovrse.jpg',
+    imageAlt: 'AutoVRse VR training work.',
+    placeholder: 'AutoVRse',
     href: 'https://www.figma.com/deck/qPCQlnmCjtWMpJbN8QBcLw/AutoVRse?node-id=11-17&t=7WVUUSpIXixszrnQ-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1',
     external: true,
   },
@@ -299,9 +302,8 @@ const playground = [
     <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">
       Selected Work
     </p>
-    {/* New design: image-first cards, two columns on desktop */}
     <ul class="work-grid">
-      {projects.filter((p) => p.title).map((p) => (
+      {projects.map((p) => (
         <li>
           <a
             href={p.href}
@@ -309,15 +311,21 @@ const playground = [
             rel={p.external ? 'noopener noreferrer' : undefined}
             class="work-card group block"
           >
-            <div class="work-card-media">
-              <img
-                src={p.image}
-                alt={p.imageAlt}
-                class="work-card-img"
-                style={p.imagePosition ? `object-position: ${p.imagePosition};` : undefined}
-                loading="lazy"
-                decoding="async"
-              />
+            <div class:list={['work-card-media', p.imagePanel && 'work-card-media--panel']}>
+              {hasImage(p.image) ? (
+                <img
+                  src={p.image}
+                  alt={p.imageAlt}
+                  class="work-card-img"
+                  style={p.imagePosition ? `object-position: ${p.imagePosition};` : undefined}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div class="work-card-img work-card-empty" aria-hidden="true">
+                  <span>{p.placeholder}</span>
+                </div>
+              )}
             </div>
             <h2 class="work-card-h font-serif font-medium text-text">
               <span class="work-card-title">{p.title}</span>
@@ -325,9 +333,6 @@ const playground = [
             <p class="work-card-meta flex items-baseline gap-2.5 text-muted">
               <span class="work-card-n shrink-0 font-serif italic text-accent">{p.n}</span>
               <span>{p.meta}</span>
-            </p>
-            <p class="work-card-line font-serif italic text-muted">
-              {p.line}
             </p>
             <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
               {p.tags.map((t) => (
@@ -337,62 +342,6 @@ const playground = [
           </a>
         </li>
       ))}
-    </ul>
-
-    {/* Old rows — only for projects not yet moved to the new fields */}
-    <ul class="mt-10" style="border-top: 0.5px solid var(--divider);">
-      {projects.filter((p) => !p.title).map((p) => {
-        // Rows without a link (work in progress) render as a plain div.
-        const Row = p.href ? 'a' : 'div';
-        const rowProps = p.href
-          ? {
-              href: p.href,
-              target: p.external ? '_blank' : undefined,
-              rel: p.external ? 'noopener noreferrer' : undefined,
-            }
-          : {};
-        return (
-          <li style="border-bottom: 0.5px solid var(--divider);">
-            <Row
-              {...rowProps}
-              class:list={[
-                'group block px-2 py-4 md:px-3 md:py-6',
-                p.href && 'work-row hover:bg-row-hover',
-              ]}
-            >
-              <div class="flex items-baseline gap-4 md:gap-8">
-                <span class="w-12 shrink-0 font-serif text-sm italic text-accent md:w-16 md:text-base">
-                  {p.n}
-                </span>
-                <div class="flex-1">
-                  <h2 class="font-serif text-xl font-medium leading-snug md:text-2xl lg:text-[1.65rem]">
-                    {p.name} <span class="text-muted">({p.year})</span>
-                    <span class="ml-1 font-sans text-base italic font-normal text-muted md:text-lg"> — {p.tagline}</span>
-                    {p.wip && (
-                      <span class="wip-tag ml-2 inline-block whitespace-nowrap align-middle font-sans text-[10px] font-semibold uppercase not-italic tracking-[0.16em]">
-                        Work in progress
-                      </span>
-                    )}
-                  </h2>
-                  <p class="mt-2 max-w-2xl font-serif text-[15px] italic leading-relaxed text-accent md:text-base">
-                    {p.finding}
-                  </p>
-                </div>
-                {/* arrow only on rows that go somewhere; the spacer keeps text widths aligned */}
-                <span
-                  aria-hidden="true"
-                  class:list={[
-                    'self-center text-base text-text transition-all duration-300 md:text-lg',
-                    p.href ? 'group-hover:translate-x-1 group-hover:text-accent' : 'invisible',
-                  ]}
-                >
-                  ↗
-                </span>
-              </div>
-            </Row>
-          </li>
-        );
-      })}
     </ul>
   </section>
 
@@ -506,26 +455,41 @@ const playground = [
     }
   }
   /* The card is a size container, so its text can scale with the card's own
-     width (cqw) and each sentence stays on one line in the two-column layout. */
+     width (cqw) and the title and meta each stay on one line in two columns. */
   .work-card {
     container-type: inline-size;
   }
-  /* Soft tinted panel: gives white-background screenshots a visible 4:3 edge. */
   .work-card-media {
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: 8px;
     background: #F4F1EC;
-    padding: 7% 9% 0;
   }
   .work-card-img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* White-background screenshots: inset on the tinted panel so the 4:3 block has an edge. */
+  .work-card-media--panel {
+    padding: 7% 9% 0;
+  }
+  .work-card-media--panel .work-card-img {
     mix-blend-mode: multiply;
     transform-origin: 50% 0;
-    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Placeholder shown until a project's image file is added to public/images */
+  .work-card-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--row-hover);
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-style: italic;
+    font-size: 2rem;
+    color: color-mix(in srgb, var(--accent) 45%, transparent);
   }
   /* Text block — phones: comfortable sizes, wrapping allowed */
   .work-card-h {
@@ -541,11 +505,6 @@ const playground = [
   .work-card-n {
     font-size: 1.08em;
   }
-  .work-card-line {
-    margin-top: 4px;
-    font-size: 15px;
-    line-height: 1.5;
-  }
   /* Two-column layout: sizes follow the card width so each sentence fits one line */
   @media (min-width: 640px) {
     .work-card-h { font-size: 24px; }
@@ -556,9 +515,6 @@ const playground = [
     }
     .work-card-meta {
       font-size: clamp(11px, 2.35cqw, 13px);
-    }
-    .work-card-line {
-      font-size: clamp(12px, 2.6cqw, 15px);
     }
   }
   /* Pen underline: a wobbly SVG stroke as the title's background, drawn in
@@ -609,15 +565,6 @@ const playground = [
     }
   }
 
-  /* ───── Old Selected Work rows (being replaced) — lift + shadow on hover ───── */
-  .work-row {
-    transition: transform 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out;
-  }
-  .work-row:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(44, 38, 32, 0.06);
-  }
-
   /* ───── Explorations cards — lift + shadow on the card, scale the image ───── */
   .exploration-card {
     transition: transform 250ms ease-out, box-shadow 250ms ease-out;
@@ -649,15 +596,6 @@ const playground = [
     font-style: italic;
     font-size: 2rem;
     color: color-mix(in srgb, var(--accent) 45%, transparent);
-  }
-
-  /* "Work in progress" tag on Selected Work rows */
-  .wip-tag {
-    padding: 3px 8px 2px;
-    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    border-radius: 999px;
-    color: var(--accent);
-    line-height: 1.4;
   }
 
   /* ───── Custom circle cursor — fine pointers only, homepage scoped ─────
