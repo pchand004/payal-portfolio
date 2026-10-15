@@ -58,3 +58,31 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
   letter-spacing: 0;
 }
+
+/* ───── Doodles — Payal's own hand-drawn marks (see src/components/Doodle.astro) ─────
+   Each path has pathLength="1": hidden at dashoffset 1.02, drawn at 0. */
+.doodle {
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+.doodle path {
+  stroke-dasharray: 1.02 2;
+  stroke-dashoffset: 1.02;
+}
+.doodle.is-drawn path {
+  stroke-dashoffset: 0;
+}
+.doodle.is-drawing path {
+  animation: doodle-draw var(--dd-dur, 700ms) linear calc(var(--doodle-delay, 0ms) + var(--dd-delay, 0ms)) both;
+}
+@keyframes doodle-draw {
+  from { stroke-dashoffset: 1.02; }
+  to   { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .doodle.is-drawing path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

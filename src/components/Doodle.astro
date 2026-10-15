@@ -1,0 +1,76 @@
+---
+/**
+ * <Doodle> — one of Payal's own hand-drawn doodles, inlined as SVG.
+ *
+ * Stroke is currentColor, fill none, so it takes the text colour around it.
+ *   name      a specific doodle ("rose-3", "flower-stem"…); see src/data/doodles.ts
+ *   kind      or pick from a set: "loop" (roses/spirals) or "flower"
+ *   seed      which one of that set to use (deterministic, so builds are stable)
+ *   draw      true → draws itself on load. Otherwise it stays hidden until a script
+ *             calls drawDoodle(el) from src/scripts/doodle.ts, or adds .is-drawing.
+ *   drawn     true → shows fully drawn, no animation
+ *   duration  total draw time in ms (clamped to 600–900), ease-out across the strokes
+ *   delay     extra ms before the pen starts
+ * Under prefers-reduced-motion the doodle appears fully drawn instead of animating.
+ * Always aria-hidden: doodles are decoration.
+ */
+import { doodles, doodleByName } from '../data/doodles';
+import { pathTimings } from '../scripts/doodle';
+
+interface Props {
+  name?: string;
+  kind?: 'loop' | 'flower';
+  seed?: number;
+  draw?: boolean;
+  drawn?: boolean;
+  duration?: number;
+  delay?: number;
+  strokeWidth?: number;
+  stretch?: boolean;
+  class?: string;
+  style?: string;
+}
+
+const {
+  name,
+  kind,
+  seed = 0,
+  draw = false,
+  drawn = false,
+  duration = 750,
+  delay = 0,
+  strokeWidth,
+  stretch = false,
+  class: className,
+  style,
+} = Astro.props;
+
+const pool = kind ? doodles.filter((d) => d.kind === kind) : doodles;
+const doodle = (name && doodleByName(name)) || pool[Math.abs(seed) % pool.length];
+const timings = pathTimings(doodle, duration);
+const svgStyle = [delay ? `--doodle-delay: ${delay}ms` : '', style ?? ''].filter(Boolean).join('; ');
+---
+
+<svg
+  class:list={['doodle', draw && 'is-drawing', drawn && 'is-drawn', className]}
+  data-doodle={doodle.name}
+  viewBox={`0 0 ${doodle.w} ${doodle.h}`}
+  preserveAspectRatio={stretch ? 'none' : undefined}
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth ?? doodle.stroke}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  style={svgStyle || undefined}
+>
+  {doodle.paths.map((p, i) => (
+    <path
+      d={p.d}
+      pathLength="1"
+      vector-effect={stretch ? 'non-scaling-stroke' : undefined}
+      style={`--dd-delay: ${timings[i].delay}ms; --dd-dur: ${timings[i].dur}ms;`}
+    />
+  ))}
+</svg>

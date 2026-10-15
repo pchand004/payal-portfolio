@@ -3,7 +3,14 @@
  * Site-wide footer. Two-column layout: italic quote + copyright on the left,
  * social links + colophon on the right. Used on the homepage and on case
  * study pages so the closing area is consistent across the site.
+ * `flowers` adds the doodled flower bed as the last row, at the very bottom of the page.
  */
+import FlowerBed from './FlowerBed.astro';
+
+interface Props {
+  flowers?: boolean;
+}
+const { flowers = false } = Astro.props;
 ---
 
 <footer class="mt-20 grid grid-cols-1 gap-10 pb-12 pt-20 md:grid-cols-[1.4fr_1fr] md:gap-12">
@@ -48,4 +55,10 @@
       Built in Astro with Claude Code.
     </p>
   </div>
+
+  {flowers && (
+    <div class="md:col-span-2">
+      <FlowerBed />
+    </div>
+  )}
 </footer>
