@@ -34,10 +34,25 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 export type DoodleOptions = {
   className?: string;
   duration?: number;
+  /** Pen width in viewBox units (scales with the doodle). */
   strokeWidth?: number;
+  /** Pen width in CSS px, constant at any size (thin, even lines). Overrides strokeWidth. */
+  px?: number;
+  /** Soft colour fill on the outermost stroke, like a quick colour-in. */
+  fill?: string;
+  fillOpacity?: number;
   /** Stretch to the box it is given (ignores aspect ratio); keeps the pen width constant. */
   stretch?: boolean;
 };
+
+/* Sticky-note palette: the same paper colours as the hero notes, with a deeper
+   ink for the outline so each flower reads as one soft object. */
+export const stickyInks = [
+  { name: 'yellow', ink: '#C4A033', paper: '#FFF1A8' },
+  { name: 'pink', ink: '#D6829F', paper: '#FAD3E0' },
+  { name: 'blue', ink: '#7A9FD1', paper: '#CFE4FA' },
+  { name: 'green', ink: '#7FA96F', paper: '#D4EDC9' },
+] as const;
 
 /** Build an inline SVG for a doodle (client side). Not drawn until drawDoodle() is called. */
 export function createDoodle(doodle: Doodle, opts: DoodleOptions = {}): SVGSVGElement {
@@ -48,7 +63,8 @@ export function createDoodle(doodle: Doodle, opts: DoodleOptions = {}): SVGSVGEl
   svg.setAttribute('stroke', 'currentColor');
   svg.setAttribute('stroke-linecap', 'round');
   svg.setAttribute('stroke-linejoin', 'round');
-  svg.setAttribute('stroke-width', String(opts.strokeWidth ?? doodle.stroke));
+  const px = opts.px ?? (opts.stretch ? opts.strokeWidth : undefined);
+  svg.setAttribute('stroke-width', String(px ?? opts.strokeWidth ?? doodle.stroke));
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   svg.dataset.doodle = doodle.name;
@@ -58,7 +74,11 @@ export function createDoodle(doodle: Doodle, opts: DoodleOptions = {}): SVGSVGEl
     const path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('d', p.d);
     path.setAttribute('pathLength', '1');
-    if (opts.stretch) path.setAttribute('vector-effect', 'non-scaling-stroke');
+    if (px !== undefined) path.setAttribute('vector-effect', 'non-scaling-stroke');
+    if (i === 0 && opts.fill) {
+      path.setAttribute('fill', opts.fill);
+      path.setAttribute('fill-opacity', String(opts.fillOpacity ?? 0.7));
+    }
     path.style.setProperty('--dd-delay', `${timings[i].delay}ms`);
     path.style.setProperty('--dd-dur', `${timings[i].dur}ms`);
     svg.appendChild(path);

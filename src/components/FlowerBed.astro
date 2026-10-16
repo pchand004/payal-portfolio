@@ -2,20 +2,23 @@
 /**
  * <FlowerBed> — the end-of-page flowers.
  *
- * A band of Payal's doodled roses and flowers. When it scrolls into view each one
- * drops in, tumbling as if just plucked, and scribbles itself in while it falls.
- * Layout is generated at build time from a fixed seed, so it is stable between
- * deploys and reserves its height up front (no layout shift). Under
- * prefers-reduced-motion the flowers are simply there, fully drawn.
+ * A soft field of Payal's doodled roses and flowers in sticky-note colours:
+ * thin even lines, some with a quick colour-in. Each flower lives on its own
+ * slow loop: it eases in and scribbles itself, sways and bobs for a while like
+ * a plushy at rest, then tumbles off its stem and washes away before coming
+ * round again. Layout is generated at build time from a fixed seed (stable
+ * between deploys, height reserved, no layout shift). Under
+ * prefers-reduced-motion the field is simply there, fully drawn and still.
  */
 import Doodle from './Doodle.astro';
 import { doodles } from '../data/doodles';
+import { stickyInks } from '../scripts/doodle';
 
 interface Props {
   seed?: number;
   count?: number;
 }
-const { seed = 7, count = 34 } = Astro.props;
+const { seed = 11, count = 30 } = Astro.props;
 
 // small deterministic PRNG (mulberry32)
 function rng(a: number) {
@@ -27,36 +30,39 @@ function rng(a: number) {
   };
 }
 const r = rng(seed);
+const pick = <T,>(a: readonly T[]) => a[Math.floor(r() * a.length)];
 const loops = doodles.filter((d) => d.kind === 'loop');
 const flowers = doodles.filter((d) => d.kind === 'flower');
-const inks = ['#3E5A22', '#3E5A22', '#4D6A2C', '#5B7737', '#34501C'];
 
 const items = Array.from({ length: count }, (_, i) => {
-  const isFlower = r() < 0.38;
-  const pool = isFlower ? flowers : loops;
-  const doodle = pool[Math.floor(r() * pool.length)];
-  // width in px: flowers a touch larger; the long-stemmed one larger still
-  const width = Math.round(
-    doodle.name === 'flower-stem' ? 120 + r() * 40 : isFlower ? 62 + r() * 38 : 40 + r() * 42,
-  );
+  const isFlower = r() < 0.4;
+  const doodle = pick(isFlower ? flowers : loops);
+  // two sizes: S and M (the long-stemmed flower runs a step larger)
+  const size = r() < 0.55 ? 'S' : 'M';
+  const base = size === 'S' ? 30 + r() * 14 : 52 + r() * 26;
+  const width = Math.round(doodle.name === 'flower-stem' ? base * 1.5 : base);
   const height = Math.round((width * doodle.h) / doodle.w);
-  // spread across the width with jitter; denser near the ground
-  const x = ((i + 0.5) / count) * 100 + (r() - 0.5) * (100 / count) * 1.6;
-  const ground = Math.pow(r(), 1.8); // 0 = resting on the ground, 1 = higher in the pile
+  const colour = pick(stickyInks);
+  const filled = r() < 0.55;
+  const x = ((i + 0.5) / count) * 100 + (r() - 0.5) * (100 / count) * 1.5;
+  const ground = Math.pow(r(), 1.6);
   return {
     doodle: doodle.name,
     width,
     height,
     x: Math.min(97, Math.max(3, x)),
-    bottom: Math.round(ground * 120),
-    rot: Math.round((r() - 0.5) * 50),
-    rot0: Math.round((r() - 0.5) * 220),
-    drift: Math.round((r() - 0.5) * 60),
-    fall: Math.round(140 + r() * 120),
-    delay: Math.round(i * 55 + r() * 160),
-    ink: inks[Math.floor(r() * inks.length)],
+    bottom: Math.round(ground * 110),
+    ink: colour.ink,
+    fill: filled ? colour.paper : undefined,
+    pen: size === 'S' ? 1.1 : filled ? 1.4 : 1.7,
+    rot: Math.round((r() - 0.5) * 40),
+    sway: (3 + r() * 5).toFixed(1),
+    bob: Math.round(3 + r() * 5),
+    tumble: Math.round((r() < 0.5 ? -1 : 1) * (35 + r() * 55)),
+    fx: Math.round((r() - 0.5) * 40),
+    period: Math.round(11000 + r() * 7000),
+    delay: Math.round(i * 90 + r() * 900),
     z: Math.round(ground * 10),
-    // on phones keep about a third, so the band stays airy
     phone: i % 3 === 0,
   };
 });
@@ -66,9 +72,9 @@ const items = Array.from({ length: count }, (_, i) => {
   {items.map((it) => (
     <span
       class:list={['fb-item', !it.phone && 'fb-item--wide']}
-      style={`left:${it.x.toFixed(2)}%; bottom:${it.bottom}px; width:${it.width}px; height:${it.height}px; z-index:${it.z}; color:${it.ink}; --r:${it.rot}deg; --r0:${it.rot0}deg; --fx:${it.drift}px; --fall:${it.fall}px; --fb-delay:${it.delay}ms;`}
+      style={`left:${it.x.toFixed(2)}%; bottom:${it.bottom}px; width:${it.width}px; height:${it.height}px; z-index:${it.z}; color:${it.ink}; --r:${it.rot}deg; --sway:${it.sway}deg; --bob:${it.bob}px; --tumble:${it.tumble}deg; --fx:${it.fx}px; --period:${it.period}ms; --fb-delay:${it.delay}ms;`}
     >
-      <Doodle name={it.doodle} duration={850} delay={it.delay + 120} class="fb-doodle" />
+      <Doodle name={it.doodle} px={it.pen} fill={it.fill} fillOpacity={0.9} duration={850} delay={it.delay + 200} class="fb-doodle" />
     </span>
   ))}
 </div>
@@ -83,7 +89,7 @@ const items = Array.from({ length: count }, (_, i) => {
   }
   @media (min-width: 768px) {
     .flowerbed {
-      height: 260px;
+      height: 250px;
       margin-top: 24px;
     }
   }
@@ -92,36 +98,56 @@ const items = Array.from({ length: count }, (_, i) => {
     display: block;
     translate: -50% 0;
     transform: rotate(var(--r));
-    transform-origin: 50% 60%;
+    transform-origin: 50% 70%;
     opacity: 0;
   }
   .fb-item :global(.fb-doodle) {
     width: 100%;
     height: 100%;
+    stroke-opacity: 0.9;
   }
-  /* phones: a third of the flowers, a little smaller, so the band isn't crowded */
   @media (max-width: 639px) {
     .fb-item--wide {
       display: none;
     }
     .fb-item {
-      scale: 0.82;
+      scale: 0.85;
     }
   }
+  /* The loop: ease in → rest (sway + bob) → tumble off the stem → wash away.
+     Every segment uses ease-in-out, so nothing starts or stops sharply. */
   .flowerbed.is-on .fb-item {
-    animation: fb-fall 1050ms cubic-bezier(0.22, 0.75, 0.3, 1) var(--fb-delay) both;
+    animation: fb-live var(--period) ease-in-out var(--fb-delay) infinite;
   }
-  @keyframes fb-fall {
+  .flowerbed.is-paused .fb-item {
+    animation-play-state: paused;
+  }
+  @keyframes fb-live {
     0% {
       opacity: 0;
-      transform: translate(var(--fx), calc(-1 * var(--fall))) rotate(var(--r0));
+      transform: translate(0, 8px) rotate(calc(var(--r) - 12deg)) scale(0.86);
     }
-    18% {
+    14% {
       opacity: 1;
+      transform: translate(0, 0) rotate(var(--r)) scale(1);
+    }
+    36% {
+      transform: translate(2px, calc(-1 * var(--bob))) rotate(calc(var(--r) + var(--sway))) scale(1.02);
+    }
+    58% {
+      transform: translate(-2px, 0) rotate(calc(var(--r) - var(--sway))) scale(1);
+    }
+    76% {
+      opacity: 1;
+      transform: translate(0, 1px) rotate(var(--r)) scale(1);
+    }
+    92% {
+      opacity: 0;
+      transform: translate(var(--fx), 30px) rotate(calc(var(--r) + var(--tumble))) scale(0.9);
     }
     100% {
-      opacity: 1;
-      transform: translate(0, 0) rotate(var(--r));
+      opacity: 0;
+      transform: translate(var(--fx), 30px) rotate(calc(var(--r) + var(--tumble))) scale(0.9);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -135,24 +161,26 @@ const items = Array.from({ length: count }, (_, i) => {
 <script>
   import { drawDoodle } from '../scripts/doodle';
 
-  // Start the fall + scribble the first time each bed is mostly in view.
-  // Observers are kept in a set so nothing can garbage-collect them before they fire.
+  // Start the loop + scribble the first time each bed is mostly in view, and
+  // pause the loop while the bed is off screen. Observers are kept in a set so
+  // nothing can garbage-collect them before they fire.
   const live = new Set<IntersectionObserver>();
   function initFlowerBeds() {
     document.querySelectorAll<HTMLElement>('[data-flowerbed]:not([data-armed])').forEach((bed) => {
       bed.dataset.armed = '1';
       const io = new IntersectionObserver(
         (entries) => {
-          if (!entries.some((e) => e.isIntersecting)) return;
-          io.disconnect();
-          live.delete(io);
-          bed.classList.add('is-on');
-          bed.querySelectorAll('.doodle').forEach((svg) => {
-            const delay = parseFloat((svg as SVGElement).style.getPropertyValue('--doodle-delay')) || 0;
-            drawDoodle(svg, delay);
-          });
+          const visible = entries.some((e) => e.isIntersecting);
+          if (visible && !bed.classList.contains('is-on')) {
+            bed.classList.add('is-on');
+            bed.querySelectorAll('.doodle').forEach((svg) => {
+              const delay = parseFloat((svg as SVGElement).style.getPropertyValue('--doodle-delay')) || 0;
+              drawDoodle(svg, delay);
+            });
+          }
+          bed.classList.toggle('is-paused', !visible && bed.classList.contains('is-on'));
         },
-        { threshold: 0.35 },
+        { threshold: [0, 0.3] },
       );
       io.observe(bed);
       live.add(io);

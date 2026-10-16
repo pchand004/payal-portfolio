@@ -11,6 +11,8 @@
  *   drawn     true → shows fully drawn, no animation
  *   duration  total draw time in ms (clamped to 600–900), ease-out across the strokes
  *   delay     extra ms before the pen starts
+ *   px        pen width in CSS px, the same at any size (thin, even lines)
+ *   fill      soft colour fill on the outermost stroke, like a quick colour-in
  * Under prefers-reduced-motion the doodle appears fully drawn instead of animating.
  * Always aria-hidden: doodles are decoration.
  */
@@ -26,6 +28,9 @@ interface Props {
   duration?: number;
   delay?: number;
   strokeWidth?: number;
+  px?: number;
+  fill?: string;
+  fillOpacity?: number;
   stretch?: boolean;
   class?: string;
   style?: string;
@@ -40,6 +45,9 @@ const {
   duration = 750,
   delay = 0,
   strokeWidth,
+  px,
+  fill,
+  fillOpacity = 0.7,
   stretch = false,
   class: className,
   style,
@@ -48,6 +56,7 @@ const {
 const pool = kind ? doodles.filter((d) => d.kind === kind) : doodles;
 const doodle = (name && doodleByName(name)) || pool[Math.abs(seed) % pool.length];
 const timings = pathTimings(doodle, duration);
+const constantPen = px !== undefined || stretch;
 const svgStyle = [delay ? `--doodle-delay: ${delay}ms` : '', style ?? ''].filter(Boolean).join('; ');
 ---
 
@@ -58,7 +67,7 @@ const svgStyle = [delay ? `--doodle-delay: ${delay}ms` : '', style ?? ''].filter
   preserveAspectRatio={stretch ? 'none' : undefined}
   fill="none"
   stroke="currentColor"
-  stroke-width={strokeWidth ?? doodle.stroke}
+  stroke-width={px ?? strokeWidth ?? doodle.stroke}
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"
@@ -69,7 +78,9 @@ const svgStyle = [delay ? `--doodle-delay: ${delay}ms` : '', style ?? ''].filter
     <path
       d={p.d}
       pathLength="1"
-      vector-effect={stretch ? 'non-scaling-stroke' : undefined}
+      vector-effect={constantPen ? 'non-scaling-stroke' : undefined}
+      fill={i === 0 && fill ? fill : undefined}
+      fill-opacity={i === 0 && fill ? fillOpacity : undefined}
       style={`--dd-delay: ${timings[i].delay}ms; --dd-dur: ${timings[i].dur}ms;`}
     />
   ))}
