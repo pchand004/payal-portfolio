@@ -3,10 +3,11 @@
  * <FlowerBed> — the end-of-page flowers.
  *
  * A soft field of Payal's doodled roses and flowers in sticky-note colours:
- * thin even lines, some with a quick colour-in. Each flower lives on its own
- * slow loop: it eases in and scribbles itself, sways and bobs for a while like
- * a plushy at rest, then tumbles off its stem and washes away before coming
- * round again. Layout is generated at build time from a fixed seed (stable
+ * thin even lines, some with a quick colour-in. When the visitor scrolls down
+ * to the footer the flowers drop in, tumbling, and scribble themselves as
+ * they land. Then each one lives on its own slow loop: it sways and bobs for
+ * a while like a plushy at rest, tumbles off its stem and washes away, and
+ * eases back in again. Layout is generated at build time from a fixed seed (stable
  * between deploys, height reserved, no layout shift). Under
  * prefers-reduced-motion the field is simply there, fully drawn and still.
  */
@@ -18,7 +19,7 @@ interface Props {
   seed?: number;
   count?: number;
 }
-const { seed = 11, count = 30 } = Astro.props;
+const { seed = 11, count = 48 } = Astro.props;
 
 // small deterministic PRNG (mulberry32)
 function rng(a: number) {
@@ -60,8 +61,11 @@ const items = Array.from({ length: count }, (_, i) => {
     bob: Math.round(3 + r() * 5),
     tumble: Math.round((r() < 0.5 ? -1 : 1) * (35 + r() * 55)),
     fx: Math.round((r() - 0.5) * 40),
+    // the drop: starts this far above its resting spot, spun this much
+    fall: Math.round(120 + r() * 140),
+    spin: Math.round((r() - 0.5) * 260),
     period: Math.round(11000 + r() * 7000),
-    delay: Math.round(i * 90 + r() * 900),
+    delay: Math.round(i * 45 + r() * 700),
     z: Math.round(ground * 10),
     phone: i % 3 === 0,
   };
@@ -72,7 +76,7 @@ const items = Array.from({ length: count }, (_, i) => {
   {items.map((it) => (
     <span
       class:list={['fb-item', !it.phone && 'fb-item--wide']}
-      style={`left:${it.x.toFixed(2)}%; bottom:${it.bottom}px; width:${it.width}px; height:${it.height}px; z-index:${it.z}; color:${it.ink}; --r:${it.rot}deg; --sway:${it.sway}deg; --bob:${it.bob}px; --tumble:${it.tumble}deg; --fx:${it.fx}px; --period:${it.period}ms; --fb-delay:${it.delay}ms;`}
+      style={`left:${it.x.toFixed(2)}%; bottom:${it.bottom}px; width:${it.width}px; height:${it.height}px; z-index:${it.z}; color:${it.ink}; --r:${it.rot}deg; --sway:${it.sway}deg; --bob:${it.bob}px; --tumble:${it.tumble}deg; --fx:${it.fx}px; --fall:${it.fall}px; --spin:${it.spin}deg; --period:${it.period}ms; --fb-delay:${it.delay}ms;`}
     >
       <Doodle name={it.doodle} px={it.pen} fill={it.fill} fillOpacity={0.9} duration={850} delay={it.delay + 200} class="fb-doodle" />
     </span>
@@ -114,40 +118,56 @@ const items = Array.from({ length: count }, (_, i) => {
       scale: 0.85;
     }
   }
-  /* The loop: ease in → rest (sway + bob) → tumble off the stem → wash away.
+  /* Arrival: the drop (once), then the loop takes over from the resting pose.
+     Loop: rest (sway + bob) → tumble off the stem → wash away → ease back in.
      Every segment uses ease-in-out, so nothing starts or stops sharply. */
   .flowerbed.is-on .fb-item {
-    animation: fb-live var(--period) ease-in-out var(--fb-delay) infinite;
+    animation:
+      fb-drop 1100ms cubic-bezier(0.22, 0.75, 0.3, 1) var(--fb-delay) both,
+      fb-live var(--period) ease-in-out calc(var(--fb-delay) + 1100ms) infinite;
   }
   .flowerbed.is-paused .fb-item {
     animation-play-state: paused;
   }
-  @keyframes fb-live {
+  @keyframes fb-drop {
     0% {
       opacity: 0;
-      transform: translate(0, 8px) rotate(calc(var(--r) - 12deg)) scale(0.86);
+      transform: translate(var(--fx), calc(-1 * var(--fall))) rotate(calc(var(--r) + var(--spin)));
     }
-    14% {
+    20% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(var(--r));
+    }
+  }
+  @keyframes fb-live {
+    0% {
       opacity: 1;
       transform: translate(0, 0) rotate(var(--r)) scale(1);
     }
-    36% {
+    24% {
       transform: translate(2px, calc(-1 * var(--bob))) rotate(calc(var(--r) + var(--sway))) scale(1.02);
     }
-    58% {
+    48% {
       transform: translate(-2px, 0) rotate(calc(var(--r) - var(--sway))) scale(1);
     }
-    76% {
+    66% {
       opacity: 1;
       transform: translate(0, 1px) rotate(var(--r)) scale(1);
     }
-    92% {
+    82% {
       opacity: 0;
       transform: translate(var(--fx), 30px) rotate(calc(var(--r) + var(--tumble))) scale(0.9);
     }
-    100% {
+    88% {
       opacity: 0;
-      transform: translate(var(--fx), 30px) rotate(calc(var(--r) + var(--tumble))) scale(0.9);
+      transform: translate(0, 8px) rotate(calc(var(--r) - 12deg)) scale(0.86);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(var(--r)) scale(1);
     }
   }
   @media (prefers-reduced-motion: reduce) {
