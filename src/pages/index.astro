@@ -888,6 +888,7 @@ const playground = [
 <script>
   import { loops } from '../data/doodles';
   import { createDoodle, drawDoodle, drawTime, pickRandom, rand, stickyInks } from '../scripts/doodle';
+  import { playTick } from '../scripts/sound';
   function initHero() {
     const hero = document.getElementById('hero');
     if (!hero) return;
@@ -922,6 +923,7 @@ const playground = [
     document.addEventListener('click', (e) => {
       const trigger = (e.target as Element | null)?.closest?.('.dz-trigger');
       const current = trigger ? owner(trigger) : null;
+      if (current && !current.classList.contains('is-open')) playTick(); // peeling a note open
       all().forEach((dz) => {
         if (dz !== current) close(dz, true);
       });
@@ -1054,6 +1056,7 @@ const playground = [
         window.setTimeout(() => svg.remove(), 320);
       };
 
+      card.addEventListener('click', () => playTick()); // selecting a project
       card.addEventListener('pointerenter', show);
       card.addEventListener('pointerleave', () => hide());
       card.addEventListener('focus', () => {
