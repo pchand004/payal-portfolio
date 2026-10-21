@@ -1138,7 +1138,14 @@ const moonIds = ['a', 'b'];
     answer.removeAttribute('aria-busy');
     readingLine.hidden = true;
     left.hidden = false;
-    if (wasReading) left.classList.add('is-written');
+    if (wasReading) {
+      left.classList.add('is-written');
+      // back to the top of the answer, now that it carries its marks
+      setTimeout(() => {
+        const top = answer.getBoundingClientRect().top + window.scrollY - 24;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }, 1100);
+    }
     render();
   }
   answer.addEventListener('click', () => {
