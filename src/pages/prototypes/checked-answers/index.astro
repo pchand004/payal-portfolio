@@ -79,9 +79,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
         <div class="answer-body" data-body hidden>
           <nav class="tabs" role="tablist" aria-label="Filter claims by status">
             <button type="button" role="tab" class="tab" data-tab="all" aria-selected="true">All <span data-count="all">{claims.length}</span></button>
-            <button type="button" role="tab" class="tab" data-tab="sourced" aria-selected="false">Sourced <span data-count="sourced">{count('sourced')}</span></button>
-            <button type="button" role="tab" class="tab" data-tab="reported" aria-selected="false">Reported <span data-count="reported">{count('reported')}</span></button>
-            <button type="button" role="tab" class="tab" data-tab="doubtful" aria-selected="false">Doubtful <span data-count="doubtful">{count('doubtful')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="sourced" aria-selected="false"><i class="dot dot-sourced" aria-hidden="true"></i>Sourced <span data-count="sourced">{count('sourced')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="reported" aria-selected="false"><i class="dot dot-reported" aria-hidden="true"></i>Reported <span data-count="reported">{count('reported')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="doubtful" aria-selected="false"><i class="dot dot-doubtful" aria-hidden="true"></i>Doubtful <span data-count="doubtful">{count('doubtful')}</span></button>
             <span class="tabs-ind" data-tabs-ind aria-hidden="true"></span>
           </nav>
 
@@ -130,7 +130,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
         <p class="note-status" id="note-status"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b></p>
         <button type="button" class="note-close" data-card-close aria-label="Close">×</button>
         <p class="note-quote" data-card-quote></p>
-        <p class="note-link"><span class="note-label">Link given:</span> <span data-card-link></span></p>
+        <p class="note-link"><span class="note-label">Link given:</span> <a data-card-link></a></p>
         <div class="note-actions" data-card-actions></div>
         <p class="note-nav" data-card-nav><span data-card-left></span><button type="button" class="note-next" data-card-next>next →</button></p>
       </aside>
@@ -155,7 +155,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     --p-paper-ink: #4a0b7a;
     --s-sourced: #3fe08f;
     --s-reported: #ffc14d;
-    --s-doubtful: #ff8a9a;
+    --s-doubtful: #ff6b81;
     --s-unconfirmed: rgba(255, 255, 255, 0.55);
   }
   body.proto-body {
@@ -552,34 +552,43 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
 
   /* Status marks */
+  /* Status marks: a full disc with a tick, a half disc, a dashed ring, an empty ring. */
   .dot {
     display: inline-block;
-    width: 9px;
-    height: 9px;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
-    margin-left: 5px;
-    vertical-align: 1px;
+    margin-left: 6px;
+    vertical-align: -1px;
     box-sizing: border-box;
-    transition: background 240ms ease, border-color 240ms ease;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: background-color 240ms ease, border-color 240ms ease;
   }
   .dot-sourced,
   .claim[data-status='sourced'] .dot {
-    background: var(--s-sourced);
+    background-color: var(--s-sourced);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='%23123b24' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 10px 10px;
   }
   .dot-reported,
   .claim[data-status='reported'] .dot {
-    border: 1.5px solid var(--s-reported);
-    background: linear-gradient(90deg, var(--s-reported) 50%, transparent 50%);
+    border: 2px solid var(--s-reported);
+    background-image: linear-gradient(90deg, var(--s-reported) 50%, transparent 50%);
   }
   .dot-doubtful,
   .claim[data-status='doubtful'] .dot {
-    border: 1.5px dotted var(--s-doubtful);
-    background: rgba(255, 138, 154, 0.28);
+    border: 2px dashed var(--s-doubtful);
+    background-color: rgba(255, 107, 129, 0.3);
   }
   .dot-unconfirmed,
   .claim[data-status='unconfirmed'] .dot {
-    border: 1.5px solid var(--s-unconfirmed);
+    border: 2px solid var(--s-unconfirmed);
     background: transparent;
+  }
+  .tab .dot {
+    margin: 0 7px 0 0;
+    vertical-align: -2px;
   }
 
   /* Left for you */
@@ -648,7 +657,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .note {
     position: absolute;
     z-index: 30;
-    width: 300px;
+    width: 336px;
     box-sizing: border-box;
     padding: 14px 18px 12px;
     border-radius: 10px;
@@ -706,35 +715,56 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     margin: 8px 0 0;
     color: rgba(74, 11, 122, 0.85);
   }
+  .note-link a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .note-link a[href] {
+    text-decoration: underline;
+    text-decoration-color: rgba(74, 11, 122, 0.3);
+    text-underline-offset: 3px;
+  }
+  .note-link a[href]:hover {
+    text-decoration-color: var(--p-paper-ink);
+  }
   .note-label {
     font-weight: 600;
     color: var(--p-paper-ink);
   }
   .note-actions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    margin-top: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
   }
   .act {
-    background: none;
-    border: 0;
-    padding: 0;
-    font: 600 13.5px / 1.5 inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--p-paper-ink);
+    background: var(--p-paper-ink);
+    color: #fff;
+    font: 600 12.5px / 1.2 inherit;
     font-family: inherit;
-    color: var(--p-paper-ink);
-    text-decoration: underline;
-    text-decoration-color: rgba(74, 11, 122, 0.3);
-    text-underline-offset: 3px;
+    text-decoration: none;
     cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
   }
   .act:hover {
-    text-decoration-color: var(--p-paper-ink);
+    background: #5e1a94;
+    border-color: #5e1a94;
   }
   .act-secondary {
-    font-weight: 500;
-    color: rgba(74, 11, 122, 0.8);
+    background: transparent;
+    color: var(--p-paper-ink);
+    border-color: rgba(74, 11, 122, 0.35);
+  }
+  .act-secondary:hover {
+    background: rgba(74, 11, 122, 0.08);
+    border-color: var(--p-paper-ink);
   }
   .note-nav {
     display: flex;
@@ -765,7 +795,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
   /* Not enough room beside the answer: the note becomes a sheet at the bottom,
      and shows the claim it is about, since that may be off screen. */
-  @media (max-width: 1139px) {
+  @media (max-width: 1175px) {
     .note {
       position: fixed;
       left: 16px;
@@ -924,12 +954,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const cardDot = $<HTMLElement>('[data-card-dot]', card)!;
   const cardStatus = $<HTMLElement>('[data-card-status]', card)!;
   const cardQuote = $<HTMLElement>('[data-card-quote]', card)!;
-  const cardLink = $<HTMLElement>('[data-card-link]', card)!;
+  const cardLink = $<HTMLAnchorElement>('[data-card-link]', card)!;
   const cardActions = $<HTMLElement>('[data-card-actions]', card)!;
   const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
   const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
   const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
-  const wide = matchMedia('(min-width: 1140px)');
+  const wide = matchMedia('(min-width: 1176px)');
 
   /* ───── State ───── */
   const order = claims.map((c) => c.id);
@@ -1072,6 +1102,14 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     cardStatus.textContent = META[st].label;
     cardQuote.textContent = c.text;
     cardLink.textContent = c.link;
+    // for a reported claim the link given is the news piece itself: open it from here
+    if (st === 'reported' && c.linkHref) {
+      cardLink.href = c.linkHref;
+      cardLink.target = '_blank';
+      cardLink.rel = 'noopener noreferrer';
+    } else {
+      cardLink.removeAttribute('href');
+    }
     cardActions.replaceChildren();
 
     if (st === 'sourced') {
@@ -1079,7 +1117,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       if (original !== 'sourced') cardActions.append(button('Undo', { act: 'undo' }));
     } else if (st === 'reported') {
       cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
-      cardActions.append(button('Read the news piece', { href: c.linkHref ?? searchUrl(c.search) }));
       if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
     } else if (st === 'doubtful') {
       cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
