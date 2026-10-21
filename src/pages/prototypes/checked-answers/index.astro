@@ -111,10 +111,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
             ))}
           </div>
 
-          <div class="left" data-left>
-            <p class="left-text" data-left-text></p>
-            <button type="button" class="btn btn-primary" data-walk>Walk me through</button>
-          </div>
+          <p class="left" data-left>
+            <span data-left-text></span>
+            <button type="button" class="left-walk" data-walk>Walk me through →</button>
+          </p>
 
           <ul class="legend" aria-label="What the marks mean">
             <li><i class="dot dot-sourced" aria-hidden="true"></i><span><b>Sourced</b>: the study is linked and says this</span></li>
@@ -124,20 +124,16 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
         </div>
       </article>
 
-      {/* Claim card: one claim, what was linked, and the one or two things you can do */}
-      <aside class="card" data-card role="dialog" aria-modal="false" aria-labelledby="card-kicker" hidden>
-        <p class="card-kicker" id="card-kicker"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b><span class="card-sep">·</span><span data-card-reason></span></p>
-        <button type="button" class="card-close" data-card-close>close</button>
-        <blockquote class="card-quote" data-card-quote></blockquote>
-        <p class="card-label">Link given</p>
-        <p class="card-link" data-card-link></p>
-        <div class="card-actions" data-card-actions></div>
-        <p class="card-note" data-card-note></p>
-        <div class="card-nav" data-card-nav>
-          <button type="button" class="card-navbtn" data-card-prev aria-label="Previous unresolved claim">←</button>
-          <span class="card-navtext" data-card-left></span>
-          <button type="button" class="card-navbtn" data-card-next aria-label="Next unresolved claim">next →</button>
-        </div>
+      {/* Margin note: one claim, what was linked, and the one or two things you can do.
+          Sits beside the claim on wide screens, as a sheet at the bottom on small ones. */}
+      <aside class="note" data-card role="dialog" aria-modal="false" aria-labelledby="note-status" hidden>
+        <p class="note-status" id="note-status"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b><span data-card-reason></span></p>
+        <button type="button" class="note-close" data-card-close aria-label="Close">×</button>
+        <p class="note-quote" data-card-quote></p>
+        <p class="note-link"><span class="note-label">Link given:</span> <span data-card-link></span></p>
+        <div class="note-actions" data-card-actions></div>
+        <p class="note-foot" data-card-note></p>
+        <p class="note-nav" data-card-nav><span data-card-left></span><button type="button" class="note-next" data-card-next>next →</button></p>
       </aside>
     </section>
   </main>
@@ -226,11 +222,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .proto-corner:focus-visible,
   .tab:focus-visible,
   .claim:focus-visible,
-  .btn:focus-visible,
+  .act:focus-visible,
+  .left-walk:focus-visible,
   .ask-submit:focus-visible,
   .ask-suggestion:focus-visible,
-  .card-close:focus-visible,
-  .card-navbtn:focus-visible {
+  .note-close:focus-visible,
+  .note-next:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 3px;
     border-radius: 4px;
@@ -243,40 +240,37 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
 
   /* ───── Screen 1 · ask ───── */
+  /* One column, 720px wide, centred: the field is a single line and the
+     suggestions are a quiet list under it. Nothing is framed. */
   .ask {
     min-height: 100dvh;
     display: grid;
     align-content: center;
-    width: min(1180px, 100%);
+    width: min(720px, 100%);
     margin: 0 auto;
-    padding: 72px 24px 48px;
+    padding: 72px 24px 64px;
     box-sizing: border-box;
   }
   .ask-title {
     font-family: inherit;
     font-weight: 700;
-    font-size: clamp(30px, 4.2vw, 44px);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin: 0 0 26px;
-  }
-  .ask-box {
-    border: 1px solid var(--p-line);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.04);
+    font-size: clamp(22px, 2.4vw, 28px);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0 0 16px 2px;
   }
   .ask-input-row {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    min-height: 118px;
-    padding: 22px 24px;
-    border-radius: 10px;
+    align-items: center;
+    gap: 12px;
+    height: 60px;
+    padding: 0 10px 0 22px;
+    border-radius: 14px;
     background: var(--p-paper);
     color: var(--p-paper-ink);
     cursor: text;
     box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(40, 0, 80, 0.18);
   }
   .ask-input-row input {
     flex: 1;
@@ -284,7 +278,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     background: transparent;
     border: 0;
     outline: none;
-    font: 600 clamp(17px, 1.9vw, 22px) / 1.3 inherit;
+    font: 500 17px / 1.3 inherit;
     font-family: inherit;
     color: inherit;
     padding: 0;
@@ -293,25 +287,30 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     color: rgba(74, 11, 122, 0.5);
   }
   .ask-submit {
-    align-self: center;
-    background: none;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
     border: 0;
-    padding: 6px;
-    margin: 0 -6px 0 0;
-    color: rgba(74, 11, 122, 0.6);
+    border-radius: 50%;
+    padding: 0;
+    background: rgba(74, 11, 122, 0.1);
+    color: var(--p-paper-ink);
     cursor: pointer;
-    transition: color 200ms ease, transform 200ms ease;
+    transition: background 200ms ease;
   }
   .ask-submit:hover {
-    color: var(--p-paper-ink);
-    transform: translateX(2px);
+    background: rgba(74, 11, 122, 0.18);
+  }
+  .ask-submit svg {
+    width: 18px;
+    height: 18px;
   }
   .ask-suggestions {
     list-style: none;
-    margin: 12px 0 0;
-    padding: 0 10px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
+    margin: 14px 0 0;
+    padding: 0 4px;
   }
   .ask-suggestions li + li {
     border-top: 1px solid rgba(255, 255, 255, 0.14);
@@ -322,23 +321,24 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 17px 14px;
+    padding: 12px 2px;
     background: none;
     border: 0;
-    color: var(--p-ink);
-    font: 400 17px / 1.35 inherit;
+    color: rgba(255, 255, 255, 0.8);
+    font: 400 14.5px / 1.35 inherit;
     font-family: inherit;
     text-align: left;
     cursor: pointer;
-    border-radius: 8px;
-    transition: background 200ms ease;
+    transition: color 200ms ease;
   }
   .ask-suggestion:hover {
-    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
   }
   .ask-suggestion svg {
     flex-shrink: 0;
-    opacity: 0.75;
+    width: 15px;
+    height: 15px;
+    opacity: 0.6;
     transition: transform 200ms ease, opacity 200ms ease;
   }
   .ask-suggestion:hover svg {
@@ -346,13 +346,14 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     transform: translate(1px, -1px);
   }
   .ask-note {
-    margin: 18px 2px 0;
-    font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.55);
+    margin: 22px 6px 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
   }
 
   /* ───── Screen 2 · answer ───── */
   .chat {
+    position: relative;
     width: min(1240px, 100%);
     margin: 0 auto;
     padding: 76px 24px 48px;
@@ -583,66 +584,44 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   /* Left for you */
   .left {
-    margin-top: 26px;
+    margin: 26px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 10px 16px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.09);
+    gap: 6px 16px;
     font-size: 13.5px;
-    line-height: 1.45;
+    line-height: 1.5;
   }
-  .left-text {
-    margin: 0;
-  }
-  .left-text b {
+  .left b {
     font-weight: 700;
   }
-  .left.is-done .btn {
-    display: none;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    font: 600 13px / 1.2 inherit;
+  .left-walk {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #fff;
+    font: 600 13.5px / 1.5 inherit;
     font-family: inherit;
     cursor: pointer;
-    text-decoration: none;
-    transition: background 200ms ease, color 200ms ease, transform 200ms ease;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.45);
+    text-underline-offset: 3px;
   }
-  .btn:active {
-    transform: translateY(1px);
+  .left-walk:hover {
+    text-decoration-color: #fff;
   }
-  .btn-primary {
-    background: #fff;
-    color: var(--p-paper-ink);
-  }
-  .btn-primary:hover {
-    background: #f1e8f8;
-  }
-  .btn-ghost {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.22);
-    color: #fff;
-  }
-  .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.2);
+  .left.is-done .left-walk {
+    display: none;
   }
 
   /* Legend */
   .legend {
     list-style: none;
-    margin: 22px 0 0;
-    padding: 16px 0 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    margin: 18px 0 0;
+    padding: 0;
     display: grid;
     gap: 7px;
     font-size: 12px;
@@ -662,133 +641,159 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     color: rgba(255, 255, 255, 0.9);
   }
 
-  /* ───── Claim card ───── */
-  .card {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
+  /* ───── Margin note ─────
+     Paper, like the question bubble. One status line, the link given, the
+     actions as plain text, a footnote. No quote on wide screens: the claim it
+     belongs to is highlighted right beside it. */
+  .note {
+    position: absolute;
     z-index: 30;
-    width: min(420px, calc(100vw - 48px));
+    width: 300px;
     box-sizing: border-box;
-    padding: 18px 20px 14px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    background: rgba(70, 12, 130, 0.9);
-    -webkit-backdrop-filter: blur(18px);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 24px 60px rgba(20, 0, 50, 0.45);
-    color: #fff;
+    padding: 14px 18px 12px;
+    border-radius: 10px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    font-size: 13.5px;
+    line-height: 1.5;
+    box-shadow: 0 12px 32px rgba(30, 0, 60, 0.28);
     opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform: translateY(6px);
+    transition: opacity 220ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .card[hidden] {
+  .note[hidden] {
     display: none;
   }
-  .card.is-open {
+  .note.is-open {
     opacity: 1;
     transform: none;
   }
-  .card-kicker {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin: 0 60px 0 0;
-    font-size: 11px;
+  .note-status {
+    margin: 0 24px 0 0;
+  }
+  .note-status .dot {
+    margin: 0 7px 0 0;
+    vertical-align: 0;
+  }
+  .note-status b {
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--k, #fff);
+    color: var(--k, var(--p-paper-ink));
   }
-  .card-kicker .dot {
-    margin: 0;
-    flex-shrink: 0;
+  .note-status [data-card-reason] {
+    color: rgba(74, 11, 122, 0.72);
   }
-  .card-kicker .card-sep,
-  .card-kicker [data-card-reason] {
-    font-weight: 500;
-    letter-spacing: 0;
-    text-transform: none;
-    color: rgba(255, 255, 255, 0.7);
+  .note-status [data-card-reason]::before {
+    content: ' · ';
   }
-  .card-close {
+  .note-close {
     position: absolute;
-    top: 14px;
-    right: 18px;
-    background: none;
+    top: 8px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
     border: 0;
-    padding: 2px 4px;
-    color: rgba(255, 255, 255, 0.7);
-    font: 500 12px inherit;
+    background: none;
+    padding: 0;
+    color: rgba(74, 11, 122, 0.55);
+    font: 400 20px / 1 inherit;
     font-family: inherit;
     cursor: pointer;
   }
-  .card-close:hover {
-    color: #fff;
+  .note-close:hover {
+    color: var(--p-paper-ink);
   }
-  .card-quote {
-    margin: 12px 0 0;
-    padding-left: 12px;
-    border-left: 2px solid rgba(255, 255, 255, 0.4);
-    font-size: 15.5px;
-    font-weight: 500;
-    line-height: 1.45;
-  }
-  .card-label {
-    margin: 16px 0 0;
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-  }
-  .card-link {
-    margin: 3px 0 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .card-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .card-note {
-    margin: 12px 0 0;
-    font-size: 12px;
-    line-height: 1.45;
-    color: rgba(255, 255, 255, 0.66);
-  }
-  .card-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-  }
-  .card-nav[hidden] {
+  .note-quote {
     display: none;
   }
-  .card-navbtn {
+  .note-link {
+    margin: 8px 0 0;
+    color: rgba(74, 11, 122, 0.85);
+  }
+  .note-label {
+    font-weight: 600;
+    color: var(--p-paper-ink);
+  }
+  .note-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .act {
     background: none;
     border: 0;
-    padding: 4px 2px;
-    color: rgba(255, 255, 255, 0.8);
-    font: 600 12px inherit;
+    padding: 0;
+    font: 600 13.5px / 1.5 inherit;
     font-family: inherit;
+    color: var(--p-paper-ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(74, 11, 122, 0.3);
+    text-underline-offset: 3px;
     cursor: pointer;
   }
-  .card-navbtn:hover {
-    color: #fff;
+  .act:hover {
+    text-decoration-color: var(--p-paper-ink);
   }
-  .card-navbtn:disabled {
-    opacity: 0.3;
+  .act-secondary {
+    font-weight: 500;
+    color: rgba(74, 11, 122, 0.8);
+  }
+  .note-foot {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(74, 11, 122, 0.62);
+  }
+  .note-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin: 10px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(74, 11, 122, 0.14);
+    font-size: 12px;
+    color: rgba(74, 11, 122, 0.62);
+  }
+  .note-nav[hidden] {
+    display: none;
+  }
+  .note-next {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: 600 12.5px / 1.4 inherit;
+    font-family: inherit;
+    color: var(--p-paper-ink);
+    cursor: pointer;
+  }
+  .note-next:disabled {
+    opacity: 0.35;
     cursor: default;
   }
-  .card-navtext {
-    font-size: 11.5px;
-    color: rgba(255, 255, 255, 0.6);
+  /* Not enough room beside the answer: the note becomes a sheet at the bottom,
+     and shows the claim it is about, since that may be off screen. */
+  @media (max-width: 1139px) {
+    .note {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: auto;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .note-quote {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      margin: 8px 0 0;
+      padding-left: 10px;
+      border-left: 2px solid rgba(74, 11, 122, 0.25);
+      color: rgba(74, 11, 122, 0.85);
+    }
   }
 
   /* ───── Small screens ───── */
@@ -799,16 +804,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .ask {
       padding: 64px 16px 40px;
     }
-    .ask-box {
-      padding: 10px;
-    }
     .ask-input-row {
-      min-height: 100px;
-      padding: 18px 18px;
-    }
-    .ask-suggestion {
-      font-size: 15px;
-      padding: 14px 10px;
+      height: 56px;
+      padding-left: 16px;
     }
     .chat {
       padding: 64px 16px 140px;
@@ -835,13 +833,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .prose {
       font-size: 15px;
     }
-    .card {
+    .note {
+      left: 0;
       right: 0;
       bottom: 0;
-      left: 0;
-      width: auto;
-      border-radius: 16px 16px 0 0;
-      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      border-radius: 14px 14px 0 0;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
     }
   }
 
@@ -852,7 +849,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     }
     .checking li,
     .tabs-ind,
-    .card,
+    .note,
     .claim {
       transition: none;
     }
@@ -942,8 +939,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const cardNote = $<HTMLElement>('[data-card-note]', card)!;
   const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
   const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
-  const cardPrev = $<HTMLButtonElement>('[data-card-prev]', card)!;
   const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
+  const wide = matchMedia('(min-width: 1140px)');
 
   /* ───── State ───── */
   const order = claims.map((c) => c.id);
@@ -953,11 +950,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   let openId: string | null = null;
   let lastFocus: HTMLElement | null = null;
 
+  /* colours for the status word on the paper note (the marks in the answer keep the bright ones) */
   const META: Record<Live, { label: string; color: string }> = {
-    sourced: { label: 'Sourced', color: 'var(--s-sourced)' },
-    reported: { label: 'Reported', color: 'var(--s-reported)' },
-    doubtful: { label: 'Doubtful', color: 'var(--s-doubtful)' },
-    unconfirmed: { label: 'Unconfirmed', color: 'var(--s-unconfirmed)' },
+    sourced: { label: 'Sourced', color: '#1d8f55' },
+    reported: { label: 'Reported', color: '#a86a0c' },
+    doubtful: { label: 'Doubtful', color: '#c9405a' },
+    unconfirmed: { label: 'Unconfirmed', color: 'rgba(74, 11, 122, 0.6)' },
   };
 
   const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
@@ -1062,7 +1060,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   /* ───── Claim card ───── */
   function button(label: string, opts: { href?: string; act?: string; primary?: boolean }) {
     const el = document.createElement(opts.href ? 'a' : 'button');
-    el.className = `btn ${opts.primary ? 'btn-primary' : 'btn-ghost'}`;
+    el.className = opts.primary ? 'act' : 'act act-secondary';
     el.textContent = label;
     if (opts.href) {
       el.setAttribute('href', opts.href);
@@ -1110,11 +1108,27 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     }
 
     const todo = unresolved();
-    cardNav.hidden = todo.length === 0 && !todo.includes(id);
-    cardLeft.textContent = todo.length ? `${todo.length} left for you` : 'all done';
-    cardPrev.disabled = todo.length === 0 || todo[0] === id;
+    cardNav.hidden = todo.length === 0;
+    cardLeft.textContent = todo.length ? `${todo.length} left for you` : '';
     cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
   }
+
+  /* Beside the claim on wide screens (absolute, inside .chat, so it scrolls with
+     the answer); the CSS turns it into a bottom sheet below 1140px. */
+  function placeCard() {
+    if (!openId) return;
+    if (!wide.matches) {
+      card.style.top = '';
+      card.style.left = '';
+      return;
+    }
+    const r = claimEl(openId).getClientRects()[0];
+    const a = answer.getBoundingClientRect();
+    const c = answerScreen.getBoundingClientRect();
+    card.style.top = `${Math.round(r.top - c.top - 8)}px`;
+    card.style.left = `${Math.round(a.right - c.left + 28)}px`;
+  }
+  window.addEventListener('resize', placeCard);
 
   function openCard(id: string, scroll = false) {
     if (openId) claimEl(openId).classList.remove('is-open');
@@ -1123,6 +1137,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     el.classList.add('is-open');
     renderCard(id);
     card.hidden = false;
+    placeCard();
     requestAnimationFrame(() => card.classList.add('is-open'));
     if (scroll) el.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
     render();
@@ -1189,7 +1204,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   });
   $<HTMLElement>('[data-card-close]')!.addEventListener('click', closeCard);
   cardNext.addEventListener('click', () => step(1));
-  cardPrev.addEventListener('click', () => step(-1));
   walk.addEventListener('click', () => {
     lastFocus = walk;
     step(1);
