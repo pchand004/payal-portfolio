@@ -127,12 +127,11 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       {/* Margin note: one claim, what was linked, and the one or two things you can do.
           Sits beside the claim on wide screens, as a sheet at the bottom on small ones. */}
       <aside class="note" data-card role="dialog" aria-modal="false" aria-labelledby="note-status" hidden>
-        <p class="note-status" id="note-status"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b><span data-card-reason></span></p>
+        <p class="note-status" id="note-status"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b></p>
         <button type="button" class="note-close" data-card-close aria-label="Close">×</button>
         <p class="note-quote" data-card-quote></p>
         <p class="note-link"><span class="note-label">Link given:</span> <span data-card-link></span></p>
         <div class="note-actions" data-card-actions></div>
-        <p class="note-foot" data-card-note></p>
         <p class="note-nav" data-card-nav><span data-card-left></span><button type="button" class="note-next" data-card-next>next →</button></p>
       </aside>
     </section>
@@ -261,10 +260,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
   .ask-input-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
-    height: 60px;
-    padding: 0 10px 0 22px;
+    min-height: 118px;
+    padding: 22px 12px 22px 24px;
     border-radius: 14px;
     background: var(--p-paper);
     color: var(--p-paper-ink);
@@ -287,6 +286,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     color: rgba(74, 11, 122, 0.5);
   }
   .ask-submit {
+    align-self: center;
     flex-shrink: 0;
     width: 38px;
     height: 38px;
@@ -675,15 +675,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     margin: 0 7px 0 0;
     vertical-align: 0;
   }
+  .note-status .dot-unconfirmed {
+    border-color: rgba(74, 11, 122, 0.45);
+  }
   .note-status b {
     font-weight: 700;
     color: var(--k, var(--p-paper-ink));
-  }
-  .note-status [data-card-reason] {
-    color: rgba(74, 11, 122, 0.72);
-  }
-  .note-status [data-card-reason]::before {
-    content: ' · ';
   }
   .note-close {
     position: absolute;
@@ -739,18 +736,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     font-weight: 500;
     color: rgba(74, 11, 122, 0.8);
   }
-  .note-foot {
-    margin: 10px 0 0;
-    font-size: 12px;
-    line-height: 1.45;
-    color: rgba(74, 11, 122, 0.62);
-  }
   .note-nav {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 10px;
-    margin: 10px 0 0;
+    margin: 12px 0 0;
     padding-top: 8px;
     border-top: 1px solid rgba(74, 11, 122, 0.14);
     font-size: 12px;
@@ -805,8 +796,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       padding: 64px 16px 40px;
     }
     .ask-input-row {
-      height: 56px;
-      padding-left: 16px;
+      min-height: 100px;
+      padding: 18px 10px 18px 18px;
     }
     .chat {
       padding: 64px 16px 140px;
@@ -932,11 +923,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const card = $<HTMLElement>('[data-card]')!;
   const cardDot = $<HTMLElement>('[data-card-dot]', card)!;
   const cardStatus = $<HTMLElement>('[data-card-status]', card)!;
-  const cardReason = $<HTMLElement>('[data-card-reason]', card)!;
   const cardQuote = $<HTMLElement>('[data-card-quote]', card)!;
   const cardLink = $<HTMLElement>('[data-card-link]', card)!;
   const cardActions = $<HTMLElement>('[data-card-actions]', card)!;
-  const cardNote = $<HTMLElement>('[data-card-note]', card)!;
   const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
   const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
   const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
@@ -1081,8 +1070,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     card.style.setProperty('--k', META[st].color);
     cardDot.className = `dot dot-${st}`;
     cardStatus.textContent = META[st].label;
-    cardReason.textContent =
-      st === 'unconfirmed' ? 'set aside by you' : st === 'sourced' && original !== 'sourced' ? 'you found the study' : c.reason;
     cardQuote.textContent = c.text;
     cardLink.textContent = c.link;
     cardActions.replaceChildren();
@@ -1090,21 +1077,15 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (st === 'sourced') {
       cardActions.append(button('Open the study', { href: c.linkHref ?? searchUrl(c.search), primary: true }));
       if (original !== 'sourced') cardActions.append(button('Undo', { act: 'undo' }));
-      cardNote.textContent = original === 'sourced' ? 'Safe to cite as written.' : 'Marked as sourced by you. It counts as checked now.';
     } else if (st === 'reported') {
       cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
       cardActions.append(button('Read the news piece', { href: c.linkHref ?? searchUrl(c.search) }));
       if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
-      cardNote.textContent = searched.has(id)
-        ? 'If the study says what the answer says, mark it and it turns green.'
-        : 'One more search before you can cite it.';
     } else if (st === 'doubtful') {
       cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
       cardActions.append(button('Nearest study', { href: searchUrl(c.search) }));
-      cardNote.textContent = c.note ?? 'Your call: set it aside, or look for the nearest study yourself.';
     } else {
       cardActions.append(button('Undo', { act: 'undo' }));
-      cardNote.textContent = 'Set aside. It stays in the answer, crossed out, so you can see what was dropped.';
     }
 
     const todo = unresolved();
