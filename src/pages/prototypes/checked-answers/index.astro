@@ -26,7 +26,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   image={`${SITE}/prototypes/checked-answers-og.png`}
 >
   <div class="proto-bg" aria-hidden="true"></div>
-  {/* Dot field that lifts near the cursor; a star-map burst where you click */}
+  {/* Dot field that lifts near the cursor, with a glow for depth */}
   <canvas class="proto-fx" data-fx aria-hidden="true"></canvas>
 
   <header class="proto-top">
@@ -1308,18 +1308,14 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   });
 
   /* ───── Background: a dot field that lifts near the cursor, with a lagging glow
-     for depth; a click on empty space shoots a star map (thin rays with tick
-     marks, like the pulsar map) that stretches out and washes away. ───── */
+     for depth. ───── */
   const fx = $<HTMLCanvasElement>('[data-fx]')!;
   const fxc = fx.getContext('2d');
   if (fxc && !reducedMotion) {
-    type Ray = { x: number; y: number; a: number; len: number; ticks: number[]; t0: number };
     const SP = 34; // dot spacing
-    const RAY_MS = 1500;
     let W = 0;
     let H = 0;
     let fxRaf = 0;
-    let rays: Ray[] = [];
     const mouse = { x: -1e4, y: -1e4 };
     const glow = { x: -1e4, y: -1e4 };
     const frame = () => {
@@ -1334,7 +1330,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       fxc!.setTransform(dpr, 0, 0, dpr, 0, 0);
       frame();
     }
-    function drawFx(now: number) {
+    function drawFx() {
       fxRaf = 0;
       const c = fxc!;
       c.clearRect(0, 0, W, H);
@@ -1360,48 +1356,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
           c.fill();
         }
       }
-      rays = rays.filter((r) => now - r.t0 < RAY_MS);
-      c.strokeStyle = '#fff';
-      c.lineWidth = 1;
-      c.lineCap = 'round';
-      for (const r of rays) {
-        const t = (now - r.t0) / RAY_MS;
-        const grow = 1 - Math.pow(1 - Math.min(1, t / 0.4), 3);
-        const fade = t < 0.4 ? 1 : 1 - (t - 0.4) / 0.6;
-        const L = r.len * grow;
-        const cx = Math.cos(r.a);
-        const cy = Math.sin(r.a);
-        c.globalAlpha = 0.85 * fade;
-        c.beginPath();
-        c.moveTo(r.x, r.y);
-        c.lineTo(r.x + cx * L, r.y + cy * L);
-        c.stroke();
-        for (const tk of r.ticks) {
-          if (tk > L) continue;
-          const px = r.x + cx * tk;
-          const py = r.y + cy * tk;
-          const sz = tk === r.ticks[r.ticks.length - 1] ? 5 : 3;
-          c.beginPath();
-          c.moveTo(px - cy * sz, py + cx * sz);
-          c.lineTo(px + cy * sz, py - cx * sz);
-          c.stroke();
-        }
-      }
-      c.globalAlpha = 1;
       const settled = Math.abs(mouse.x - glow.x) < 0.2 && Math.abs(mouse.y - glow.y) < 0.2;
-      if (rays.length || !settled) frame();
-    }
-    function burst(x: number, y: number) {
-      const n = 12 + Math.floor(Math.random() * 7);
-      const t0 = performance.now();
-      for (let i = 0; i < n; i++) {
-        let len = 60 + Math.random() * 220;
-        if (Math.random() < 0.12) len *= 2.4; // the one long ray
-        const ticks = Array.from({ length: 3 + Math.floor(Math.random() * 6) }, () => len * (0.15 + Math.random() * 0.85)).sort((a, b) => a - b);
-        ticks.push(len);
-        rays.push({ x, y, a: Math.random() * Math.PI * 2, len, ticks, t0 });
-      }
-      frame();
+      if (!settled) frame();
     }
     window.addEventListener('resize', resizeFx, { passive: true });
     window.addEventListener('pointermove', (e) => {
@@ -1413,11 +1369,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       mouse.x = -1e4;
       mouse.y = -1e4;
       frame();
-    });
-    document.addEventListener('pointerdown', (e) => {
-      const el = e.target as Element | null;
-      if (el?.closest('button, a, input, label, .claim, .note, .ask-suggestions')) return;
-      burst(e.clientX, e.clientY);
     });
     resizeFx();
   }
