@@ -107,7 +107,7 @@ const projects = [
     tags: ['XR', 'Learning design', 'Systems'],
     image: '/images/work-autovrse.jpg',
     imageAlt: 'Cover slide of the AutoVRse deck: designing consequence-based and experiential XR training systems for industrial adoption.',
-    imageContain: '#FFE6FD', // 16:9 slide shown whole, on the slide's own background colour
+    imagePosition: 'center',
     placeholder: 'AutoVRse',
     href: 'https://www.figma.com/deck/qPCQlnmCjtWMpJbN8QBcLw/AutoVRse?node-id=11-17&t=7WVUUSpIXixszrnQ-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1',
     external: true,
@@ -692,10 +692,11 @@ const playground = [
     white-space: nowrap;
   }
   .dz-trigger {
-    text-decoration: underline dotted;
+    font-weight: 600;
+    text-decoration: underline solid;
     text-decoration-thickness: 1.5px;
-    text-underline-offset: 0.22em;
-    text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+    text-underline-offset: 0.2em;
+    text-decoration-color: color-mix(in srgb, var(--accent) 75%, transparent);
     border-radius: 3px;
     outline: none;
     transition: color 200ms ease, text-decoration-color 200ms ease;
