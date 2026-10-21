@@ -18,6 +18,12 @@ const STATUS_LABEL = { sourced: 'sourced', reported: 'reported', doubtful: 'doub
 const count = (s: string) => claims.filter((c) => c.status === s).length;
 
 const SITE = 'https://payal-portfolio-five.vercel.app';
+
+// Payal's hand-drawn moon (same stroke as the nav). The lit disc is clipped
+// to the current phase by the script: new moon while everything is left for
+// you, full moon when nothing is.
+const MOON_STROKE = 'M15.4 3.2 C 9.6 2.5, 4.1 7.4, 4.5 12.9 C 4.9 18.6, 10.6 22.1, 16.7 20.3 C 12.4 18.8, 10.1 15.4, 10.5 11.5 C 10.8 8.1, 12.6 5.3, 16.1 3.6';
+const moonIds = ['a', 'b'];
 ---
 
 <Prototype
@@ -70,13 +76,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       </div>
 
       <article class="answer" data-answer data-filter="all" aria-busy="true">
-        {/* The checking beat: what the model did before handing over */}
-        <ol class="checking" data-checking aria-live="polite">
-          <li data-step>Drafting the answer</li>
-          <li data-step>Finding every claim that leans on a number or a study · <b>11</b></li>
-          <li data-step>Opening what the answer links to · <b>9 of 11</b> have a link</li>
-          <li data-step><b>2</b> say what the answer says · <b>4</b> are reports, not studies · <b>5</b> don't hold up</li>
-        </ol>
+        {/* While the model checks, you watch: one claim at a time, marks landing as it goes */}
+        <p class="reading" data-reading aria-live="polite" hidden></p>
+        {/* Ink overlay: hand-drawn circles and strikes, positioned by the script */}
+        <div class="ink" data-ink aria-hidden="true"></div>
 
         <div class="answer-body" data-body hidden>
           <nav class="tabs" role="tablist" aria-label="Filter claims by status">
@@ -113,7 +116,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
             ))}
           </div>
 
-          <p class="left" data-left>
+          <p class="left" data-left hidden>
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <defs><clipPath id="moon-clip-a"><path data-moon-terminator d="M12.2 3.6 A 8.3 8.3 0 0 0 12.2 20.2 A 8.3 8.3 0 0 1 12.2 3.6 Z" /></clipPath></defs>
+              <circle cx="12.2" cy="11.9" r="8.3" fill="currentColor" fill-opacity="0.55" stroke="none" clip-path="url(#moon-clip-a)" />
+              <path d={MOON_STROKE} />
+            </svg>
             <span data-left-text></span>
             <button type="button" class="left-walk" data-walk>Walk me through →</button>
           </p>
@@ -134,7 +142,17 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
         <p class="note-quote" data-card-quote></p>
         <p class="note-link"><span class="note-label">Link given:</span> <a data-card-link></a></p>
         <div class="note-actions" data-card-actions></div>
-        <p class="note-nav" data-card-nav><span data-card-left></span><button type="button" class="note-next" data-card-next>next →</button></p>
+        <p class="note-nav" data-card-nav>
+          <span class="note-moon">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <defs><clipPath id="moon-clip-b"><path data-moon-terminator d="M12.2 3.6 A 8.3 8.3 0 0 0 12.2 20.2 A 8.3 8.3 0 0 1 12.2 3.6 Z" /></clipPath></defs>
+              <circle cx="12.2" cy="11.9" r="8.3" fill="currentColor" fill-opacity="0.55" stroke="none" clip-path="url(#moon-clip-b)" />
+              <path d={MOON_STROKE} />
+            </svg>
+            <span data-card-left></span>
+          </span>
+          <button type="button" class="note-next" data-card-next>next →</button>
+        </p>
       </aside>
     </section>
   </main>
@@ -418,43 +436,53 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     to { --ang: 360deg; }
   }
 
-  .checking {
-    list-style: none;
+  .reading {
     margin: 0;
-    padding: 20px 0 16px;
-    display: grid;
-    gap: 9px;
-    font-size: 14px;
-    color: var(--p-ink-2);
+    padding: 18px 0 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.78);
   }
-  .checking li {
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
+  .reading[hidden] {
+    display: none;
+  }
+  /* While reading: marks are not there yet, tabs wait, the current claim is underlined by the pen */
+  .answer.is-reading .claim .dot:not(.is-on) {
     opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 320ms ease, transform 320ms ease;
+    transform: scale(0.4);
   }
-  .checking li::before {
-    content: '';
+  .answer.is-reading .tabs {
+    pointer-events: none;
+  }
+  .claim.is-reading {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 -1.5px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  /* Ink: hand-drawn circles and strikes, drawn with the site's pen animation */
+  .ink {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .ink svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    transition: opacity 260ms ease;
+  }
+  .ink svg.is-leaving {
+    opacity: 0;
+  }
+
+  /* The moon: lit area grows as claims get resolved */
+  .moon {
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.7);
-    transform: translateY(-1px);
-    transition: background 240ms ease;
-  }
-  .checking li.is-on {
-    opacity: 1;
-    transform: none;
-  }
-  .checking li.is-done::before {
-    background: #fff;
-  }
-  .checking li b {
-    font-weight: 700;
-    color: #fff;
+    vertical-align: -3px;
+    transform: rotate(-12deg);
   }
 
   /* Tabs */
@@ -552,9 +580,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .answer[data-filter='doubtful'] .claim[data-status='doubtful'] {
     background: rgba(255, 255, 255, 0.16);
   }
+  /* set aside: the pen strikes it through (see strike() in the script) */
   .claim[data-status='unconfirmed'] {
-    text-decoration: line-through;
-    text-decoration-color: rgba(255, 255, 255, 0.6);
     color: rgba(255, 255, 255, 0.6);
   }
   .claim[data-status='unconfirmed']::after {
@@ -585,7 +612,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     box-sizing: border-box;
     background-repeat: no-repeat;
     background-position: center;
-    transition: background-color 240ms ease, border-color 240ms ease;
+    transition: background-color 240ms ease, border-color 240ms ease, opacity 220ms ease, transform 220ms ease;
   }
   .dot-sourced,
   .claim[data-status='sourced'] .dot {
@@ -629,11 +656,23 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     border-top: 1px solid rgba(255, 255, 255, 0.16);
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 6px 16px;
+    align-items: center;
+    gap: 6px 10px;
     font-size: 13.5px;
     line-height: 1.5;
+  }
+  .left[hidden] {
+    display: none;
+  }
+  .left .left-walk {
+    margin-left: auto;
+  }
+  .left.is-written {
+    animation: left-in 520ms ease both;
+  }
+  @keyframes left-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
   }
   .left b {
     font-weight: 700;
@@ -811,6 +850,11 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .note-nav[hidden] {
     display: none;
   }
+  .note-moon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
   .note-next {
     background: none;
     border: 0;
@@ -899,7 +943,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       animation: none;
       background: rgba(255, 255, 255, 0.5);
     }
-    .checking li,
+    .left.is-written,
     .tabs-ind,
     .note,
     .claim {
@@ -936,7 +980,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     } catch { actx = null; }
   }
-  function playTick() {
+  function playTick(pitch = 1) {
     if (!soundOn()) return;
     if (!actx) primeSound();
     const c = actx;
@@ -948,10 +992,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
         const t0 = c.currentTime;
         const src = c.createBufferSource();
         src.buffer = noise!;
-        src.playbackRate.value = vary();
+        src.playbackRate.value = pitch * vary();
         const bp = c.createBiquadFilter();
         bp.type = 'bandpass';
-        bp.frequency.value = 2600 * vary();
+        bp.frequency.value = 2600 * pitch * vary();
         bp.Q.value = 1.4;
         const gain = c.createGain();
         gain.gain.setValueAtTime(0.0001, t0);
@@ -979,8 +1023,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const input = $<HTMLInputElement>('[data-ask-input]')!;
   const userQ = $<HTMLElement>('[data-user-q]')!;
   const answer = $<HTMLElement>('[data-answer]')!;
-  const checking = $<HTMLElement>('[data-checking]')!;
-  const steps = $$<HTMLElement>('[data-step]', checking);
+  const readingLine = $<HTMLElement>('[data-reading]')!;
+  const ink = $<HTMLElement>('[data-ink]')!;
   const body = $<HTMLElement>('[data-body]')!;
   const tabs = $$<HTMLButtonElement>('[data-tab]');
   const ind = $<HTMLElement>('[data-tabs-ind]')!;
@@ -1015,9 +1059,13 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     unconfirmed: { label: 'Unconfirmed', color: 'rgba(74, 11, 122, 0.6)' },
   };
 
-  const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
+  const countOf = (s: Live) => order.filter((id) => landed.has(id) && state[id] === s).length;
   const unresolved = () => order.filter((id) => state[id] === 'reported' || state[id] === 'doubtful');
   const claimEl = (id: string) => $<HTMLElement>(`[data-claim="${id}"]`)!;
+  const PITCH: Record<Live, number> = { sourced: 1.22, reported: 1, doubtful: 0.8, unconfirmed: 0.9 };
+  /* claims the model has checked so far (all of them once the reading is done) */
+  const landed = new Set<string>();
+  const totalToDo = unresolved().length;
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
@@ -1026,37 +1074,76 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     answerScreen.hidden = false;
     reset.hidden = false;
     window.scrollTo({ top: 0 });
-    runChecking(instant || reducedMotion);
-  }
-
-  function runChecking(instant: boolean) {
-    if (instant) {
-      steps.forEach((s) => s.classList.add('is-on', 'is-done'));
-      reveal();
-      return;
-    }
-    answer.classList.add('is-checking');
-    const at = [120, 760, 1420, 2140];
-    at.forEach((t, i) => {
-      setTimeout(() => {
-        steps[i].classList.add('is-on');
-        if (i > 0) steps[i - 1].classList.add('is-done');
-      }, t);
-    });
-    setTimeout(() => {
-      steps[steps.length - 1].classList.add('is-done');
-    }, 2900);
-    setTimeout(reveal, 3150);
-  }
-
-  function reveal() {
-    answer.classList.remove('is-checking');
-    answer.removeAttribute('aria-busy');
-    checking.hidden = true;
     body.hidden = false;
     setFilter('all', false);
+    if (instant || reducedMotion) finishReading();
+    else startReading();
+  }
+
+  /* ───── Watch it check ─────
+     The answer is there from the start, unmarked. The pen underlines one
+     claim at a time; its mark lands with a tick and the counts go up. Last,
+     the "left for you" line writes itself. A click anywhere skips ahead. */
+  let reading = false;
+  let readTimer = 0;
+  let readIdx = 0;
+  function startReading() {
+    reading = true;
+    answer.classList.add('is-checking', 'is-reading');
+    readingLine.hidden = false;
+    readingLine.textContent = 'Reading the answer';
+    render();
+    readTimer = window.setTimeout(readNext, 800);
+  }
+  function readNext() {
+    if (readIdx > 0) land(order[readIdx - 1]);
+    if (readIdx >= order.length) {
+      readTimer = window.setTimeout(finishReading, 350);
+      return;
+    }
+    const id = order[readIdx];
+    const el = claimEl(id);
+    el.classList.add('is-reading');
+    readingLine.textContent = `Checking claim ${readIdx + 1} of ${order.length} against what it links to`;
+    const r = el.getBoundingClientRect();
+    if (r.bottom > window.innerHeight * 0.82 || r.top < 72) {
+      window.scrollBy({ top: r.top - window.innerHeight * 0.42, behavior: 'smooth' });
+    }
+    readIdx++;
+    readTimer = window.setTimeout(readNext, 150 + Math.min(430, byId[id].text.length * 0.95));
+  }
+  function land(id: string) {
+    const el = claimEl(id);
+    el.classList.remove('is-reading');
+    if (landed.has(id)) return;
+    landed.add(id);
+    const d = el.querySelector<HTMLElement>('.dot')!;
+    d.classList.add('is-on');
+    d.style.animationDelay = '0ms';
+    d.classList.add('is-pulse');
+    d.addEventListener('animationend', () => d.classList.remove('is-pulse'), { once: true });
+    playTick(PITCH[state[id]]);
     render();
   }
+  function finishReading() {
+    clearTimeout(readTimer);
+    const wasReading = reading;
+    reading = false;
+    order.forEach((id) => {
+      claimEl(id).classList.remove('is-reading');
+      landed.add(id);
+      claimEl(id).querySelector('.dot')!.classList.add('is-on');
+    });
+    answer.classList.remove('is-checking', 'is-reading');
+    answer.removeAttribute('aria-busy');
+    readingLine.hidden = true;
+    left.hidden = false;
+    if (wasReading) left.classList.add('is-written');
+    render();
+  }
+  answer.addEventListener('click', () => {
+    if (reading) finishReading();
+  });
 
   /* ───── Tabs ───── */
   function moveIndicator(tab: HTMLElement) {
@@ -1094,7 +1181,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     }
   }
   tabs.forEach((t, i) => {
-    t.addEventListener('click', () => setFilter(t.dataset.tab!));
+    t.addEventListener('click', () => {
+      if (!reading) setFilter(t.dataset.tab!);
+    });
     t.addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
       e.preventDefault();
@@ -1112,8 +1201,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   function render() {
     (['all', 'sourced', 'reported', 'doubtful'] as const).forEach((k) => {
       const el = $<HTMLElement>(`[data-count="${k}"]`)!;
-      el.textContent = String(k === 'all' ? order.length : countOf(k));
+      el.textContent = String(k === 'all' ? landed.size : countOf(k));
     });
+    setMoon(reading ? 0 : 1 - unresolved().length / totalToDo);
     const r = countOf('reported');
     const d = countOf('doubtful');
     const u = countOf('unconfirmed');
@@ -1133,6 +1223,129 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       left.classList.add('is-done');
     }
   }
+
+  /* ───── The moon: lit area = share of "left for you" that is done ───── */
+  const CX = 12.2;
+  const CY = 11.9;
+  const R = 8.3;
+  const terminator = (t: number) => {
+    const w = -R + t * 2 * R;
+    const rx = Math.max(0.02, Math.abs(w)).toFixed(3);
+    const sweep = w < 0 ? 1 : 0;
+    return `M${CX} ${CY - R} A ${R} ${R} 0 0 0 ${CX} ${CY + R} A ${rx} ${R} 0 0 ${sweep} ${CX} ${CY - R} Z`;
+  };
+  const moonPaths = $$<SVGPathElement>('[data-moon-terminator]');
+  let moonT = 0;
+  let moonRaf = 0;
+  function setMoon(target: number) {
+    const from = moonT;
+    const t0 = performance.now();
+    const dur = reducedMotion ? 0 : 520;
+    cancelAnimationFrame(moonRaf);
+    const step = (now: number) => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+      const e = 1 - Math.pow(1 - k, 3);
+      moonT = from + (target - from) * e;
+      const d = terminator(moonT);
+      moonPaths.forEach((p) => p.setAttribute('d', d));
+      if (k < 1) moonRaf = requestAnimationFrame(step);
+    };
+    moonRaf = requestAnimationFrame(step);
+  }
+
+  /* ───── Ink: hand-drawn marks, positioned over the answer ───── */
+  const wobble = (amt: number) => (Math.random() * 2 - 1) * amt;
+  function inkSvg(kind: string, paths: { d: string; dur: number; delay: number }[], forId?: string) {
+    const a = answer.getBoundingClientRect();
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', `doodle ink-${kind} is-drawing`);
+    svg.setAttribute('viewBox', `0 0 ${a.width} ${a.height}`);
+    svg.setAttribute('width', String(a.width));
+    svg.setAttribute('height', String(a.height));
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'rgba(255,255,255,0.9)');
+    svg.setAttribute('stroke-width', '1.6');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    if (forId) svg.dataset.inkFor = forId;
+    for (const p of paths) {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', p.d);
+      path.setAttribute('pathLength', '1');
+      path.style.setProperty('--dd-dur', `${p.dur}ms`);
+      path.style.setProperty('--dd-delay', `${p.delay}ms`);
+      svg.appendChild(path);
+    }
+    ink.appendChild(svg);
+    return svg;
+  }
+  /* a pen loop around a point: a little over one turn, never quite closing */
+  function loopPath(cx: number, cy: number, rx: number, ry: number) {
+    const start = Math.random() * Math.PI * 2;
+    const pts: string[] = [];
+    const n = 26;
+    for (let i = 0; i <= n; i++) {
+      const a = start + (i / n) * Math.PI * 2.25;
+      const drift = 1 + i / n / 9;
+      pts.push(`${(cx + Math.cos(a) * rx * drift + wobble(0.8)).toFixed(1)} ${(cy + Math.sin(a) * ry * drift + wobble(0.8)).toFixed(1)}`);
+    }
+    return `M${pts.join(' L')}`;
+  }
+  /* a pen line across a text fragment */
+  function linePath(x1: number, x2: number, y: number) {
+    const n = Math.max(3, Math.round((x2 - x1) / 40));
+    const pts: string[] = [];
+    for (let i = 0; i <= n; i++) {
+      const x = x1 + ((x2 - x1) * i) / n;
+      pts.push(`${(x + (i === 0 || i === n ? 0 : wobble(1.5))).toFixed(1)} ${(y + wobble(1.3)).toFixed(1)}`);
+    }
+    return `M${pts.join(' L')}`;
+  }
+  function circleMark(id: string) {
+    uncircle();
+    const d = claimEl(id).querySelector('.dot')!.getBoundingClientRect();
+    const a = answer.getBoundingClientRect();
+    const cx = d.left + d.width / 2 - a.left;
+    const cy = d.top + d.height / 2 - a.top;
+    inkSvg('circle', [{ d: loopPath(cx, cy, 11, 10), dur: 420, delay: 60 }], `circle:${id}`);
+  }
+  function uncircle() {
+    ink.querySelectorAll<SVGSVGElement>('svg.ink-circle').forEach((svg) => {
+      svg.classList.add('is-leaving');
+      setTimeout(() => svg.remove(), 280);
+    });
+  }
+  function strike(id: string, instant = false) {
+    unstrike(id);
+    const el = claimEl(id);
+    const dot = el.querySelector('.dot')!.getBoundingClientRect();
+    const a = answer.getBoundingClientRect();
+    const rects = Array.from(el.getClientRects());
+    const paths: { d: string; dur: number; delay: number }[] = [];
+    let delay = 0;
+    rects.forEach((r, i) => {
+      const last = i === rects.length - 1;
+      const x2 = last ? dot.left - 5 : r.right;
+      if (x2 - r.left < 14) return;
+      const y = r.top + r.height * 0.55 - a.top;
+      const dur = Math.min(360, 90 + (x2 - r.left) * 0.4);
+      paths.push({ d: linePath(r.left - a.left, x2 - a.left, y), dur, delay });
+      delay += dur;
+    });
+    const svg = inkSvg('strike', paths, id);
+    if (instant) {
+      svg.classList.remove('is-drawing');
+      svg.classList.add('is-drawn');
+    }
+  }
+  function unstrike(id: string) {
+    ink.querySelectorAll<SVGSVGElement>(`svg[data-ink-for="${id}"]`).forEach((svg) => svg.remove());
+  }
+  /* strikes follow the text when it reflows */
+  window.addEventListener('resize', () => {
+    order.filter((id) => state[id] === 'unconfirmed').forEach((id) => strike(id, true));
+    if (openId) circleMark(openId);
+  });
 
   /* ───── Claim card ───── */
   function button(label: string, opts: { href?: string; act?: string; primary?: boolean }) {
@@ -1185,7 +1398,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
     const todo = unresolved();
     cardNav.hidden = todo.length === 0;
-    cardLeft.textContent = todo.length ? `${todo.length} left for you` : '';
+    cardLeft.textContent = todo.length ? `${todo.length} left` : 'all done';
     cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
   }
 
@@ -1214,7 +1427,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     renderCard(id);
     card.hidden = false;
     placeCard();
-    requestAnimationFrame(() => card.classList.add('is-open'));
+    requestAnimationFrame(() => {
+      card.classList.add('is-open');
+      circleMark(id);
+    });
     if (scroll) el.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
     render();
     playTick();
@@ -1223,6 +1439,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (!openId) return;
     claimEl(openId).classList.remove('is-open');
     openId = null;
+    uncircle();
     card.classList.remove('is-open');
     setTimeout(() => { if (!openId) card.hidden = true; }, reducedMotion ? 0 : 260);
     render();
@@ -1247,6 +1464,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   $$<HTMLElement>('.claim').forEach((el) => {
     const go = () => {
+      if (reading) return; // the answer-level click already skips ahead
       lastFocus = el;
       openId === el.dataset.claim ? closeCard() : openCard(el.dataset.claim!);
     };
@@ -1274,9 +1492,13 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (act === 'confirm') state[id] = 'sourced';
     if (act === 'undo') state[id] = byId[id].status;
     claimEl(id).dataset.status = state[id];
-    playTick();
+    playTick(PITCH[state[id]]);
     renderCard(id);
     render();
+    // the pen: strike it through when set aside, lift the strike on undo
+    if (state[id] === 'unconfirmed') requestAnimationFrame(() => strike(id));
+    else unstrike(id);
+    requestAnimationFrame(() => circleMark(id));
   });
   $<HTMLElement>('[data-card-close]')!.addEventListener('click', closeCard);
   cardNext.addEventListener('click', () => step(1));
