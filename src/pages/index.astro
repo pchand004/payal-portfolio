@@ -169,6 +169,15 @@ const hasImage = (src: string) => existsSync(join(process.cwd(), 'public', src))
 
 const playground = [
   {
+    name: 'Checked answers',
+    slug: 'checked-answers',
+    when: 'October 2026',
+    tagline:
+      "An AI answer that carries verification status on every claim — sourced, reported or doubtful — so what's left for you is a short list, not “verify everything”.",
+    video: '/videos/playground-checked-answers.mp4',
+    href: '/prototypes/checked-answers',
+  },
+  {
     name: 'Margin',
     when: 'May 2026',
     tagline:
@@ -397,13 +406,13 @@ const playground = [
       Recent things made for fun — hover to play, click to open.
     </p>
 
-    <div class="mt-8 grid grid-cols-1 gap-6 md:mt-10 md:grid-cols-2">
+    <div class="mt-8 grid grid-cols-1 gap-6 md:mt-10 md:grid-cols-2 lg:grid-cols-3">
       {playground.map((item) => (
         <a
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          class:list={['playground-card', `playground-card-${item.name.toLowerCase()}`]}
+          class:list={['playground-card', `playground-card-${item.slug ?? item.name.toLowerCase()}`]}
         >
           <div class="playground-media">
             <div class="playground-phone">
@@ -825,6 +834,11 @@ const playground = [
     padding: 3rem 4rem;
     background-size: cover;
     background-position: center;
+  }
+  /* Checked answers: a landscape screen on the prototype's own purple */
+  .playground-card-checked-answers .playground-media {
+    padding: 2.5rem 1.25rem;
+    background-image: radial-gradient(90% 70% at 50% 36%, #9a1ae0 0%, #7110bd 46%, #470a86 100%);
   }
   .playground-card-margin .playground-media {
     background-image: url('/images/bg-margin.png');
