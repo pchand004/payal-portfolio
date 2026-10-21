@@ -1,0 +1,150 @@
+---
+/**
+ * /prototypes — the index. One entry per prototype: a cover, the number and
+ * date, a title, a one-line description, and two links (live page, notes).
+ */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const prototypes = [
+  {
+    n: 'N°01',
+    when: 'October 2026',
+    title: 'Checked answers',
+    tagline:
+      "An AI answer that carries verification status on every claim — sourced, reported or doubtful — and leaves you a short list of what it couldn't check.",
+    cover: '/prototypes/checked-answers-cover.png',
+    coverAlt: 'The Checked answers prototype: a purple chat answer with tabs for All, Sourced, Reported and Doubtful claims.',
+    href: '/prototypes/checked-answers',
+    notes: '/prototypes/checked-answers/notes',
+  },
+];
+---
+
+<Layout
+  title="Prototypes — Payal Chand"
+  description="Small working prototypes about AI products. Each one has a live page and a short note."
+>
+  <Nav />
+
+  <main class="py-16 md:py-24">
+    <p class="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-muted">Prototypes</p>
+    <h1 class="font-serif text-4xl font-normal leading-tight tracking-tight md:text-6xl">Prototypes</h1>
+    <p class="mt-5 max-w-[42rem] font-serif text-lg italic text-muted md:text-xl">
+      Small, working answers to design questions about AI products. Each one has a live page you can use, and a short note on why.
+    </p>
+
+    <ul class="proto-list mt-12 md:mt-16">
+      {prototypes.map((p) => (
+        <li class="proto-entry">
+          <a href={p.href} class="proto-cover-link" aria-label={`Open ${p.title}`}>
+            <img src={p.cover} alt={p.coverAlt} class="proto-cover" width="1200" height="760" loading="lazy" />
+          </a>
+          <div class="proto-text">
+            <p class="font-serif text-sm italic text-muted">{p.n} · {p.when}</p>
+            <h2 class="proto-title">{p.title}</h2>
+            <p class="proto-tagline">{p.tagline}</p>
+            <p class="proto-links">
+              <a href={p.href} class="proto-link proto-link--primary">Open the prototype <span aria-hidden="true">↗</span></a>
+              <a href={p.notes} class="proto-link">Read the notes</a>
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p class="mt-16 text-sm">
+      <a href="/" class="text-muted transition-colors duration-200 hover:text-accent">← Back to desk</a>
+    </p>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .proto-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 48px;
+  }
+  .proto-entry {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px 40px;
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .proto-entry {
+      grid-template-columns: 3fr 2fr;
+    }
+  }
+  .proto-cover-link {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #6c0bb4;
+  }
+  .proto-cover-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .proto-cover {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .proto-cover-link:hover .proto-cover {
+      transform: scale(1.02);
+    }
+  }
+  .proto-title {
+    margin-top: 10px;
+    font-size: 26px;
+    line-height: 1.2;
+  }
+  .proto-tagline {
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 38rem;
+  }
+  .proto-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+    font-size: 14px;
+  }
+  .proto-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--divider);
+    color: var(--text);
+    text-decoration: none;
+    transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+  }
+  .proto-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .proto-link--primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .proto-link--primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: #fff;
+  }
+</style>

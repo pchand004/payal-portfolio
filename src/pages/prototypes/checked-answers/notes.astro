@@ -1,0 +1,121 @@
+---
+/**
+ * Notes for the "Checked answers" prototype: the problem, what it does, what a
+ * real model can't do yet, and what to test next. Uses the case-study system.
+ */
+import Layout from '../../../layouts/Layout.astro';
+import Nav from '../../../components/Nav.astro';
+import Footer from '../../../components/Footer.astro';
+import '../../../styles/case-study.css';
+---
+
+<Layout
+  title="Checked answers · notes — Payal Chand"
+  description="Notes on a prototype: an AI answer that carries verification status on every claim, and leaves you a short list of what it couldn't check."
+>
+  <Nav />
+
+  <article class="evam">
+    <section class="pt-12 pb-2 md:pt-16">
+      <div class="evam-prose">
+        <p class="evam-eyebrow">Prototype · N°01 · October 2026</p>
+        <h1 class="evam-h1">Checked answers</h1>
+        <p class="evam-subtitle">
+          An AI answer that carries verification status on every claim, and leaves you a short list of what it couldn't check.
+        </p>
+        <p class="mt-8">
+          <a href="/prototypes/checked-answers" class="notes-cta">Open the prototype <span aria-hidden="true">↗</span></a>
+        </p>
+      </div>
+    </section>
+
+    <section class="mt-10 md:mt-12">
+      <img
+        src="/prototypes/checked-answers-toggle.gif"
+        alt="The answer card with four tabs: All, Sourced, Reported, Doubtful. Selecting a tab highlights the claims with that status and quietens the rest; clicking a doubtful claim opens a card with the link given and the actions available."
+        class="notes-gif"
+        width="1200"
+        height="760"
+        loading="lazy"
+      />
+      <p class="evam-caption">The toggle. Each tab highlights its claims in place; a claim opens the smallest useful card.</p>
+    </section>
+
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">The problem</h2>
+        <p class="evam-body evam-body--mt-md">
+          AI assistants do the work, then hand the checking back to me. A good answer ends with “please verify important information”, which really means “the labour is yours now”. By the time I reach that line I’ve either trusted the whole thing, asked the model to verify itself and got the same confidence back, or skipped it. Verification gets dumped on the user: in text, at the end, with no shape.
+        </p>
+      </div>
+    </section>
+
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">What it does</h2>
+        <p class="evam-body evam-body--mt-md">
+          Ask a literature question and the answer comes back with every claim already checked, and the result sits on the claim itself. Green: the study is linked and says this. Amber: the link is a news report or press release, so it’s true as far as the link goes but needs one more search. Red: a detail is off, or nothing stands behind the number. The tabs filter the answer by status, so “what can I cite?” is one tap. Clicking a claim opens the smallest useful card: what was linked, why it got that colour, and one or two things to do about it. What’s left for you is four searches and five decisions, not “verify everything”.
+        </p>
+      </div>
+    </section>
+
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">What a real model can’t do yet</h2>
+        <p class="evam-body evam-body--mt-md">
+          Reliably open a link and judge whether the paper says what the answer says. Tell a press release apart from the study it describes. Notice that a study was in mice unless asked. Admit that a number has no source; it rounds up to confidence. The statuses here are hand-labelled, and the search links are real while the study links are illustrative.
+        </p>
+      </div>
+    </section>
+
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">What I’d test next</h2>
+        <p class="evam-body evam-body--mt-md">
+          Whether people open the amber and red cards more than they read a trailing disclaimer. Whether “Treat as unconfirmed” gets used, or ignored. Whether the counts in the tabs change how much people trust the green ones. And whether it scales: at thirty claims, is the list still short?
+        </p>
+      </div>
+    </section>
+
+    <section class="evam-closing">
+      <div class="evam-prose">
+        <p class="evam-closing-doc">
+          Designed in Figma, built in Astro with Claude Code. The answer is canned; see the prototype for the one question it knows.
+        </p>
+        <p class="evam-back">
+          <a href="/prototypes" class="evam-link">← All prototypes</a>
+          <span class="mx-2 text-muted" aria-hidden="true">·</span>
+          <a href="/prototypes/checked-answers" class="evam-link">Open the prototype ↗</a>
+        </p>
+      </div>
+    </section>
+  </article>
+
+  <Footer />
+</Layout>
+
+<style>
+  .notes-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 200ms ease;
+  }
+  .notes-cta:hover {
+    background: var(--accent-hover);
+  }
+  .notes-gif {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    background: #6c0bb4;
+  }
+</style>

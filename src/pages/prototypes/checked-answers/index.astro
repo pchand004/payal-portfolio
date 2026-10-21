@@ -1,0 +1,1221 @@
+---
+/**
+ * Checked answers — a live prototype.
+ *
+ * An AI answer that carries verification status on every claim: the model has
+ * done the checking it can (sourced / reported / doubtful) and leaves the
+ * reader a short, concrete list for what it couldn't. Two screens: ask, then
+ * the answer. The question is canned: whatever you ask, you get the one
+ * pre-checked answer in src/data/checked-answers.ts.
+ *
+ *   #answer  in the URL submits the question on load (with the checking beat)
+ *   #now     skips the checking beat too (used for screenshots)
+ */
+import Prototype from '../../../layouts/Prototype.astro';
+import { question, suggestions, summary, sections, claims, claimById } from '../../../data/checked-answers';
+
+const STATUS_LABEL = { sourced: 'sourced', reported: 'reported', doubtful: 'doubtful' } as const;
+const count = (s: string) => claims.filter((c) => c.status === s).length;
+
+const SITE = 'https://payal-portfolio-five.vercel.app';
+---
+
+<Prototype
+  title="Checked answers · a prototype by Payal Chand"
+  description="An AI answer that carries verification status on every claim — sourced, reported or doubtful — and leaves you a short list of what it couldn't check."
+  image={`${SITE}/prototypes/checked-answers-og.png`}
+>
+  <div class="proto-bg" aria-hidden="true"></div>
+
+  <header class="proto-top">
+    <a href="/prototypes" class="proto-corner">← prototypes</a>
+    <div class="proto-corner-group">
+      <button type="button" class="proto-corner proto-corner-btn" data-reset hidden>start over</button>
+      <a href="/prototypes/checked-answers/notes" class="proto-corner">notes</a>
+    </div>
+  </header>
+
+  <main class="proto" data-proto>
+    {/* ───── Screen 1 · ask ───── */}
+    <section class="ask" data-screen="ask">
+      <h1 class="ask-title">What does literature say?</h1>
+      <form class="ask-box" data-ask-form>
+        <label class="ask-input-row">
+          <span class="sr-only">Your question</span>
+          <input type="text" name="q" value={question} autocomplete="off" spellcheck="false" data-ask-input />
+          <button type="submit" class="ask-submit" aria-label="Ask">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H6"/><path d="M9 10l-4 4 4 4"/></svg>
+          </button>
+        </label>
+        <ul class="ask-suggestions">
+          {suggestions.map((s) => (
+            <li>
+              <button type="button" class="ask-suggestion" data-suggest>
+                <span>{s}</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </form>
+      <p class="ask-note">A prototype. Whatever you ask, you get the one pre-checked answer.</p>
+    </section>
+
+    {/* ───── Screen 2 · answer ───── */}
+    <section class="chat" data-screen="answer" hidden>
+      <div class="chat-user">
+        <p data-user-q></p>
+      </div>
+
+      <article class="answer" data-answer data-filter="all" aria-busy="true">
+        {/* The checking beat: what the model did before handing over */}
+        <ol class="checking" data-checking aria-live="polite">
+          <li data-step>Drafting the answer</li>
+          <li data-step>Finding every claim that leans on a number or a study · <b>11</b></li>
+          <li data-step>Opening what the answer links to · <b>9 of 11</b> have a link</li>
+          <li data-step><b>2</b> say what the answer says · <b>4</b> are reports, not studies · <b>5</b> don't hold up</li>
+        </ol>
+
+        <div class="answer-body" data-body hidden>
+          <nav class="tabs" role="tablist" aria-label="Filter claims by status">
+            <button type="button" role="tab" class="tab" data-tab="all" aria-selected="true">All <span data-count="all">{claims.length}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="sourced" aria-selected="false">Sourced <span data-count="sourced">{count('sourced')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="reported" aria-selected="false">Reported <span data-count="reported">{count('reported')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="doubtful" aria-selected="false">Doubtful <span data-count="doubtful">{count('doubtful')}</span></button>
+            <span class="tabs-ind" data-tabs-ind aria-hidden="true"></span>
+          </nav>
+
+          <div class="prose" data-prose>
+            <p class="prose-summary">{summary}</p>
+            {sections.map((sec) => (
+              <>
+                <h3>{sec.heading}</h3>
+                <p>
+                  {sec.parts.map((part) =>
+                    typeof part === 'string' ? (
+                      <span class="plain">{part}</span>
+                    ) : (
+                      <span
+                        class="claim"
+                        role="button"
+                        tabindex="0"
+                        id={`claim-${part.claim}`}
+                        data-claim={part.claim}
+                        data-status={claimById[part.claim].status}
+                        aria-haspopup="dialog"
+                      >{claimById[part.claim].text}<i class="dot" aria-hidden="true"></i><span class="sr-only"> ({STATUS_LABEL[claimById[part.claim].status]})</span></span>
+                    )
+                  )}
+                </p>
+              </>
+            ))}
+          </div>
+
+          <div class="left" data-left>
+            <p class="left-text" data-left-text></p>
+            <button type="button" class="btn btn-primary" data-walk>Walk me through</button>
+          </div>
+
+          <ul class="legend" aria-label="What the marks mean">
+            <li><i class="dot dot-sourced" aria-hidden="true"></i><span><b>Sourced</b>: the study is linked and says this</span></li>
+            <li><i class="dot dot-reported" aria-hidden="true"></i><span><b>Reported</b>: true as far as the link goes, but the link isn't the study</span></li>
+            <li><i class="dot dot-doubtful" aria-hidden="true"></i><span><b>Doubtful</b>: a detail is off, or nothing is behind the number</span></li>
+          </ul>
+        </div>
+      </article>
+
+      {/* Claim card: one claim, what was linked, and the one or two things you can do */}
+      <aside class="card" data-card role="dialog" aria-modal="false" aria-labelledby="card-kicker" hidden>
+        <p class="card-kicker" id="card-kicker"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b><span class="card-sep">·</span><span data-card-reason></span></p>
+        <button type="button" class="card-close" data-card-close>close</button>
+        <blockquote class="card-quote" data-card-quote></blockquote>
+        <p class="card-label">Link given</p>
+        <p class="card-link" data-card-link></p>
+        <div class="card-actions" data-card-actions></div>
+        <p class="card-note" data-card-note></p>
+        <div class="card-nav" data-card-nav>
+          <button type="button" class="card-navbtn" data-card-prev aria-label="Previous unresolved claim">←</button>
+          <span class="card-navtext" data-card-left></span>
+          <button type="button" class="card-navbtn" data-card-next aria-label="Next unresolved claim">next →</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+</Prototype>
+
+<style is:global>
+  /* Global on purpose: the claim card is built in JS, so scoped classes would miss it. */
+  /* ───── Palette ───── */
+  .proto,
+  .proto-top,
+  .proto-bg {
+    --p-bg1: #9a1ae0;
+    --p-bg2: #7110bd;
+    --p-bg3: #470a86;
+    --p-ink: #ffffff;
+    --p-ink-2: rgba(255, 255, 255, 0.72);
+    --p-line: rgba(255, 255, 255, 0.22);
+    --p-fill: rgba(255, 255, 255, 0.07);
+    --p-paper: #f7f2fb;
+    --p-paper-ink: #4a0b7a;
+    --s-sourced: #3fe08f;
+    --s-reported: #ffc14d;
+    --s-doubtful: #ff8a9a;
+    --s-unconfirmed: rgba(255, 255, 255, 0.55);
+  }
+  body.proto-body {
+    margin: 0;
+    background: #6c0bb4;
+    color: #fff;
+  }
+  body.proto-body ::selection {
+    background: #fff;
+    color: #4a0b7a;
+  }
+  .proto-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(90% 70% at 50% 36%, var(--p-bg1) 0%, var(--p-bg2) 46%, var(--p-bg3) 100%);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ───── Corner links ───── */
+  .proto-top {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 40;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px;
+    pointer-events: none;
+    font-size: 13px;
+  }
+  .proto-corner-group {
+    display: flex;
+    gap: 18px;
+  }
+  .proto-corner {
+    pointer-events: auto;
+    color: var(--p-ink-2);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .proto-corner:hover,
+  .proto-corner:focus-visible {
+    color: var(--p-ink);
+  }
+  .proto-corner-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .proto-corner:focus-visible,
+  .tab:focus-visible,
+  .claim:focus-visible,
+  .btn:focus-visible,
+  .ask-submit:focus-visible,
+  .ask-suggestion:focus-visible,
+  .card-close:focus-visible,
+  .card-navbtn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .proto {
+    min-height: 100dvh;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Screen 1 · ask ───── */
+  .ask {
+    min-height: 100dvh;
+    display: grid;
+    align-content: center;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 72px 24px 48px;
+    box-sizing: border-box;
+  }
+  .ask-title {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(30px, 4.2vw, 44px);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 26px;
+  }
+  .ask-box {
+    border: 1px solid var(--p-line);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .ask-input-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    min-height: 118px;
+    padding: 22px 24px;
+    border-radius: 10px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    cursor: text;
+    box-sizing: border-box;
+  }
+  .ask-input-row input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font: 600 clamp(17px, 1.9vw, 22px) / 1.3 inherit;
+    font-family: inherit;
+    color: inherit;
+    padding: 0;
+  }
+  .ask-input-row input::placeholder {
+    color: rgba(74, 11, 122, 0.5);
+  }
+  .ask-submit {
+    align-self: center;
+    background: none;
+    border: 0;
+    padding: 6px;
+    margin: 0 -6px 0 0;
+    color: rgba(74, 11, 122, 0.6);
+    cursor: pointer;
+    transition: color 200ms ease, transform 200ms ease;
+  }
+  .ask-submit:hover {
+    color: var(--p-paper-ink);
+    transform: translateX(2px);
+  }
+  .ask-suggestions {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .ask-suggestions li + li {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .ask-suggestion {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 17px 14px;
+    background: none;
+    border: 0;
+    color: var(--p-ink);
+    font: 400 17px / 1.35 inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 200ms ease;
+  }
+  .ask-suggestion:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .ask-suggestion svg {
+    flex-shrink: 0;
+    opacity: 0.75;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+  .ask-suggestion:hover svg {
+    opacity: 1;
+    transform: translate(1px, -1px);
+  }
+  .ask-note {
+    margin: 18px 2px 0;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  /* ───── Screen 2 · answer ───── */
+  .chat {
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    padding: 76px 24px 48px;
+    box-sizing: border-box;
+  }
+  .chat-user {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .chat-user p {
+    max-width: 560px;
+    margin: 0;
+    padding: 18px 22px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .answer {
+    position: relative;
+    margin-top: 44px;
+    width: min(760px, 100%);
+    box-sizing: border-box;
+    border: 1px solid var(--p-line);
+    border-radius: 14px;
+    padding: 6px 28px 24px;
+    background: var(--p-fill);
+  }
+  /* a running light around the card while the model is still checking */
+  @property --ang {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  .answer.is-checking::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 15px;
+    padding: 1.5px;
+    background: conic-gradient(from var(--ang), rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.95) 70deg, rgba(255, 255, 255, 0) 140deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: proto-spin 1.6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes proto-spin {
+    to { --ang: 360deg; }
+  }
+
+  .checking {
+    list-style: none;
+    margin: 0;
+    padding: 20px 0 16px;
+    display: grid;
+    gap: 9px;
+    font-size: 14px;
+    color: var(--p-ink-2);
+  }
+  .checking li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+  .checking li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    transform: translateY(-1px);
+    transition: background 240ms ease;
+  }
+  .checking li.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .checking li.is-done::before {
+    background: #fff;
+  }
+  .checking li b {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Tabs */
+  .tabs {
+    position: relative;
+    display: flex;
+    margin: 0 -28px;
+    padding: 0 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .tab {
+    flex: 1 1 0;
+    padding: 18px 6px 14px;
+    background: none;
+    border: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font: 700 16px / 1.2 inherit;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 200ms ease;
+    white-space: nowrap;
+  }
+  .tab:hover,
+  .tab[aria-selected='true'] {
+    color: #fff;
+  }
+  .tabs-ind {
+    position: absolute;
+    bottom: -1px;
+    left: 28px;
+    width: 0;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: left 380ms cubic-bezier(0.2, 0.7, 0.2, 1), width 380ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Prose */
+  .prose {
+    padding-top: 22px;
+    font-size: 15.5px;
+    line-height: 1.68;
+  }
+  .prose p {
+    margin: 0;
+  }
+  .prose h3 {
+    margin: 26px 0 12px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.86);
+  }
+  .claim {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px 0;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background 240ms ease, opacity 320ms ease;
+  }
+  .claim:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .claim.is-open {
+    background: rgba(255, 255, 255, 0.22);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.85);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  /* a tab highlights its claims and quietens the rest; plain text stays as it is */
+  .answer[data-filter='sourced'] .claim:not([data-status='sourced']),
+  .answer[data-filter='reported'] .claim:not([data-status='reported']),
+  .answer[data-filter='doubtful'] .claim:not([data-status='doubtful']) {
+    opacity: 0.36;
+  }
+  .answer[data-filter='sourced'] .claim[data-status='sourced'],
+  .answer[data-filter='reported'] .claim[data-status='reported'],
+  .answer[data-filter='doubtful'] .claim[data-status='doubtful'] {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .claim[data-status='unconfirmed'] {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .claim[data-status='unconfirmed']::after {
+    content: 'set aside';
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    vertical-align: 1px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  /* Status marks */
+  .dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-left: 5px;
+    vertical-align: 1px;
+    box-sizing: border-box;
+    transition: background 240ms ease, border-color 240ms ease;
+  }
+  .dot-sourced,
+  .claim[data-status='sourced'] .dot {
+    background: var(--s-sourced);
+  }
+  .dot-reported,
+  .claim[data-status='reported'] .dot {
+    border: 1.5px solid var(--s-reported);
+    background: linear-gradient(90deg, var(--s-reported) 50%, transparent 50%);
+  }
+  .dot-doubtful,
+  .claim[data-status='doubtful'] .dot {
+    border: 1.5px dotted var(--s-doubtful);
+    background: rgba(255, 138, 154, 0.28);
+  }
+  .dot-unconfirmed,
+  .claim[data-status='unconfirmed'] .dot {
+    border: 1.5px solid var(--s-unconfirmed);
+    background: transparent;
+  }
+
+  /* Left for you */
+  .left {
+    margin-top: 26px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.09);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  .left-text {
+    margin: 0;
+  }
+  .left-text b {
+    font-weight: 700;
+  }
+  .left.is-done .btn {
+    display: none;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font: 600 13px / 1.2 inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 200ms ease, color 200ms ease, transform 200ms ease;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: #fff;
+    color: var(--p-paper-ink);
+  }
+  .btn-primary:hover {
+    background: #f1e8f8;
+  }
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #fff;
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Legend */
+  .legend {
+    list-style: none;
+    margin: 22px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    display: grid;
+    gap: 7px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend .dot {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+  .legend b {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* ───── Claim card ───── */
+  .card {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 30;
+    width: min(420px, calc(100vw - 48px));
+    box-sizing: border-box;
+    padding: 18px 20px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(70, 12, 130, 0.9);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 60px rgba(20, 0, 50, 0.45);
+    color: #fff;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .card[hidden] {
+    display: none;
+  }
+  .card.is-open {
+    opacity: 1;
+    transform: none;
+  }
+  .card-kicker {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 60px 0 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--k, #fff);
+  }
+  .card-kicker .dot {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .card-kicker .card-sep,
+  .card-kicker [data-card-reason] {
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .card-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: none;
+    border: 0;
+    padding: 2px 4px;
+    color: rgba(255, 255, 255, 0.7);
+    font: 500 12px inherit;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .card-close:hover {
+    color: #fff;
+  }
+  .card-quote {
+    margin: 12px 0 0;
+    padding-left: 12px;
+    border-left: 2px solid rgba(255, 255, 255, 0.4);
+    font-size: 15.5px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .card-label {
+    margin: 16px 0 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .card-link {
+    margin: 3px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .card-note {
+    margin: 12px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  .card-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .card-nav[hidden] {
+    display: none;
+  }
+  .card-navbtn {
+    background: none;
+    border: 0;
+    padding: 4px 2px;
+    color: rgba(255, 255, 255, 0.8);
+    font: 600 12px inherit;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .card-navbtn:hover {
+    color: #fff;
+  }
+  .card-navbtn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .card-navtext {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* ───── Small screens ───── */
+  @media (max-width: 720px) {
+    .proto-top {
+      padding: 14px 16px;
+    }
+    .ask {
+      padding: 64px 16px 40px;
+    }
+    .ask-box {
+      padding: 10px;
+    }
+    .ask-input-row {
+      min-height: 100px;
+      padding: 18px 18px;
+    }
+    .ask-suggestion {
+      font-size: 15px;
+      padding: 14px 10px;
+    }
+    .chat {
+      padding: 64px 16px 140px;
+    }
+    .chat-user p {
+      font-size: 15px;
+      padding: 14px 16px;
+    }
+    .answer {
+      margin-top: 28px;
+      padding: 4px 18px 20px;
+    }
+    .tabs {
+      margin: 0 -18px;
+      padding: 0 18px;
+    }
+    .tabs-ind {
+      left: 18px;
+    }
+    .tab {
+      font-size: 13.5px;
+      padding: 15px 2px 12px;
+    }
+    .prose {
+      font-size: 15px;
+    }
+    .card {
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      border-radius: 16px 16px 0 0;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .answer.is-checking::before {
+      animation: none;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .checking li,
+    .tabs-ind,
+    .card,
+    .claim {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { claims, question, searchUrl } from '../../../data/checked-answers';
+  import type { Status } from '../../../data/checked-answers';
+
+  /* ───── A pencil tick on selection (Web Audio, 40–70ms of band-passed noise).
+     Same on/off key in localStorage ("sound") as the site-wide toggle. ───── */
+  let actx: AudioContext | null = null;
+  let noise: AudioBuffer | null = null;
+  const soundOn = () => {
+    try { return localStorage.getItem('sound') !== 'off'; } catch { return true; }
+  };
+  function primeSound() {
+    if (actx) { if (actx.state === 'suspended') actx.resume().catch(() => {}); return; }
+    try {
+      actx = new AudioContext();
+      const len = Math.round(actx.sampleRate * 0.1);
+      noise = actx.createBuffer(1, len, actx.sampleRate);
+      const d = noise.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    } catch { actx = null; }
+  }
+  function playTick() {
+    if (!soundOn()) return;
+    if (!actx) primeSound();
+    const c = actx;
+    if (!c || !noise) return;
+    const go = () => {
+      try {
+        const vary = () => 1 + (Math.random() * 2 - 1) * 0.15;
+        const dur = 0.04 + Math.random() * 0.03;
+        const t0 = c.currentTime;
+        const src = c.createBufferSource();
+        src.buffer = noise!;
+        src.playbackRate.value = vary();
+        const bp = c.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 2600 * vary();
+        bp.Q.value = 1.4;
+        const gain = c.createGain();
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.063, t0 + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        src.connect(bp).connect(gain).connect(c.destination);
+        src.start(t0);
+        src.stop(t0 + dur + 0.01);
+      } catch { /* a sound must never break an interaction */ }
+    };
+    if (c.state === 'suspended') c.resume().then(go).catch(() => {});
+    else go();
+  }
+
+  type Live = Status | 'unconfirmed';
+
+  const $ = <T extends Element>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
+  const $$ = <T extends Element>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(sel));
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const askScreen = $<HTMLElement>('[data-screen="ask"]')!;
+  const answerScreen = $<HTMLElement>('[data-screen="answer"]')!;
+  const form = $<HTMLFormElement>('[data-ask-form]')!;
+  const input = $<HTMLInputElement>('[data-ask-input]')!;
+  const userQ = $<HTMLElement>('[data-user-q]')!;
+  const answer = $<HTMLElement>('[data-answer]')!;
+  const checking = $<HTMLElement>('[data-checking]')!;
+  const steps = $$<HTMLElement>('[data-step]', checking);
+  const body = $<HTMLElement>('[data-body]')!;
+  const tabs = $$<HTMLButtonElement>('[data-tab]');
+  const ind = $<HTMLElement>('[data-tabs-ind]')!;
+  const left = $<HTMLElement>('[data-left]')!;
+  const leftText = $<HTMLElement>('[data-left-text]')!;
+  const walk = $<HTMLButtonElement>('[data-walk]')!;
+  const reset = $<HTMLButtonElement>('[data-reset]')!;
+  const card = $<HTMLElement>('[data-card]')!;
+  const cardDot = $<HTMLElement>('[data-card-dot]', card)!;
+  const cardStatus = $<HTMLElement>('[data-card-status]', card)!;
+  const cardReason = $<HTMLElement>('[data-card-reason]', card)!;
+  const cardQuote = $<HTMLElement>('[data-card-quote]', card)!;
+  const cardLink = $<HTMLElement>('[data-card-link]', card)!;
+  const cardActions = $<HTMLElement>('[data-card-actions]', card)!;
+  const cardNote = $<HTMLElement>('[data-card-note]', card)!;
+  const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
+  const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
+  const cardPrev = $<HTMLButtonElement>('[data-card-prev]', card)!;
+  const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
+
+  /* ───── State ───── */
+  const order = claims.map((c) => c.id);
+  const byId = Object.fromEntries(claims.map((c) => [c.id, c]));
+  const state: Record<string, Live> = Object.fromEntries(claims.map((c) => [c.id, c.status]));
+  const searched = new Set<string>(); // reported claims whose "Find the study" was opened
+  let openId: string | null = null;
+  let lastFocus: HTMLElement | null = null;
+
+  const META: Record<Live, { label: string; color: string }> = {
+    sourced: { label: 'Sourced', color: 'var(--s-sourced)' },
+    reported: { label: 'Reported', color: 'var(--s-reported)' },
+    doubtful: { label: 'Doubtful', color: 'var(--s-doubtful)' },
+    unconfirmed: { label: 'Unconfirmed', color: 'var(--s-unconfirmed)' },
+  };
+
+  const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
+  const unresolved = () => order.filter((id) => state[id] === 'reported' || state[id] === 'doubtful');
+  const claimEl = (id: string) => $<HTMLElement>(`[data-claim="${id}"]`)!;
+
+  /* ───── Screen 1 → 2 ───── */
+  function ask(q: string, instant = false) {
+    userQ.textContent = q;
+    askScreen.hidden = true;
+    answerScreen.hidden = false;
+    reset.hidden = false;
+    window.scrollTo({ top: 0 });
+    runChecking(instant || reducedMotion);
+  }
+
+  function runChecking(instant: boolean) {
+    if (instant) {
+      steps.forEach((s) => s.classList.add('is-on', 'is-done'));
+      reveal();
+      return;
+    }
+    answer.classList.add('is-checking');
+    const at = [120, 760, 1420, 2140];
+    at.forEach((t, i) => {
+      setTimeout(() => {
+        steps[i].classList.add('is-on');
+        if (i > 0) steps[i - 1].classList.add('is-done');
+      }, t);
+    });
+    setTimeout(() => {
+      steps[steps.length - 1].classList.add('is-done');
+    }, 2900);
+    setTimeout(reveal, 3150);
+  }
+
+  function reveal() {
+    answer.classList.remove('is-checking');
+    answer.removeAttribute('aria-busy');
+    checking.hidden = true;
+    body.hidden = false;
+    setFilter('all', false);
+    render();
+  }
+
+  /* ───── Tabs ───── */
+  function moveIndicator(tab: HTMLElement) {
+    const nav = tab.parentElement!;
+    const r = tab.getBoundingClientRect();
+    const n = nav.getBoundingClientRect();
+    ind.style.left = `${r.left - n.left}px`;
+    ind.style.width = `${r.width}px`;
+  }
+  function setFilter(f: string, tick = true) {
+    answer.dataset.filter = f;
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === f)));
+    const active = tabs.find((t) => t.dataset.tab === f)!;
+    moveIndicator(active);
+    if (tick) playTick();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => setFilter(t.dataset.tab!));
+    t.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus();
+      setFilter(next.dataset.tab!);
+    });
+  });
+  window.addEventListener('resize', () => {
+    const active = tabs.find((t) => t.getAttribute('aria-selected') === 'true');
+    if (active && !body.hidden) moveIndicator(active);
+  });
+
+  /* ───── Counts + "left for you" ───── */
+  function render() {
+    (['all', 'sourced', 'reported', 'doubtful'] as const).forEach((k) => {
+      const el = $<HTMLElement>(`[data-count="${k}"]`)!;
+      el.textContent = String(k === 'all' ? order.length : countOf(k));
+    });
+    const r = countOf('reported');
+    const d = countOf('doubtful');
+    const u = countOf('unconfirmed');
+    const s = countOf('sourced');
+    const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+    if (r + d > 0) {
+      const bits: string[] = [];
+      if (r) bits.push(`<b>${plural(r, 'needs', 'need')} one more search</b>`);
+      if (d) bits.push(`<b>${plural(d, 'needs', 'need')} a call</b> from you`);
+      let html = `Left for you: ${bits.join(', ')}.`;
+      if (u) html += ` ${plural(u, 'claim', 'claims')} set aside.`;
+      leftText.innerHTML = html;
+      left.classList.remove('is-done');
+      walk.textContent = openId ? 'Continue' : 'Walk me through';
+    } else {
+      leftText.innerHTML = `Nothing left for you. <b>${s}</b> ${s === 1 ? 'claim holds' : 'claims hold'} up; ${u} set aside.`;
+      left.classList.add('is-done');
+    }
+  }
+
+  /* ───── Claim card ───── */
+  function button(label: string, opts: { href?: string; act?: string; primary?: boolean }) {
+    const el = document.createElement(opts.href ? 'a' : 'button');
+    el.className = `btn ${opts.primary ? 'btn-primary' : 'btn-ghost'}`;
+    el.textContent = label;
+    if (opts.href) {
+      el.setAttribute('href', opts.href);
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+      el.insertAdjacentHTML('beforeend', ' <span aria-hidden="true">↗</span>');
+    } else {
+      el.setAttribute('type', 'button');
+    }
+    if (opts.act) el.dataset.act = opts.act;
+    return el;
+  }
+
+  function renderCard(id: string) {
+    const c = byId[id];
+    const st = state[id];
+    const original = c.status;
+    card.style.setProperty('--k', META[st].color);
+    cardDot.className = `dot dot-${st}`;
+    cardStatus.textContent = META[st].label;
+    cardReason.textContent =
+      st === 'unconfirmed' ? 'set aside by you' : st === 'sourced' && original !== 'sourced' ? 'you found the study' : c.reason;
+    cardQuote.textContent = c.text;
+    cardLink.textContent = c.link;
+    cardActions.replaceChildren();
+
+    if (st === 'sourced') {
+      cardActions.append(button('Open the study', { href: c.linkHref ?? searchUrl(c.search), primary: true }));
+      if (original !== 'sourced') cardActions.append(button('Undo', { act: 'undo' }));
+      cardNote.textContent = original === 'sourced' ? 'Safe to cite as written.' : 'Marked as sourced by you. It counts as checked now.';
+    } else if (st === 'reported') {
+      cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
+      cardActions.append(button('Read the news piece', { href: c.linkHref ?? searchUrl(c.search) }));
+      if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
+      cardNote.textContent = searched.has(id)
+        ? 'If the study says what the answer says, mark it and it turns green.'
+        : 'One more search before you can cite it.';
+    } else if (st === 'doubtful') {
+      cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
+      cardActions.append(button('Nearest study', { href: searchUrl(c.search) }));
+      cardNote.textContent = c.note ?? 'Your call: set it aside, or look for the nearest study yourself.';
+    } else {
+      cardActions.append(button('Undo', { act: 'undo' }));
+      cardNote.textContent = 'Set aside. It stays in the answer, crossed out, so you can see what was dropped.';
+    }
+
+    const todo = unresolved();
+    cardNav.hidden = todo.length === 0 && !todo.includes(id);
+    cardLeft.textContent = todo.length ? `${todo.length} left for you` : 'all done';
+    cardPrev.disabled = todo.length === 0 || todo[0] === id;
+    cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
+  }
+
+  function openCard(id: string, scroll = false) {
+    if (openId) claimEl(openId).classList.remove('is-open');
+    openId = id;
+    const el = claimEl(id);
+    el.classList.add('is-open');
+    renderCard(id);
+    card.hidden = false;
+    requestAnimationFrame(() => card.classList.add('is-open'));
+    if (scroll) el.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
+    render();
+    playTick();
+  }
+  function closeCard() {
+    if (!openId) return;
+    claimEl(openId).classList.remove('is-open');
+    openId = null;
+    card.classList.remove('is-open');
+    setTimeout(() => { if (!openId) card.hidden = true; }, reducedMotion ? 0 : 260);
+    render();
+    lastFocus?.focus();
+    lastFocus = null;
+  }
+  function step(dir: 1 | -1) {
+    const todo = unresolved();
+    if (!todo.length) return closeCard();
+    let next: string | undefined;
+    if (openId && todo.includes(openId)) {
+      next = todo[todo.indexOf(openId) + dir];
+    } else if (openId) {
+      // the open claim was just resolved: carry on from its position in the answer
+      const pos = order.indexOf(openId);
+      next = dir === 1 ? todo.find((id) => order.indexOf(id) > pos) : [...todo].reverse().find((id) => order.indexOf(id) < pos);
+    } else {
+      next = dir === 1 ? todo[0] : todo[todo.length - 1];
+    }
+    if (next) openCard(next, true);
+  }
+
+  $$<HTMLElement>('.claim').forEach((el) => {
+    const go = () => {
+      lastFocus = el;
+      openId === el.dataset.claim ? closeCard() : openCard(el.dataset.claim!);
+    };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        go();
+      }
+    });
+  });
+
+  cardActions.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
+    if (!btn || !openId) return;
+    const id = openId;
+    const act = btn.dataset.act;
+    if (act === 'find') {
+      // the link opens in a new tab; here we only remember that the search happened
+      searched.add(id);
+      setTimeout(() => renderCard(id), 200);
+      return;
+    }
+    if (act === 'unconfirm') state[id] = 'unconfirmed';
+    if (act === 'confirm') state[id] = 'sourced';
+    if (act === 'undo') state[id] = byId[id].status;
+    claimEl(id).dataset.status = state[id];
+    playTick();
+    renderCard(id);
+    render();
+  });
+  $<HTMLElement>('[data-card-close]')!.addEventListener('click', closeCard);
+  cardNext.addEventListener('click', () => step(1));
+  cardPrev.addEventListener('click', () => step(-1));
+  walk.addEventListener('click', () => {
+    lastFocus = walk;
+    step(1);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openId) closeCard();
+  });
+
+  /* ───── Ask ───── */
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    primeSound();
+    ask(input.value.trim() || question);
+  });
+  $$<HTMLButtonElement>('[data-suggest]').forEach((b) => {
+    b.addEventListener('click', () => {
+      input.value = b.querySelector('span')!.textContent!.trim();
+      primeSound();
+      playTick();
+      ask(input.value);
+    });
+  });
+  reset.addEventListener('click', () => {
+    location.href = location.pathname;
+  });
+
+  const hash = location.hash.replace('#', '');
+  if (hash === 'answer' || hash === 'now') ask(question, hash === 'now');
+</script>
