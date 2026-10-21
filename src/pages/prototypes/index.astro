@@ -35,7 +35,7 @@ const prototypes = [
       Small, working answers to design questions about AI products. Each one has a live page you can use, and a short note on why.
     </p>
 
-    <ul class="proto-list mt-12 md:mt-16">
+    <ul class="proto-list">
       {prototypes.map((p) => (
         <li class="proto-entry">
           <a href={p.href} class="proto-cover-link" aria-label={`Open ${p.title}`}>
@@ -65,7 +65,7 @@ const prototypes = [
 <style>
   .proto-list {
     list-style: none;
-    margin: 0;
+    margin: 48px 0 0;
     padding: 0;
     display: grid;
     gap: 48px;
@@ -77,6 +77,9 @@ const prototypes = [
     align-items: start;
   }
   @media (min-width: 900px) {
+    .proto-list {
+      margin-top: 64px;
+    }
     .proto-entry {
       grid-template-columns: 3fr 2fr;
     }
