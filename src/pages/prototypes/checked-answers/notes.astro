@@ -27,14 +27,22 @@ import '../../../styles/case-study.css';
         <a href="/prototypes/checked-answers" class="notes-open">Open prototype <span aria-hidden="true">↗</span></a>
       </div>
       <figure class="notes-figure">
-        <img
-          src="/prototypes/checked-answers-toggle.gif"
-          alt="The answer card with four tabs: All, Sourced, Reported, Doubtful. Selecting a tab highlights the claims with that status and quietens the rest; clicking a doubtful claim opens a note with the link given and the actions available."
+        {/* the interaction on a loop; the gif stands in as the poster until the video loads */}
+        <video
           class="notes-gif"
+          src="/videos/checked-answers.mp4"
+          poster="/prototypes/checked-answers-toggle.gif"
           width="1000"
           height="625"
-        />
-        <figcaption class="evam-caption">The toggle. Each tab highlights its claims in place; a claim opens a note in the margin.</figcaption>
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label="The answer card with four tabs: All, Sourced, Reported, Doubtful. Selecting a tab lights up the claims with that status and quietens the rest; clicking a doubtful claim opens a note with the link given and the actions available."
+          data-hero-video
+        ></video>
+        <figcaption class="evam-caption">Each tab lights up its claims in place; a claim opens a note beside it.</figcaption>
       </figure>
     </section>
 
@@ -169,6 +177,7 @@ import '../../../styles/case-study.css';
     width: 100%;
     height: auto;
     aspect-ratio: 1000 / 625;
+    object-fit: cover;
     margin: 0;
     border-radius: 12px;
     background: #6c0bb4;
@@ -286,6 +295,19 @@ import '../../../styles/case-study.css';
     );
     els.forEach((el) => io.observe(el));
   }
+  /* hero video: no autoplay for people who prefer reduced motion */
+  function initVideo() {
+    const v = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+    if (!v) return;
+    if (reduced) {
+      v.removeAttribute('autoplay');
+      v.pause();
+    } else {
+      v.play().catch(() => {});
+    }
+  }
+  document.addEventListener('astro:page-load', initVideo);
+
   // runs on first load and after each client-side navigation to this page
   document.addEventListener('astro:page-load', () => {
     if (!document.querySelector('[data-reveal]')) return;
