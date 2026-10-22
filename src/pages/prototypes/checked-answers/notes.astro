@@ -16,29 +16,26 @@ import '../../../styles/case-study.css';
   <Nav />
 
   <article class="evam">
-    <section class="pt-12 pb-2 md:pt-16">
-      <div class="evam-prose">
-        <p class="evam-eyebrow">Prototype · N°01 · October 2026</p>
-        <h1 class="evam-h1">Checked answers</h1>
-        <p class="evam-subtitle">
-          An AI answer that carries verification status on every claim, and leaves you a short list of what it couldn't check.
-        </p>
-        <p class="mt-8">
-          <a href="/prototypes/checked-answers" class="notes-cta">Open the prototype <span aria-hidden="true">↗</span></a>
-        </p>
+    {/* First view: title and the prototype link on one row, the gif centred below,
+        all sized to fit the screen without scrolling. */}
+    <section class="notes-hero">
+      <div class="notes-head">
+        <div>
+          <p class="evam-eyebrow">October 2026</p>
+          <h1 class="notes-title">Checked answers</h1>
+        </div>
+        <a href="/prototypes/checked-answers" class="notes-open">Open prototype <span aria-hidden="true">↗</span></a>
       </div>
-    </section>
-
-    <section class="mt-10 md:mt-12">
-      <img
-        src="/prototypes/checked-answers-toggle.gif"
-        alt="The answer card with four tabs: All, Sourced, Reported, Doubtful. Selecting a tab highlights the claims with that status and quietens the rest; clicking a doubtful claim opens a card with the link given and the actions available."
-        class="notes-gif"
-        width="1200"
-        height="760"
-        loading="lazy"
-      />
-      <p class="evam-caption">The toggle. Each tab highlights its claims in place; a claim opens a note in the margin.</p>
+      <figure class="notes-figure">
+        <img
+          src="/prototypes/checked-answers-toggle.gif"
+          alt="The answer card with four tabs: All, Sourced, Reported, Doubtful. Selecting a tab highlights the claims with that status and quietens the rest; clicking a doubtful claim opens a note with the link given and the actions available."
+          class="notes-gif"
+          width="1000"
+          height="625"
+        />
+        <figcaption class="evam-caption">The toggle. Each tab highlights its claims in place; a claim opens a note in the margin.</figcaption>
+      </figure>
     </section>
 
     <section class="evam-block">
@@ -80,12 +77,10 @@ import '../../../styles/case-study.css';
     <section class="evam-closing">
       <div class="evam-prose">
         <p class="evam-closing-doc">
-          Designed in Figma, built in Astro with Claude Code. The answer is canned; see the prototype for the one question it knows.
+          Designed in Figma, built in Astro with Claude Code.
         </p>
         <p class="evam-back">
-          <a href="/prototypes" class="evam-link">← All prototypes</a>
-          <span class="mx-2 text-muted" aria-hidden="true">·</span>
-          <a href="/prototypes/checked-answers" class="evam-link">Open the prototype ↗</a>
+          <a href="/#playground" class="evam-link">← back</a>
         </p>
       </div>
     </section>
@@ -93,67 +88,83 @@ import '../../../styles/case-study.css';
 
   <Footer />
 
-  {/* pinned bottom right while you read; opens the prototype in this tab */}
-  <a href="/prototypes/checked-answers" class="visit-proto">Visit prototype <span aria-hidden="true">→</span></a>
 </Layout>
 
 <style>
-  .visit-proto {
-    position: fixed;
-    right: 24px;
-    bottom: 20px;
-    z-index: 40;
-    padding: 6px 2px;
+  .notes-hero {
+    padding-top: 28px;
+  }
+  .notes-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .notes-title {
+    margin-top: 8px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  @media (min-width: 768px) {
+    .notes-title {
+      font-size: 40px;
+    }
+    .notes-open {
+      padding-bottom: 4px;
+      font-size: 16px;
+    }
+  }
+  /* plain text link, no box */
+  .notes-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding-bottom: 2px;
     font-size: 14px;
     font-weight: 500;
     color: var(--accent);
     text-decoration: none;
-    background: none;
     transition: color 200ms ease;
   }
-  .visit-proto span {
+  .notes-open span {
     display: inline-block;
     transition: transform 200ms ease;
   }
-  .visit-proto:hover {
+  .notes-open:hover {
     color: var(--accent-hover);
   }
-  .visit-proto:hover span {
-    transform: translateX(3px);
+  .notes-open:hover span {
+    transform: translate(2px, -2px);
   }
-  .visit-proto:focus-visible {
+  .notes-open:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
     border-radius: 3px;
   }
-  @media (max-width: 640px) {
-    .visit-proto {
-      right: 16px;
-      bottom: calc(14px + env(safe-area-inset-bottom));
-    }
+  .notes-figure {
+    margin: 28px 0 0;
   }
-  .notes-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 200ms ease;
-  }
-  .notes-cta:hover {
-    background: var(--accent-hover);
-  }
+  /* the gif's height is what's left of the first view after the nav, title row
+     and caption; its width follows from that, centred */
   .notes-gif {
     display: block;
-    width: 100%;
+    width: auto;
     height: auto;
+    max-width: 100%;
+    max-height: max(260px, calc(100svh - 300px));
+    aspect-ratio: 1000 / 625;
+    margin: 0 auto;
     border-radius: 12px;
     background: #6c0bb4;
+  }
+  .notes-figure .evam-caption {
+    text-align: center;
   }
 
   /* ───── Reveal on scroll: once each, never on the way back up ─────
