@@ -437,24 +437,37 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .stream.tabs.is-in {
     opacity: 1;
   }
-  .stream.is-in:not(.tabs) {
+  /* the "left for you" line and the legend keep the beat */
+  .stream.is-in:not(.tabs):not(.stream-lead):not(.stream-rise) {
     animation: block-in var(--beat) cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
   @keyframes block-in {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
-  /* inside a paragraph: one sentence or claim per beat */
-  .stream .u {
+  /* lead paragraph: word by word, 20ms apart, each fading in over 200ms */
+  .stream-lead .w {
     opacity: 0;
   }
-  .stream.is-in .u {
-    animation: unit-in var(--beat) ease-out both;
+  .stream-lead.is-in .w {
+    animation: word-in 200ms ease-out both;
     animation-delay: var(--d, 0ms);
   }
-  @keyframes unit-in {
-    from { opacity: 0; filter: blur(3px); }
-    to { opacity: 1; filter: none; }
+  @keyframes word-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* the rest: fade in and rise 8px, 300ms ease-out (started 70ms apart by the script) */
+  .stream-rise.is-in {
+    animation: rise-in 300ms ease-out both;
+  }
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* marks wait until the last paragraph is in, then land in reading order */
+  .answer.marks-pending .claim .dot {
+    opacity: 0;
   }
 
   /* ───── Screen 2 · answer ───── */
@@ -1224,7 +1237,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     answer.classList.remove('is-checking');
     answer.removeAttribute('aria-busy');
     checking.hidden = true;
-    if (animate) prepareStream();
+    if (animate) plan = prepareStream();
     body.hidden = false;
     setFilter('all', false);
     render();
@@ -1235,95 +1248,96 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
 
   /* ───── Streaming the answer in ─────
-     Blocks (tabs, summary, each heading and paragraph, the "left for you" line,
-     the legend) arrive one after another, one beat apart. Inside a paragraph
-     each sentence or claim fades in one beat after the last, like a reply
-     being written. A click on the answer finishes it. */
-  let blocks: { el: HTMLElement; typing: number }[] = [];
-  let streamTimer = 0;
+     Tabs arrive on the beat, then the lead paragraph streams in word by word
+     (20ms apart, 200ms fade each). The remaining headings and paragraphs fade
+     in and rise 8px, 70ms apart (300ms each). When the last one is in, the
+     marks land in reading order; then the "left for you" line and the legend
+     follow on the beat. A click on the answer finishes it. */
+  const WORD_GAP = 20;
+  const WORD_FADE = 200;
+  const RISE_GAP = 70;
+  const RISE = 300;
+  let streamEls: HTMLElement[] = [];
+  let streamTimers: number[] = [];
   let streaming = false;
-  /* split a paragraph into units (sentences of plain text, whole claims); a short
-     connector like "and" or "On the other side," arrives with the claim after it */
-  function wrapUnits(root: HTMLElement) {
-    const units: HTMLElement[][] = [];
-    let carry: HTMLElement[] = [];
-    const push = (el: HTMLElement, short: boolean) => {
-      carry.push(el);
-      if (!short) {
-        units.push(carry);
-        carry = [];
-      }
-    };
-    Array.from(root.childNodes).forEach((n) => {
-      // bare text (the summary) gets a span first, so it splits like the rest
-      let node: Node = n;
-      if (n.nodeType === Node.TEXT_NODE) {
-        if (!n.textContent?.trim()) return;
-        const span = document.createElement('span');
-        span.textContent = n.textContent;
-        n.parentNode!.replaceChild(span, n);
-        node = span;
-      }
-      if (!(node instanceof HTMLElement)) return;
-      if (node.classList.contains('claim')) {
-        push(node, false);
-        return;
-      }
-      const text = node.textContent ?? '';
-      if (!text.trim()) {
-        if (carry.length) carry.push(node);
-        return;
-      }
-      const sentences = text.match(/[^.!?]+[.!?]*\s*/g) ?? [text];
-      const frag = document.createDocumentFragment();
-      sentences.forEach((sentence) => {
-        const u = document.createElement('span');
-        u.textContent = sentence;
-        frag.append(u);
-        push(u, sentence.trim().length < 28);
-      });
-      node.replaceChildren(frag);
-    });
-    if (carry.length) units.push(carry);
-    units.forEach((group, k) => group.forEach((el) => {
-      el.classList.add('u');
-      el.style.setProperty('--d', `${k * GAP}ms`);
-    }));
-    return units.length * GAP;
-  }
-  function prepareStream() {
-    const prose = $<HTMLElement>('[data-prose]')!;
-    const els = [$<HTMLElement>('.tabs')!, ...Array.from(prose.children) as HTMLElement[], left, $<HTMLElement>('.legend')!];
-    blocks = els.map((el) => {
-      el.classList.add('stream');
-      const typing = el.tagName === 'P' && el !== left ? wrapUnits(el) : 0;
-      return { el, typing };
-    });
-  }
-  function runStream() {
-    streaming = true;
+  function wrapWords(root: HTMLElement) {
     let i = 0;
-    const next = () => {
-      if (i >= blocks.length) return endStream();
-      const b = blocks[i++];
-      b.el.classList.add('is-in');
-      // the next block starts one beat after this one has fully arrived
-      streamTimer = window.setTimeout(next, b.typing + GAP);
+    const walk = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const parts = (node.textContent ?? '').split(/(\s+)/);
+        const frag = document.createDocumentFragment();
+        for (const part of parts) {
+          if (!part) continue;
+          if (!part.trim()) {
+            frag.append(part);
+            continue;
+          }
+          const w = document.createElement('span');
+          w.className = 'w';
+          w.style.setProperty('--d', `${i++ * WORD_GAP}ms`);
+          w.textContent = part;
+          frag.append(w);
+        }
+        node.parentNode!.replaceChild(frag, node);
+        return;
+      }
+      if (node instanceof HTMLElement && !node.classList.contains('sr-only')) Array.from(node.childNodes).forEach(walk);
     };
-    next();
+    walk(root);
+    return Math.max(0, i - 1) * WORD_GAP + WORD_FADE;
+  }
+  const later = (fn: () => void, ms: number) => streamTimers.push(window.setTimeout(fn, ms));
+  function prepareStream() {
+    const tabsEl = $<HTMLElement>('.tabs')!;
+    const prose = $<HTMLElement>('[data-prose]')!;
+    const [lead, ...rest] = Array.from(prose.children) as HTMLElement[];
+    const legend = $<HTMLElement>('.legend')!;
+    tabsEl.classList.add('stream');
+    lead.classList.add('stream', 'stream-lead');
+    rest.forEach((el) => el.classList.add('stream', 'stream-rise'));
+    left.classList.add('stream');
+    legend.classList.add('stream');
+    streamEls = [tabsEl, lead, ...rest, left, legend];
+    answer.classList.add('marks-pending');
+    return { tabsEl, lead, rest, legend, leadTime: wrapWords(lead) };
+  }
+  let plan: ReturnType<typeof prepareStream> | null = null;
+  function runStream() {
+    if (!plan) return;
+    const { tabsEl, lead, rest, legend, leadTime } = plan;
+    streaming = true;
+    let t = 0;
+    later(() => tabsEl.classList.add('is-in'), t);
+    t += GAP;
+    later(() => lead.classList.add('is-in'), t);
+    t += leadTime;
+    rest.forEach((el, i) => later(() => el.classList.add('is-in'), t + i * RISE_GAP));
+    t += (rest.length - 1) * RISE_GAP + RISE;
+    later(landMarks, t);
+    t += order.length * 40 + 260 + GAP;
+    later(() => left.classList.add('is-in'), t);
+    t += GAP;
+    later(() => legend.classList.add('is-in'), t);
+    t += GAP;
+    later(endStream, t);
+  }
+  function landMarks() {
+    answer.classList.remove('marks-pending');
+    if (reducedMotion) return;
+    $$<HTMLElement>('.claim .dot').forEach((d, i) => {
+      d.style.animationDelay = `${i * 40}ms`;
+      d.classList.add('is-pulse');
+      d.addEventListener('animationend', () => d.classList.remove('is-pulse'), { once: true });
+    });
   }
   function endStream() {
-    clearTimeout(streamTimer);
+    streamTimers.forEach(clearTimeout);
+    streamTimers = [];
     streaming = false;
-    // once it's all in, take the streaming classes off, so filters and
-    // highlights behave exactly as before (a finished animation would hold opacity)
-    blocks.forEach(({ el }) => {
-      el.classList.remove('stream', 'is-in');
-      el.querySelectorAll<HTMLElement>('.u').forEach((u) => {
-        u.classList.remove('u');
-        u.style.removeProperty('--d');
-      });
-    });
+    answer.classList.remove('marks-pending');
+    // take the streaming classes off, so filters and highlights behave exactly as before
+    streamEls.forEach((el) => el.classList.remove('stream', 'stream-lead', 'stream-rise', 'is-in'));
+    $$<HTMLElement>('.stream-done-w, [data-prose] .w').forEach((w) => w.style.removeProperty('--d'));
   }
   answer.addEventListener('click', (e) => {
     if (!streaming) return;

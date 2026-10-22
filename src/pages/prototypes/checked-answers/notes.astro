@@ -43,36 +43,36 @@ import '../../../styles/case-study.css';
 
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">The problem</h2>
+        <h2 class="evam-h2" data-reveal>The problem</h2>
         <p class="evam-body evam-body--mt-md">
-          AI assistants do the work, then hand the checking back to me. A good answer ends with “please verify important information”, which really means “the labour is yours now”. By the time I reach that line I’ve either trusted the whole thing, asked the model to verify itself and got the same confidence back, or skipped it. Verification gets dumped on the user: in text, at the end, with no shape.
+          AI assistants do the work, then hand the checking back to me. A good answer ends with “please verify important information”, which really means “<mark class="hl" data-reveal>the labour is yours now</mark>”. By the time I reach that line I’ve either trusted the whole thing, asked the model to verify itself and got the same confidence back, or skipped it. Verification gets dumped on the user: in text, at the end, with no shape.
         </p>
       </div>
     </section>
 
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">What it does</h2>
+        <h2 class="evam-h2" data-reveal>What it does</h2>
         <p class="evam-body evam-body--mt-md">
-          Ask a literature question and the answer comes back with every claim already checked, and the result sits on the claim itself. Green: the study is linked and says this. Amber: the link is a news report or press release, so it’s true as far as the link goes but needs one more search. Red: a detail is off, or nothing stands behind the number. The tabs filter the answer by status, so “what can I cite?” is one tap. Clicking a claim opens a margin note beside it: what was linked, why it got that colour, and one or two things to do about it. What’s left for you is four searches and five decisions, not “verify everything”.
+          Ask a literature question and the answer comes back with every claim already checked, and the result sits on the claim itself. Green: the study is linked and says this. Amber: the link is a news report or press release, so it’s true as far as the link goes but needs one more search. Red: a detail is off, or nothing stands behind the number. The tabs filter the answer by status, so “what can I cite?” is one tap. Clicking a claim opens a margin note beside it: what was linked, why it got that colour, and one or two things to do about it. What’s left for you is <mark class="hl" data-reveal>four searches and five decisions</mark>, not “verify everything”.
         </p>
       </div>
     </section>
 
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">What a real model can’t do yet</h2>
+        <h2 class="evam-h2" data-reveal>What a real model can’t do yet</h2>
         <p class="evam-body evam-body--mt-md">
-          Reliably open a link and judge whether the paper says what the answer says. Tell a press release apart from the study it describes. Notice that a study was in mice unless asked. Admit that a number has no source; it rounds up to confidence. The statuses here are hand-labelled, and the study links are real: each one was checked.
+          Reliably open a link and judge whether the paper says what the answer says. Tell a press release apart from the study it describes. Notice that a study was in mice unless asked. <mark class="hl" data-reveal>Admit that a number has no source</mark>; it rounds up to confidence. The statuses here are hand-labelled, and the study links are real: each one was checked.
         </p>
       </div>
     </section>
 
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">What I’d test next</h2>
+        <h2 class="evam-h2" data-reveal>What I’d test next</h2>
         <p class="evam-body evam-body--mt-md">
-          Whether people open the amber and red cards more than they read a trailing disclaimer. Whether “Treat as unconfirmed” gets used, or ignored. Whether the counts in the tabs change how much people trust the green ones. And whether it scales: at thirty claims, is the list still short?
+          Whether people <mark class="hl" data-reveal>open the amber and red cards</mark> more than they read a trailing disclaimer. Whether “Treat as unconfirmed” gets used, or ignored. Whether the counts in the tabs change how much people trust the green ones. And whether it scales: at thirty claims, is the list still short?
         </p>
       </div>
     </section>
@@ -118,4 +118,123 @@ import '../../../styles/case-study.css';
     border-radius: 12px;
     background: #6c0bb4;
   }
+
+  /* ───── Reveal on scroll: once each, never on the way back up ─────
+     Hidden states apply only once the script has marked the page ready, so
+     without JS (or with reduced motion) everything is simply visible. */
+  .hl {
+    position: relative;
+    display: inline-block;
+    color: inherit;
+    background: none;
+    padding: 0 3px;
+    margin: 0 -1px;
+    isolation: isolate;
+  }
+  .hl::before {
+    content: '';
+    position: absolute;
+    inset: 0.12em -1px 0.06em;
+    z-index: -1;
+    border-radius: 3px;
+    background: #fff1a8;
+    transform-origin: 0 50%;
+  }
+  :global(html.reveal-ready) .hl:not(.is-shown)::before {
+    transform: scaleX(0);
+  }
+  :global(html.reveal-ready) .hl.is-animating::before {
+    transition: transform 400ms cubic-bezier(0.3, 0.6, 0.2, 1);
+  }
+
+  /* headings: each line rises from behind its own mask */
+  .evam-h2 :global(.line) {
+    display: block;
+    overflow: hidden;
+    /* room for descenders inside the mask */
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+  .evam-h2 :global(.line-in) {
+    display: block;
+  }
+  :global(html.reveal-ready) .evam-h2:not(.is-shown) :global(.line-in) {
+    transform: translateY(100%);
+  }
+  :global(html.reveal-ready) .evam-h2.is-animating :global(.line-in) {
+    transition: transform 350ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--ld, 0ms);
+  }
 </style>
+
+<script>
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* split a heading into its rendered lines, each wrapped in a mask */
+  function splitLines(h: HTMLElement) {
+    const text = h.textContent ?? '';
+    const words = text.split(/\s+/).filter(Boolean);
+    h.textContent = '';
+    const spans = words.map((w, i) => {
+      const s = document.createElement('span');
+      s.textContent = w + (i < words.length - 1 ? ' ' : '');
+      h.append(s);
+      return s;
+    });
+    const lines: HTMLSpanElement[][] = [];
+    let top: number | null = null;
+    spans.forEach((s) => {
+      if (top === null || Math.abs(s.offsetTop - top) > 2) {
+        lines.push([]);
+        top = s.offsetTop;
+      }
+      lines[lines.length - 1].push(s);
+    });
+    h.textContent = '';
+    lines.forEach((ws, i) => {
+      const line = document.createElement('span');
+      line.className = 'line';
+      const inner = document.createElement('span');
+      inner.className = 'line-in';
+      inner.style.setProperty('--ld', `${i * 70}ms`);
+      inner.textContent = ws.map((w) => w.textContent).join('');
+      line.append(inner);
+      h.append(line);
+    });
+    h.setAttribute('aria-label', text);
+  }
+
+  function init() {
+    const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+    if (!els.length || reduced || !('IntersectionObserver' in window)) return;
+    els.filter((el) => el.matches('h2') && !el.querySelector('.line')).forEach(splitLines);
+    document.documentElement.classList.add('reveal-ready');
+    const show = (el: HTMLElement, animate: boolean) => {
+      if (animate) el.classList.add('is-animating');
+      el.classList.add('is-shown');
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const el = e.target as HTMLElement;
+          if (e.isIntersecting) {
+            show(el, true);
+            io.unobserve(el);
+          } else if (e.boundingClientRect.top < 0) {
+            // already scrolled past (e.g. a restored scroll position): just show it, no animation
+            show(el, false);
+            io.unobserve(el);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+    els.forEach((el) => io.observe(el));
+  }
+  // runs on first load and after each client-side navigation to this page
+  document.addEventListener('astro:page-load', () => {
+    if (!document.querySelector('[data-reveal]')) return;
+    if (document.fonts?.ready) document.fonts.ready.then(init);
+    else init();
+  });
+</script>
