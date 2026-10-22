@@ -413,7 +413,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .answer.is-waiting {
     opacity: 0;
   }
-  .answer {
+  :root {
     --beat: 350ms;
   }
   .answer.is-entering {
@@ -1150,7 +1150,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   /* the beat for everything after send: the gap between things arriving,
      and how long each one takes to appear (also --beat in the CSS) */
-  const GAP = 350;
+  /* ?beat=600 in the URL tries a different beat (150–1500ms), for tuning by feel */
+  const beatParam = Number(new URLSearchParams(location.search).get('beat'));
+  const GAP = beatParam >= 150 && beatParam <= 1500 ? Math.round(beatParam) : 350;
+  document.documentElement.style.setProperty('--beat', `${GAP}ms`);
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
