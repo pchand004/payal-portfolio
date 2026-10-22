@@ -15,7 +15,7 @@ import '../../../styles/case-study.css';
 >
   <Nav />
 
-  <article class="evam">
+  <article class="evam notes">
     {/* First view: title and the prototype link on one row, the gif centred below,
         all sized to fit the screen without scrolling. */}
     <section class="notes-hero">
@@ -91,6 +91,17 @@ import '../../../styles/case-study.css';
 </Layout>
 
 <style>
+  /* One centred column for the whole page. Its width is the gif's: what fits in
+     the first view after the nav, title row and caption (16:10), capped at 960px. */
+  .notes {
+    --col: min(100%, 960px, max(416px, calc((100svh - 300px) * 1.6)));
+  }
+  .notes-hero,
+  .notes :global(.evam-prose) {
+    width: var(--col);
+    max-width: 100%;
+    margin-inline: auto;
+  }
   .notes-hero {
     padding-top: 28px;
   }
@@ -151,13 +162,11 @@ import '../../../styles/case-study.css';
     margin: 28px 0 0;
   }
   /* the gif's height is what's left of the first view after the nav, title row
-     and caption; its width follows from that, left-aligned with the text */
+     and caption; it fills the centred column */
   .notes-gif {
     display: block;
-    width: auto;
+    width: 100%;
     height: auto;
-    max-width: 100%;
-    max-height: max(260px, calc(100svh - 300px));
     aspect-ratio: 1000 / 625;
     margin: 0;
     border-radius: 12px;
