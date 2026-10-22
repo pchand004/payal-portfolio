@@ -362,6 +362,53 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     color: rgba(255, 255, 255, 0.5);
   }
 
+  /* ───── Send: the question morphs into the user bubble ─────
+     The name moves from the ask box to the bubble inside startViewTransition,
+     so the browser animates one into the other. The rest of the page fades. */
+  .vt-question {
+    view-transition-name: question;
+  }
+  ::view-transition-group(question) {
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* the box reshapes; the text inside keeps its real size, clipped by the box */
+  ::view-transition-image-pair(question) {
+    overflow: clip;
+    border-radius: 14px;
+  }
+  ::view-transition-old(question),
+  ::view-transition-new(question) {
+    height: 100%;
+    object-fit: none;
+    object-position: left center;
+  }
+  /* the tall box hands over early, so you see one shape travelling, not two */
+  ::view-transition-old(question) {
+    animation: vt-out 160ms ease-out both;
+  }
+  ::view-transition-new(question) {
+    animation: vt-in 200ms ease-out 40ms both;
+  }
+  @keyframes vt-out {
+    to { opacity: 0; }
+  }
+  @keyframes vt-in {
+    from { opacity: 0; }
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 320ms;
+  }
+  /* Fallback for browsers without view transitions: the bubble rises into place */
+  .chat-user p.is-arriving {
+    animation: bubble-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes bubble-in {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+
   /* ───── Screen 2 · answer ───── */
   .chat {
     position: relative;
@@ -913,6 +960,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .proto-fx {
       display: none;
     }
+    .chat-user p.is-arriving {
+      animation: none;
+    }
   }
 </style>
 
@@ -1024,12 +1074,35 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
-    userQ.textContent = q;
-    askScreen.hidden = true;
-    answerScreen.hidden = false;
-    reset.hidden = false;
-    window.scrollTo({ top: 0 });
-    runChecking(instant || reducedMotion);
+    const box = $<HTMLElement>('.ask-input-row')!;
+    const swap = () => {
+      userQ.textContent = q;
+      askScreen.hidden = true;
+      answerScreen.hidden = false;
+      reset.hidden = false;
+      window.scrollTo({ top: 0 });
+      box.classList.remove('vt-question');
+      userQ.classList.add('vt-question');
+    };
+    const go = () => runChecking(instant || reducedMotion);
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (instant || reducedMotion) {
+      swap();
+      userQ.classList.remove('vt-question');
+      go();
+    } else if (doc.startViewTransition) {
+      // the question box and the user bubble share a name, so one morphs into the other
+      box.classList.add('vt-question');
+      const vt = doc.startViewTransition(swap);
+      vt.finished.finally(() => userQ.classList.remove('vt-question'));
+      go();
+    } else {
+      swap();
+      userQ.classList.remove('vt-question');
+      userQ.classList.add('is-arriving');
+      userQ.addEventListener('animationend', () => userQ.classList.remove('is-arriving'), { once: true });
+      go();
+    }
   }
 
   function runChecking(instant: boolean) {
