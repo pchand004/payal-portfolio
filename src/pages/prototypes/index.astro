@@ -38,7 +38,7 @@ const prototypes = [
     <ul class="proto-list">
       {prototypes.map((p) => (
         <li class="proto-entry">
-          <a href={p.href} class="proto-cover-link" aria-label={`Open ${p.title}`}>
+          <a href={p.notes} class="proto-cover-link" aria-label={`${p.title}: read the notes`}>
             <img src={p.cover} alt={p.coverAlt} class="proto-cover" width="1200" height="760" loading="lazy" />
           </a>
           <div class="proto-text">

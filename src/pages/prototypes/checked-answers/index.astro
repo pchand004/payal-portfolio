@@ -26,11 +26,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   image={`${SITE}/prototypes/checked-answers-og.png`}
 >
   <div class="proto-bg" aria-hidden="true"></div>
-  {/* Dot field that lifts near the cursor, with a glow for depth */}
-  <canvas class="proto-fx" data-fx aria-hidden="true"></canvas>
 
   <header class="proto-top">
-    <a href="/prototypes" class="proto-corner">← prototypes</a>
+    <a href="/#playground" class="proto-corner">← playground</a>
     <div class="proto-corner-group">
       <button type="button" class="proto-corner proto-corner-btn" data-reset hidden>start over</button>
       <a href="/prototypes/checked-answers/notes" class="proto-corner">notes</a>
@@ -235,12 +233,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     border-radius: 4px;
   }
 
-  .proto-fx {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-  }
   .proto {
     position: relative;
     z-index: 1;
@@ -362,6 +354,120 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     color: rgba(255, 255, 255, 0.5);
   }
 
+  /* ───── Send: the question morphs into the user bubble ─────
+     The name moves from the ask box to the bubble inside startViewTransition,
+     so the browser animates one into the other. The rest of the page fades. */
+  .vt-question {
+    view-transition-name: question;
+  }
+  /* the same morph is used twice: question box → bubble, and loader card → reply */
+  .vt-card {
+    view-transition-name: answer-card;
+  }
+  ::view-transition-group(question),
+  ::view-transition-group(answer-card) {
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* the box reshapes; the text inside keeps its real size, clipped by the box */
+  ::view-transition-image-pair(question),
+  ::view-transition-image-pair(answer-card) {
+    overflow: clip;
+    border-radius: 14px;
+  }
+  ::view-transition-old(question),
+  ::view-transition-new(question) {
+    height: 100%;
+    object-fit: none;
+    object-position: left center;
+  }
+  ::view-transition-old(answer-card),
+  ::view-transition-new(answer-card) {
+    height: 100%;
+    object-fit: none;
+    object-position: left top;
+  }
+  /* the old shape hands over early, so you see one shape changing, not two */
+  ::view-transition-old(question),
+  ::view-transition-old(answer-card) {
+    animation: vt-out 160ms ease-out both;
+  }
+  ::view-transition-new(question),
+  ::view-transition-new(answer-card) {
+    animation: vt-in 200ms ease-out 40ms both;
+  }
+  @keyframes vt-out {
+    to { opacity: 0; }
+  }
+  @keyframes vt-in {
+    from { opacity: 0; }
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 350ms;
+  }
+  /* Fallback for browsers without view transitions: the bubble rises into place */
+  .chat-user p.is-arriving {
+    animation: bubble-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes bubble-in {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ───── After send: the answer card follows the bubble ───── */
+  .answer.is-waiting {
+    opacity: 0;
+  }
+  :root {
+    --beat: 350ms;
+  }
+  .answer.is-entering {
+    transform-origin: 0 0;
+    animation: card-in var(--beat) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ───── The answer streams in: blocks one after another, words typed in ───── */
+  /* blocks that haven't arrived take no space, so the panel grows as it fills */
+  .stream:not(.is-in):not(.tabs):not(.stream-lead) {
+    display: none;
+  }
+  .stream.tabs {
+    opacity: 0;
+    transition: opacity var(--beat) ease;
+  }
+  .stream.tabs.is-in {
+    opacity: 1;
+  }
+  /* the "left for you" line and the legend keep the beat */
+  .stream.is-in:not(.tabs):not(.stream-words) {
+    animation: block-in var(--beat) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes block-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* every heading and paragraph: word by word, 45ms apart, each fading in over 350ms */
+  .stream-words .w {
+    opacity: 0;
+  }
+  .stream-words.is-in .w {
+    animation: word-in 350ms ease-out both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes word-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* marks wait until the last paragraph is in, then land in reading order */
+  .answer.marks-pending .claim .dot {
+    opacity: 0;
+  }
+
   /* ───── Screen 2 · answer ───── */
   .chat {
     position: relative;
@@ -434,7 +540,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     align-items: baseline;
     opacity: 0;
     transform: translateY(4px);
-    transition: opacity 320ms ease, transform 320ms ease;
+    transition: opacity var(--beat) ease, transform var(--beat) ease;
   }
   .checking li::before {
     content: '';
@@ -530,7 +636,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     padding: 1px 0;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
-    transition: background 240ms ease, opacity 320ms ease;
+    transition: background 240ms ease, opacity 350ms ease;
   }
   .claim:hover {
     background: rgba(255, 255, 255, 0.12);
@@ -689,7 +795,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .note {
     position: absolute;
     z-index: 30;
-    width: 336px;
+    width: 416px;
     box-sizing: border-box;
     padding: 14px 18px 12px;
     border-radius: 10px;
@@ -827,7 +933,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
   /* Not enough room beside the answer: the note becomes a sheet at the bottom,
      and shows the claim it is about, since that may be off screen. */
-  @media (max-width: 1175px) {
+  @media (max-width: 1255px) {
     .note {
       position: fixed;
       left: 16px;
@@ -910,8 +1016,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .tabs-ind.is-sweeping {
       animation: none;
     }
-    .proto-fx {
-      display: none;
+    .chat-user p.is-arriving,
+    .answer.is-entering {
+      animation: none;
     }
   }
 </style>
@@ -937,6 +1044,33 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     } catch { actx = null; }
   }
+  /* "your answer is here": two soft sine notes, a fifth apart */
+  function playChime() {
+    if (!soundOn()) return;
+    if (!actx) primeSound();
+    const c = actx;
+    if (!c) return;
+    const go = () => {
+      try {
+        const t0 = c.currentTime + 0.01;
+        [[880, 0], [1318.5, 0.09]].forEach(([f, dt]) => {
+          const o = c.createOscillator();
+          const g = c.createGain();
+          o.type = 'sine';
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t0 + dt);
+          g.gain.exponentialRampToValueAtTime(0.05, t0 + dt + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.42);
+          o.connect(g).connect(c.destination);
+          o.start(t0 + dt);
+          o.stop(t0 + dt + 0.45);
+        });
+      } catch { /* a sound must never break an interaction */ }
+    };
+    if (c.state === 'suspended') c.resume().then(go).catch(() => {});
+    else go();
+  }
+
   function playTick() {
     if (!soundOn()) return;
     if (!actx) primeSound();
@@ -998,7 +1132,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
   const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
   const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
-  const wide = matchMedia('(min-width: 1176px)');
+  const wide = matchMedia('(min-width: 1256px)');
 
   /* ───── State ───── */
   const order = claims.map((c) => c.id);
@@ -1019,15 +1153,59 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
   const unresolved = () => order.filter((id) => state[id] === 'reported' || state[id] === 'doubtful');
   const claimEl = (id: string) => $<HTMLElement>(`[data-claim="${id}"]`)!;
+  /* the claims that came back needing a check (reported or doubtful), in reading order */
+  const toCheck = order.filter((id) => byId[id].status !== 'sourced');
+
+  /* the beat for everything after send: the gap between things arriving,
+     and how long each one takes to appear (also --beat in the CSS) */
+  /* ?beat=600 in the URL tries a different beat (150–1500ms), for tuning by feel */
+  const beatParam = Number(new URLSearchParams(location.search).get('beat'));
+  const GAP = beatParam >= 150 && beatParam <= 1500 ? Math.round(beatParam) : 350;
+  document.documentElement.style.setProperty('--beat', `${GAP}ms`);
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
-    userQ.textContent = q;
-    askScreen.hidden = true;
-    answerScreen.hidden = false;
-    reset.hidden = false;
-    window.scrollTo({ top: 0 });
-    runChecking(instant || reducedMotion);
+    const box = $<HTMLElement>('.ask-input-row')!;
+    const swap = () => {
+      userQ.textContent = q;
+      if (!(instant || reducedMotion)) answer.classList.add('is-waiting');
+      askScreen.hidden = true;
+      answerScreen.hidden = false;
+      reset.hidden = false;
+      window.scrollTo({ top: 0 });
+      box.classList.remove('vt-question');
+      userQ.classList.add('vt-question');
+    };
+    const go = () => runChecking(instant || reducedMotion);
+    // the card follows the bubble: it starts one beat after the bubble has landed
+    const follow = () => window.setTimeout(() => {
+      answer.classList.remove('is-waiting');
+      answer.classList.add('is-entering');
+      answer.addEventListener('animationend', () => answer.classList.remove('is-entering'), { once: true });
+      go();
+    }, GAP);
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (instant || reducedMotion) {
+      swap();
+      userQ.classList.remove('vt-question');
+      go();
+    } else if (doc.startViewTransition) {
+      // the question box and the user bubble share a name, so one morphs into the other
+      box.classList.add('vt-question');
+      const vt = doc.startViewTransition(swap);
+      vt.finished.finally(() => {
+        userQ.classList.remove('vt-question');
+        follow();
+      });
+    } else {
+      swap();
+      userQ.classList.remove('vt-question');
+      userQ.classList.add('is-arriving');
+      userQ.addEventListener('animationend', () => {
+        userQ.classList.remove('is-arriving');
+        follow();
+      }, { once: true });
+    }
   }
 
   function runChecking(instant: boolean) {
@@ -1037,27 +1215,155 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       return;
     }
     answer.classList.add('is-checking');
-    const at = [120, 760, 1420, 2140];
-    at.forEach((t, i) => {
+    // one line every GAP, starting once the card has settled
+    const start = GAP;
+    steps.forEach((step, i) => {
       setTimeout(() => {
-        steps[i].classList.add('is-on');
+        step.classList.add('is-on');
         if (i > 0) steps[i - 1].classList.add('is-done');
-      }, t);
+      }, start + i * GAP);
     });
-    setTimeout(() => {
-      steps[steps.length - 1].classList.add('is-done');
-    }, 2900);
-    setTimeout(reveal, 3150);
+    const end = start + steps.length * GAP;
+    setTimeout(() => steps[steps.length - 1].classList.add('is-done'), end);
+    setTimeout(() => reveal(true), end + GAP);
   }
 
-  function reveal() {
-    answer.classList.remove('is-checking');
-    answer.removeAttribute('aria-busy');
-    checking.hidden = true;
-    body.hidden = false;
-    setFilter('all', false);
-    render();
+  function reveal(animate = false) {
+    const apply = () => {
+      answer.classList.remove('is-checking');
+      answer.removeAttribute('aria-busy');
+      checking.hidden = true;
+      if (animate) {
+        plan = prepareStream();
+        // tabs arrive with the morph, so the loader turns into a card with tabs, never an empty one
+        plan.tabsEl.classList.add('is-in');
+      }
+      body.hidden = false;
+      setFilter('all', false);
+      render();
+    };
+    if (!animate) return apply();
+    playChime();
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (doc.startViewTransition) {
+      // same morph as the question box: the loader card reshapes into the reply
+      answer.classList.add('vt-card');
+      const vt = doc.startViewTransition(apply);
+      vt.finished.finally(() => {
+        answer.classList.remove('vt-card');
+        runStream();
+      });
+    } else {
+      apply();
+      runStream();
+    }
   }
+
+  /* ───── Streaming the answer in ─────
+     Tabs arrive with the loader-to-reply morph. Then every paragraph and heading
+     streams in word by word on one timing (45ms apart, 350ms fade each), each
+     starting as the previous one finishes. When the last one is in, the
+     marks land in reading order; then the "left for you" line and the legend
+     follow on the beat. A click on the answer finishes it. */
+  const WORD_GAP = 45;
+  const WORD_FADE = 350;
+  let streamEls: HTMLElement[] = [];
+  let streamTimers: number[] = [];
+  let streaming = false;
+  function wrapWords(root: HTMLElement) {
+    let i = 0;
+    const walk = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const parts = (node.textContent ?? '').split(/(\s+)/);
+        const frag = document.createDocumentFragment();
+        for (const part of parts) {
+          if (!part) continue;
+          if (!part.trim()) {
+            frag.append(part);
+            continue;
+          }
+          const w = document.createElement('span');
+          w.className = 'w';
+          w.style.setProperty('--d', `${i++ * WORD_GAP}ms`);
+          w.textContent = part;
+          frag.append(w);
+        }
+        node.parentNode!.replaceChild(frag, node);
+        return;
+      }
+      if (node instanceof HTMLElement && !node.classList.contains('sr-only')) Array.from(node.childNodes).forEach(walk);
+    };
+    walk(root);
+    return Math.max(0, i - 1) * WORD_GAP + WORD_FADE;
+  }
+  const later = (fn: () => void, ms: number) => streamTimers.push(window.setTimeout(fn, ms));
+  function prepareStream() {
+    const tabsEl = $<HTMLElement>('.tabs')!;
+    const prose = $<HTMLElement>('[data-prose]')!;
+    const [lead, ...rest] = Array.from(prose.children) as HTMLElement[];
+    const legend = $<HTMLElement>('.legend')!;
+    tabsEl.classList.add('stream');
+    lead.classList.add('stream', 'stream-lead', 'stream-words');
+    rest.forEach((el) => el.classList.add('stream', 'stream-words'));
+    left.classList.add('stream');
+    legend.classList.add('stream');
+    streamEls = [tabsEl, lead, ...rest, left, legend];
+    answer.classList.add('marks-pending');
+    return {
+      tabsEl,
+      lead,
+      rest: rest.map((el) => ({ el, time: wrapWords(el) })),
+      legend,
+      leadTime: wrapWords(lead),
+    };
+  }
+  let plan: ReturnType<typeof prepareStream> | null = null;
+  function runStream() {
+    if (!plan) return;
+    const { tabsEl, lead, rest, legend, leadTime } = plan;
+    streaming = true;
+    let t = 0;
+    tabsEl.classList.add('is-in');
+    // the lead starts as the morph lands
+    later(() => lead.classList.add('is-in'), t);
+    t += leadTime;
+    // each heading and paragraph starts as the previous one finishes, on the same word timing
+    rest.forEach(({ el, time }) => {
+      t += WORD_GAP;
+      later(() => el.classList.add('is-in'), t);
+      t += time;
+    });
+    later(landMarks, t);
+    t += order.length * 40 + 260 + GAP;
+    later(() => left.classList.add('is-in'), t);
+    t += GAP;
+    later(() => legend.classList.add('is-in'), t);
+    t += GAP;
+    later(endStream, t);
+  }
+  function landMarks() {
+    answer.classList.remove('marks-pending');
+    if (reducedMotion) return;
+    $$<HTMLElement>('.claim .dot').forEach((d, i) => {
+      d.style.animationDelay = `${i * 40}ms`;
+      d.classList.add('is-pulse');
+      d.addEventListener('animationend', () => d.classList.remove('is-pulse'), { once: true });
+    });
+  }
+  function endStream() {
+    streamTimers.forEach(clearTimeout);
+    streamTimers = [];
+    streaming = false;
+    answer.classList.remove('marks-pending');
+    // take the streaming classes off, so filters and highlights behave exactly as before
+    streamEls.forEach((el) => el.classList.remove('stream', 'stream-lead', 'stream-words', 'is-in'));
+    $$<HTMLElement>('.stream-done-w, [data-prose] .w').forEach((w) => w.style.removeProperty('--d'));
+  }
+  answer.addEventListener('click', (e) => {
+    if (!streaming) return;
+    e.stopPropagation();
+    endStream();
+  }, true);
 
   /* ───── Tabs ───── */
   function moveIndicator(tab: HTMLElement) {
@@ -1159,7 +1465,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     card.style.setProperty('--k', META[st].color);
     cardDot.className = `dot dot-${st}`;
     cardStatus.textContent = META[st].label;
-    cardQuote.textContent = c.text;
+    cardQuote.textContent = c.quote ?? c.text;
     cardLink.textContent = c.link;
     // for a reported claim the link given is the news piece itself: open it from here
     if (st === 'reported' && c.linkHref) {
@@ -1177,6 +1483,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     } else if (st === 'reported') {
       cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
       if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
+    } else if (st === 'doubtful' && c.actions) {
+      c.actions.forEach((a, i) => cardActions.append(button(a.label, { href: a.href, primary: i === 0 })));
     } else if (st === 'doubtful') {
       cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
       cardActions.append(button('Nearest study', { href: searchUrl(c.search) }));
@@ -1185,8 +1493,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     }
 
     const todo = unresolved();
+    const pos = toCheck.indexOf(id);
     cardNav.hidden = todo.length === 0;
-    cardLeft.textContent = todo.length ? `${todo.length} left for you` : '';
+    cardLeft.textContent = !todo.length ? '' : pos >= 0 ? `${pos + 1} of ${toCheck.length} to check` : `${toCheck.length} to check`;
     cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
   }
 
@@ -1197,6 +1506,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (!wide.matches) {
       card.style.top = '';
       card.style.left = '';
+      answer.style.paddingBottom = '';
       return;
     }
     const r = claimEl(openId).getClientRects()[0];
@@ -1204,6 +1514,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     const c = answerScreen.getBoundingClientRect();
     card.style.top = `${Math.round(r.top - c.top - 8)}px`;
     card.style.left = `${Math.round(a.right - c.left + 28)}px`;
+    // room under the answer as tall as the card, so the text and legend
+    // beside and below it can still be scrolled into view
+    answer.style.paddingBottom = `${24 + card.offsetHeight}px`;
   }
   window.addEventListener('resize', placeCard);
 
@@ -1224,6 +1537,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (!openId) return;
     claimEl(openId).classList.remove('is-open');
     openId = null;
+    answer.style.paddingBottom = '';
     card.classList.remove('is-open');
     setTimeout(() => { if (!openId) card.hidden = true; }, reducedMotion ? 0 : 260);
     render();
@@ -1275,6 +1589,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (act === 'confirm') state[id] = 'sourced';
     if (act === 'undo') state[id] = byId[id].status;
     claimEl(id).dataset.status = state[id];
+    requestAnimationFrame(placeCard);
     playTick();
     renderCard(id);
     render();
@@ -1306,72 +1621,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   reset.addEventListener('click', () => {
     location.href = location.pathname;
   });
-
-  /* ───── Background: a dot field that lifts near the cursor, with a lagging glow
-     for depth. ───── */
-  const fx = $<HTMLCanvasElement>('[data-fx]')!;
-  const fxc = fx.getContext('2d');
-  if (fxc && !reducedMotion) {
-    const SP = 34; // dot spacing
-    let W = 0;
-    let H = 0;
-    let fxRaf = 0;
-    const mouse = { x: -1e4, y: -1e4 };
-    const glow = { x: -1e4, y: -1e4 };
-    const frame = () => {
-      if (!fxRaf) fxRaf = requestAnimationFrame(drawFx);
-    };
-    function resizeFx() {
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = window.innerWidth;
-      H = window.innerHeight;
-      fx.width = Math.round(W * dpr);
-      fx.height = Math.round(H * dpr);
-      fxc!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      frame();
-    }
-    function drawFx() {
-      fxRaf = 0;
-      const c = fxc!;
-      c.clearRect(0, 0, W, H);
-      glow.x += (mouse.x - glow.x) * 0.14;
-      glow.y += (mouse.y - glow.y) * 0.14;
-      const near = mouse.x > -1000;
-      if (near) {
-        const g = c.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, 340);
-        g.addColorStop(0, 'rgba(214, 160, 255, 0.30)');
-        g.addColorStop(0.5, 'rgba(214, 160, 255, 0.10)');
-        g.addColorStop(1, 'rgba(214, 160, 255, 0)');
-        c.fillStyle = g;
-        c.fillRect(glow.x - 340, glow.y - 340, 680, 680);
-      }
-      const ox = ((W % SP) / 2) | 0;
-      const oy = ((H % SP) / 2) | 0;
-      for (let x = ox; x <= W; x += SP) {
-        for (let y = oy; y <= H; y += SP) {
-          const k = near ? Math.max(0, 1 - Math.hypot(x - glow.x, y - glow.y) / 210) : 0;
-          c.beginPath();
-          c.arc(x, y, 1.1 + k * k * 2, 0, Math.PI * 2);
-          c.fillStyle = `rgba(255,255,255,${(0.14 + k * 0.75).toFixed(3)})`;
-          c.fill();
-        }
-      }
-      const settled = Math.abs(mouse.x - glow.x) < 0.2 && Math.abs(mouse.y - glow.y) < 0.2;
-      if (!settled) frame();
-    }
-    window.addEventListener('resize', resizeFx, { passive: true });
-    window.addEventListener('pointermove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      frame();
-    }, { passive: true });
-    document.addEventListener('pointerleave', () => {
-      mouse.x = -1e4;
-      mouse.y = -1e4;
-      frame();
-    });
-    resizeFx();
-  }
 
   const hash = location.hash.replace('#', '');
   if (hash === 'answer' || hash === 'now') ask(question, hash === 'now');
