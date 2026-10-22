@@ -75,11 +75,9 @@ import '../../../styles/case-study.css';
     </section>
 
     <section class="evam-closing">
-      <div class="evam-prose">
-        <p class="evam-closing-doc">
-          Designed in Figma, built in Astro with Claude Code.
-        </p>
-        <p class="evam-back">
+      {/* outside the centred column: lines up with the footer */}
+      <div>
+        <p class="evam-back notes-back">
           <a href="/#playground" class="evam-link">← back</a>
         </p>
       </div>
@@ -97,13 +95,16 @@ import '../../../styles/case-study.css';
     --col: min(100%, 960px, max(416px, calc((100svh - 300px) * 1.6)));
   }
   .notes-hero,
-  .notes :global(.evam-prose) {
+  .notes .evam-block :global(.evam-prose) {
     width: var(--col);
     max-width: 100%;
     margin-inline: auto;
   }
   .notes-hero {
     padding-top: 28px;
+  }
+  .notes-back {
+    margin-top: 0;
   }
   .notes-head {
     display: flex;
