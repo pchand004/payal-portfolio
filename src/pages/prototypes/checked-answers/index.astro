@@ -25,13 +25,14 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   description="An AI answer that carries verification status on every claim — sourced, reported or doubtful — and leaves you a short list of what it couldn't check."
   image={`${SITE}/prototypes/checked-answers-og.png`}
 >
+  <div class="proto-frame">
   <div class="proto-bg" aria-hidden="true"></div>
 
   <header class="proto-top">
     <a href="/#playground" class="proto-corner">← playground</a>
     <div class="proto-corner-group">
       <button type="button" class="proto-corner proto-corner-btn" data-reset hidden>start over</button>
-      <a href="/prototypes/checked-answers/notes" class="proto-corner">notes</a>
+      <a href="/prototypes/checked-answers/notes" class="proto-corner" data-astro-reload>notes</a>
     </div>
   </header>
 
@@ -136,6 +137,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       </aside>
     </section>
   </main>
+  </div>
 </Prototype>
 
 <style is:global>
@@ -360,6 +362,47 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .vt-question {
     view-transition-name: question;
   }
+  /* ───── Notes ⇄ prototype: the notes hero and this page are one object ─────
+     A cross-document view transition (typed "proto-nav", so it never touches
+     the in-page ones). Going in, the hero grows into the full page; going back,
+     the page shrinks into the hero. Same 520ms morph as the question box. */
+  @view-transition {
+    navigation: auto;
+    types: proto-nav;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition {
+      navigation: none;
+    }
+  }
+  .proto-frame {
+    position: relative;
+    min-height: 100dvh;
+  }
+  html:active-view-transition-type(proto-nav) .proto-frame {
+    view-transition-name: proto-frame;
+  }
+  ::view-transition-group(proto-frame) {
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  ::view-transition-image-pair(proto-frame) {
+    overflow: clip;
+    border-radius: 12px;
+  }
+  ::view-transition-old(proto-frame),
+  ::view-transition-new(proto-frame) {
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+  ::view-transition-old(proto-frame) {
+    animation: vt-out 220ms ease-out both;
+  }
+  ::view-transition-new(proto-frame) {
+    animation: vt-in 280ms ease-out 60ms both;
+  }
+
   /* the same morph is used twice: question box → bubble, and loader card → reply */
   .vt-card {
     view-transition-name: answer-card;
@@ -1156,6 +1199,16 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   /* the claims that came back needing a check (reported or doubtful), in reading order */
   const toCheck = order.filter((id) => byId[id].status !== 'sourced');
 
+  /* each ask is a session; "start over" ends it, and anything it scheduled is dropped */
+  let session = 0;
+  let sessionTimers: number[] = [];
+  const after = (fn: () => void, ms: number) => {
+    const s = session;
+    sessionTimers.push(window.setTimeout(() => {
+      if (s === session) fn();
+    }, ms));
+  };
+
   /* the beat for everything after send: the gap between things arriving,
      and how long each one takes to appear (also --beat in the CSS) */
   /* ?beat=600 in the URL tries a different beat (150–1500ms), for tuning by feel */
@@ -1165,6 +1218,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
+    session++;
     const box = $<HTMLElement>('.ask-input-row')!;
     const swap = () => {
       userQ.textContent = q;
@@ -1178,7 +1232,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     };
     const go = () => runChecking(instant || reducedMotion);
     // the card follows the bubble: it starts one beat after the bubble has landed
-    const follow = () => window.setTimeout(() => {
+    const follow = () => after(() => {
       answer.classList.remove('is-waiting');
       answer.classList.add('is-entering');
       answer.addEventListener('animationend', () => answer.classList.remove('is-entering'), { once: true });
@@ -1193,9 +1247,10 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       // the question box and the user bubble share a name, so one morphs into the other
       box.classList.add('vt-question');
       const vt = doc.startViewTransition(swap);
+      const s = session;
       vt.finished.finally(() => {
         userQ.classList.remove('vt-question');
-        follow();
+        if (s === session) follow();
       });
     } else {
       swap();
@@ -1218,14 +1273,14 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     // one line every GAP, starting once the card has settled
     const start = GAP;
     steps.forEach((step, i) => {
-      setTimeout(() => {
+      after(() => {
         step.classList.add('is-on');
         if (i > 0) steps[i - 1].classList.add('is-done');
       }, start + i * GAP);
     });
     const end = start + steps.length * GAP;
-    setTimeout(() => steps[steps.length - 1].classList.add('is-done'), end);
-    setTimeout(() => reveal(true), end + GAP);
+    after(() => steps[steps.length - 1].classList.add('is-done'), end);
+    after(() => reveal(true), end + GAP);
   }
 
   function reveal(animate = false) {
@@ -1248,10 +1303,11 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (doc.startViewTransition) {
       // same morph as the question box: the loader card reshapes into the reply
       answer.classList.add('vt-card');
+      const s = session;
       const vt = doc.startViewTransition(apply);
       vt.finished.finally(() => {
         answer.classList.remove('vt-card');
-        runStream();
+        if (s === session) runStream();
       });
     } else {
       apply();
@@ -1357,7 +1413,13 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     answer.classList.remove('marks-pending');
     // take the streaming classes off, so filters and highlights behave exactly as before
     streamEls.forEach((el) => el.classList.remove('stream', 'stream-lead', 'stream-words', 'is-in'));
-    $$<HTMLElement>('.stream-done-w, [data-prose] .w').forEach((w) => w.style.removeProperty('--d'));
+    // unwrap the streamed words back into plain text, so a second ask starts clean
+    const parents = new Set<Node>();
+    $$<HTMLElement>('[data-prose] .w').forEach((w) => {
+      if (w.parentNode) parents.add(w.parentNode);
+      w.replaceWith(document.createTextNode(w.textContent ?? ''));
+    });
+    parents.forEach((n) => n.normalize());
   }
   answer.addEventListener('click', (e) => {
     if (!streaming) return;
@@ -1600,8 +1662,33 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     lastFocus = walk;
     step(1);
   });
+  /* ↑ / ↓ move through the claims (only the ones the current tab shows), in
+     reading order. With a note open, the note follows; otherwise Enter opens
+     the claim you're on. Esc closes the note. */
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && openId) closeCard();
+    if (e.key === 'Escape' && openId) {
+      closeCard();
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    if (answerScreen.hidden || body.hidden || streaming || e.altKey || e.metaKey || e.ctrlKey) return;
+    const t = e.target as HTMLElement | null;
+    if (t?.closest('input, textarea, select, [role="tab"]')) return;
+    const f = answer.dataset.filter ?? 'all';
+    const list = $$<HTMLElement>('.claim').filter((c) => f === 'all' || c.dataset.status === f);
+    if (!list.length) return;
+    e.preventDefault();
+    const cur = openId ? claimEl(openId) : (document.activeElement as HTMLElement | null)?.closest<HTMLElement>('.claim') ?? null;
+    let i = cur ? list.indexOf(cur) : -1;
+    if (e.key === 'ArrowDown') i = Math.min(list.length - 1, i + 1);
+    else i = i < 0 ? list.length - 1 : Math.max(0, i - 1);
+    const el = list[i];
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
+    if (openId && openId !== el.dataset.claim) {
+      lastFocus = el; // Esc comes back to this claim, not the first one opened
+      openCard(el.dataset.claim!);
+    }
   });
 
   /* ───── Ask ───── */
@@ -1618,9 +1705,59 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       ask(input.value);
     });
   });
-  reset.addEventListener('click', () => {
-    location.href = location.pathname;
-  });
+  /* Start over: the send transition in reverse. The bubble drops back into the
+     question box, the answer goes, and everything is put back as it was. */
+  function resetAnswer() {
+    session++;
+    sessionTimers.forEach(clearTimeout);
+    sessionTimers = [];
+    if (openId) closeCard();
+    if (streaming || plan) endStream();
+    plan = null;
+    order.forEach((id) => {
+      state[id] = byId[id].status;
+      claimEl(id).dataset.status = state[id];
+    });
+    searched.clear();
+    answer.classList.remove('is-checking', 'is-waiting', 'is-entering', 'marks-pending', 'vt-card');
+    answer.setAttribute('aria-busy', 'true');
+    answer.style.paddingBottom = '';
+    checking.hidden = false;
+    steps.forEach((st) => st.classList.remove('is-on', 'is-done'));
+    body.hidden = true;
+    answer.dataset.filter = 'all';
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === 'all')));
+  }
+  function startOver() {
+    const box = $<HTMLElement>('.ask-input-row')!;
+    input.value = userQ.textContent || question;
+    const swapBack = () => {
+      resetAnswer();
+      answerScreen.hidden = true;
+      askScreen.hidden = false;
+      reset.hidden = true;
+      window.scrollTo({ top: 0 });
+      userQ.classList.remove('vt-question');
+      box.classList.add('vt-question');
+    };
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (!reducedMotion && doc.startViewTransition) {
+      // the bubble carries the name now, so it morphs back into the box
+      window.scrollTo({ top: 0 });
+      userQ.classList.add('vt-question');
+      const vt = doc.startViewTransition(swapBack);
+      vt.finished.finally(() => {
+        box.classList.remove('vt-question');
+        input.focus({ preventScroll: true });
+      });
+    } else {
+      swapBack();
+      box.classList.remove('vt-question');
+      input.focus({ preventScroll: true });
+    }
+    playTick();
+  }
+  reset.addEventListener('click', startOver);
 
   const hash = location.hash.replace('#', '');
   if (hash === 'answer' || hash === 'now') ask(question, hash === 'now');

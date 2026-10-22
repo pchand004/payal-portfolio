@@ -24,7 +24,7 @@ import '../../../styles/case-study.css';
           <p class="evam-eyebrow">October 2026</p>
           <h1 class="notes-title">Checked answers</h1>
         </div>
-        <a href="/prototypes/checked-answers" class="notes-open">Open prototype <span aria-hidden="true">↗</span></a>
+        <a href="/prototypes/checked-answers" class="notes-open" data-astro-reload>Open prototype <span aria-hidden="true">↗</span></a>
       </div>
       <figure class="notes-figure">
         {/* the interaction on a loop; the gif stands in as the poster until the video loads */}
@@ -110,6 +110,19 @@ import '../../../styles/case-study.css';
   }
   .notes-hero {
     padding-top: 28px;
+  }
+  /* the hero and the prototype page are one object: see the prototype page */
+  @view-transition {
+    navigation: auto;
+    types: proto-nav;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition {
+      navigation: none;
+    }
+  }
+  :global(html:active-view-transition-type(proto-nav)) .notes-gif {
+    view-transition-name: proto-frame;
   }
   .notes-back {
     margin-top: 0;
