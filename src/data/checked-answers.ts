@@ -20,6 +20,10 @@ export type Claim = {
   search: string;
   /** Card footer line. */
   note?: string;
+  /** What the card quotes, when it should differ from the sentence in the answer. */
+  quote?: string;
+  /** Card buttons, when this claim needs its own instead of the status defaults. */
+  actions?: { label: string; href: string }[];
 };
 
 export type Part = string | { claim: string };
@@ -121,8 +125,14 @@ export const claims: Claim[] = [
     status: 'doubtful',
     text: 'A New Zealand study that filmed adolescents with body-worn and bedroom cameras found that screen time in the two hours before bed had no overall association with sleep, but using screens once in bed and before attempting sleep was associated with delayed onset and less sleep, particularly for interactive use. Each extra 10 minutes of interactive in-bed use cut sleep by about the same amount.',
     reason: 'a detail is off',
-    link: 'Study abstract · in-bed use is there, the “10 minutes” figure is not',
+    link: 'Nursing commentary of the study · Evidence-Based Nursing, 2025',
     search: 'New Zealand adolescents body-worn cameras screen time before bed in bed sleep 2025',
+    quote:
+      'A New Zealand study that filmed adolescents with body-worn and bedroom cameras found that screen time in the two hours before bed had no overall association with sleep, but using screens once in bed and before attempting sleep was associated with delayed onset and less sleep, particularly for interactive use.',
+    actions: [
+      { label: 'Open the press release', href: 'https://otago.ac.nz/news/newsroom/keep-devices-out-of-bed-for-better-sleep-study' },
+      { label: 'Read the commentary', href: 'https://shura.shu.ac.uk/36551/1/Smith-ScreenUseAt%28VoR%29.pdf' },
+    ],
   },
   {
     id: 'c7',

@@ -689,7 +689,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .note {
     position: absolute;
     z-index: 30;
-    width: 336px;
+    width: 416px;
     box-sizing: border-box;
     padding: 14px 18px 12px;
     border-radius: 10px;
@@ -827,7 +827,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
   /* Not enough room beside the answer: the note becomes a sheet at the bottom,
      and shows the claim it is about, since that may be off screen. */
-  @media (max-width: 1175px) {
+  @media (max-width: 1255px) {
     .note {
       position: fixed;
       left: 16px;
@@ -998,7 +998,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
   const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
   const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
-  const wide = matchMedia('(min-width: 1176px)');
+  const wide = matchMedia('(min-width: 1256px)');
 
   /* ───── State ───── */
   const order = claims.map((c) => c.id);
@@ -1019,6 +1019,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
   const unresolved = () => order.filter((id) => state[id] === 'reported' || state[id] === 'doubtful');
   const claimEl = (id: string) => $<HTMLElement>(`[data-claim="${id}"]`)!;
+  /* the claims that came back needing a check (reported or doubtful), in reading order */
+  const toCheck = order.filter((id) => byId[id].status !== 'sourced');
 
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
@@ -1159,7 +1161,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     card.style.setProperty('--k', META[st].color);
     cardDot.className = `dot dot-${st}`;
     cardStatus.textContent = META[st].label;
-    cardQuote.textContent = c.text;
+    cardQuote.textContent = c.quote ?? c.text;
     cardLink.textContent = c.link;
     // for a reported claim the link given is the news piece itself: open it from here
     if (st === 'reported' && c.linkHref) {
@@ -1177,6 +1179,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     } else if (st === 'reported') {
       cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
       if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
+    } else if (st === 'doubtful' && c.actions) {
+      c.actions.forEach((a, i) => cardActions.append(button(a.label, { href: a.href, primary: i === 0 })));
     } else if (st === 'doubtful') {
       cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
       cardActions.append(button('Nearest study', { href: searchUrl(c.search) }));
@@ -1185,8 +1189,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     }
 
     const todo = unresolved();
+    const pos = toCheck.indexOf(id);
     cardNav.hidden = todo.length === 0;
-    cardLeft.textContent = todo.length ? `${todo.length} left for you` : '';
+    cardLeft.textContent = !todo.length ? '' : pos >= 0 ? `${pos + 1} of ${toCheck.length} to check` : `${toCheck.length} to check`;
     cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
   }
 
@@ -1197,6 +1202,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (!wide.matches) {
       card.style.top = '';
       card.style.left = '';
+      answer.style.paddingBottom = '';
       return;
     }
     const r = claimEl(openId).getClientRects()[0];
@@ -1204,6 +1210,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     const c = answerScreen.getBoundingClientRect();
     card.style.top = `${Math.round(r.top - c.top - 8)}px`;
     card.style.left = `${Math.round(a.right - c.left + 28)}px`;
+    // room under the answer as tall as the card, so the text and legend
+    // beside and below it can still be scrolled into view
+    answer.style.paddingBottom = `${24 + card.offsetHeight}px`;
   }
   window.addEventListener('resize', placeCard);
 
@@ -1224,6 +1233,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (!openId) return;
     claimEl(openId).classList.remove('is-open');
     openId = null;
+    answer.style.paddingBottom = '';
     card.classList.remove('is-open');
     setTimeout(() => { if (!openId) card.hidden = true; }, reducedMotion ? 0 : 260);
     render();
@@ -1275,6 +1285,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     if (act === 'confirm') state[id] = 'sourced';
     if (act === 'undo') state[id] = byId[id].status;
     claimEl(id).dataset.status = state[id];
+    requestAnimationFrame(placeCard);
     playTick();
     renderCard(id);
     render();
