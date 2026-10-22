@@ -452,32 +452,24 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     opacity: 1;
   }
   /* the "left for you" line and the legend keep the beat */
-  .stream.is-in:not(.tabs):not(.stream-lead):not(.stream-rise) {
+  .stream.is-in:not(.tabs):not(.stream-words) {
     animation: block-in var(--beat) cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
   @keyframes block-in {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
-  /* lead paragraph: word by word, 45ms apart, each fading in over 350ms */
-  .stream-lead .w {
+  /* every heading and paragraph: word by word, 45ms apart, each fading in over 350ms */
+  .stream-words .w {
     opacity: 0;
   }
-  .stream-lead.is-in .w {
+  .stream-words.is-in .w {
     animation: word-in 350ms ease-out both;
     animation-delay: var(--d, 0ms);
   }
   @keyframes word-in {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-  /* the rest: fade in and rise 8px, 450ms ease-out (started 160ms apart by the script) */
-  .stream-rise.is-in {
-    animation: rise-in 450ms ease-out both;
-  }
-  @keyframes rise-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
   }
   /* marks wait until the last paragraph is in, then land in reading order */
   .answer.marks-pending .claim .dot {
@@ -1279,15 +1271,13 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
 
   /* ───── Streaming the answer in ─────
-     Tabs arrive with the loader-to-reply morph, then the lead paragraph streams in word by word
-     (45ms apart, 350ms fade each). The remaining headings and paragraphs fade
-     in and rise 8px, 160ms apart (450ms each). When the last one is in, the
+     Tabs arrive with the loader-to-reply morph. Then every paragraph and heading
+     streams in word by word on one timing (45ms apart, 350ms fade each), each
+     starting as the previous one finishes. When the last one is in, the
      marks land in reading order; then the "left for you" line and the legend
      follow on the beat. A click on the answer finishes it. */
   const WORD_GAP = 45;
   const WORD_FADE = 350;
-  const RISE_GAP = 160;
-  const RISE = 450;
   let streamEls: HTMLElement[] = [];
   let streamTimers: number[] = [];
   let streaming = false;
@@ -1324,13 +1314,19 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     const [lead, ...rest] = Array.from(prose.children) as HTMLElement[];
     const legend = $<HTMLElement>('.legend')!;
     tabsEl.classList.add('stream');
-    lead.classList.add('stream', 'stream-lead');
-    rest.forEach((el) => el.classList.add('stream', 'stream-rise'));
+    lead.classList.add('stream', 'stream-lead', 'stream-words');
+    rest.forEach((el) => el.classList.add('stream', 'stream-words'));
     left.classList.add('stream');
     legend.classList.add('stream');
     streamEls = [tabsEl, lead, ...rest, left, legend];
     answer.classList.add('marks-pending');
-    return { tabsEl, lead, rest, legend, leadTime: wrapWords(lead) };
+    return {
+      tabsEl,
+      lead,
+      rest: rest.map((el) => ({ el, time: wrapWords(el) })),
+      legend,
+      leadTime: wrapWords(lead),
+    };
   }
   let plan: ReturnType<typeof prepareStream> | null = null;
   function runStream() {
@@ -1342,8 +1338,12 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     // the lead starts as the morph lands
     later(() => lead.classList.add('is-in'), t);
     t += leadTime;
-    rest.forEach((el, i) => later(() => el.classList.add('is-in'), t + i * RISE_GAP));
-    t += (rest.length - 1) * RISE_GAP + RISE;
+    // each heading and paragraph starts as the previous one finishes, on the same word timing
+    rest.forEach(({ el, time }) => {
+      t += WORD_GAP;
+      later(() => el.classList.add('is-in'), t);
+      t += time;
+    });
     later(landMarks, t);
     t += order.length * 40 + 260 + GAP;
     later(() => left.classList.add('is-in'), t);
@@ -1367,7 +1367,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     streaming = false;
     answer.classList.remove('marks-pending');
     // take the streaming classes off, so filters and highlights behave exactly as before
-    streamEls.forEach((el) => el.classList.remove('stream', 'stream-lead', 'stream-rise', 'is-in'));
+    streamEls.forEach((el) => el.classList.remove('stream', 'stream-lead', 'stream-words', 'is-in'));
     $$<HTMLElement>('.stream-done-w, [data-prose] .w').forEach((w) => w.style.removeProperty('--d'));
   }
   answer.addEventListener('click', (e) => {
