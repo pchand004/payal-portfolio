@@ -26,11 +26,9 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   image={`${SITE}/prototypes/checked-answers-og.png`}
 >
   <div class="proto-bg" aria-hidden="true"></div>
-  {/* Dot field that lifts near the cursor, with a glow for depth */}
-  <canvas class="proto-fx" data-fx aria-hidden="true"></canvas>
 
   <header class="proto-top">
-    <a href="/prototypes" class="proto-corner">← prototypes</a>
+    <a href="/#playground" class="proto-corner">← playground</a>
     <div class="proto-corner-group">
       <button type="button" class="proto-corner proto-corner-btn" data-reset hidden>start over</button>
       <a href="/prototypes/checked-answers/notes" class="proto-corner">notes</a>
@@ -235,12 +233,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     border-radius: 4px;
   }
 
-  .proto-fx {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-  }
   .proto {
     position: relative;
     z-index: 1;
@@ -1024,9 +1016,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .tabs-ind.is-sweeping {
       animation: none;
     }
-    .proto-fx {
-      display: none;
-    }
     .chat-user p.is-arriving,
     .answer.is-entering {
       animation: none;
@@ -1632,72 +1621,6 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   reset.addEventListener('click', () => {
     location.href = location.pathname;
   });
-
-  /* ───── Background: a dot field that lifts near the cursor, with a lagging glow
-     for depth. ───── */
-  const fx = $<HTMLCanvasElement>('[data-fx]')!;
-  const fxc = fx.getContext('2d');
-  if (fxc && !reducedMotion) {
-    const SP = 34; // dot spacing
-    let W = 0;
-    let H = 0;
-    let fxRaf = 0;
-    const mouse = { x: -1e4, y: -1e4 };
-    const glow = { x: -1e4, y: -1e4 };
-    const frame = () => {
-      if (!fxRaf) fxRaf = requestAnimationFrame(drawFx);
-    };
-    function resizeFx() {
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = window.innerWidth;
-      H = window.innerHeight;
-      fx.width = Math.round(W * dpr);
-      fx.height = Math.round(H * dpr);
-      fxc!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      frame();
-    }
-    function drawFx() {
-      fxRaf = 0;
-      const c = fxc!;
-      c.clearRect(0, 0, W, H);
-      glow.x += (mouse.x - glow.x) * 0.14;
-      glow.y += (mouse.y - glow.y) * 0.14;
-      const near = mouse.x > -1000;
-      if (near) {
-        const g = c.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, 340);
-        g.addColorStop(0, 'rgba(214, 160, 255, 0.30)');
-        g.addColorStop(0.5, 'rgba(214, 160, 255, 0.10)');
-        g.addColorStop(1, 'rgba(214, 160, 255, 0)');
-        c.fillStyle = g;
-        c.fillRect(glow.x - 340, glow.y - 340, 680, 680);
-      }
-      const ox = ((W % SP) / 2) | 0;
-      const oy = ((H % SP) / 2) | 0;
-      for (let x = ox; x <= W; x += SP) {
-        for (let y = oy; y <= H; y += SP) {
-          const k = near ? Math.max(0, 1 - Math.hypot(x - glow.x, y - glow.y) / 210) : 0;
-          c.beginPath();
-          c.arc(x, y, 1.1 + k * k * 2, 0, Math.PI * 2);
-          c.fillStyle = `rgba(255,255,255,${(0.14 + k * 0.75).toFixed(3)})`;
-          c.fill();
-        }
-      }
-      const settled = Math.abs(mouse.x - glow.x) < 0.2 && Math.abs(mouse.y - glow.y) < 0.2;
-      if (!settled) frame();
-    }
-    window.addEventListener('resize', resizeFx, { passive: true });
-    window.addEventListener('pointermove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      frame();
-    }, { passive: true });
-    document.addEventListener('pointerleave', () => {
-      mouse.x = -1e4;
-      mouse.y = -1e4;
-      frame();
-    });
-    resizeFx();
-  }
 
   const hash = location.hash.replace('#', '');
   if (hash === 'answer' || hash === 'now') ask(question, hash === 'now');

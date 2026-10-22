@@ -92,9 +92,46 @@ import '../../../styles/case-study.css';
   </article>
 
   <Footer />
+
+  {/* pinned bottom right while you read; opens the prototype in this tab */}
+  <a href="/prototypes/checked-answers" class="visit-proto">Visit prototype <span aria-hidden="true">→</span></a>
 </Layout>
 
 <style>
+  .visit-proto {
+    position: fixed;
+    right: 24px;
+    bottom: 20px;
+    z-index: 40;
+    padding: 6px 2px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    background: none;
+    transition: color 200ms ease;
+  }
+  .visit-proto span {
+    display: inline-block;
+    transition: transform 200ms ease;
+  }
+  .visit-proto:hover {
+    color: var(--accent-hover);
+  }
+  .visit-proto:hover span {
+    transform: translateX(3px);
+  }
+  .visit-proto:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+  @media (max-width: 640px) {
+    .visit-proto {
+      right: 16px;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+  }
   .notes-cta {
     display: inline-flex;
     align-items: center;

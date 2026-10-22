@@ -175,7 +175,7 @@ const playground = [
     tagline:
       "An AI answer that carries verification status on every claim — sourced, reported or doubtful — so what's left for you is a short list, not “verify everything”.",
     video: '/videos/playground-checked-answers.mp4',
-    href: '/prototypes/checked-answers',
+    href: '/prototypes/checked-answers/notes',
   },
   {
     name: 'Margin',
@@ -410,8 +410,8 @@ const playground = [
       {playground.map((item) => (
         <a
           href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
+          target={item.href.startsWith('/') ? undefined : '_blank'}
+          rel={item.href.startsWith('/') ? undefined : 'noopener noreferrer'}
           class:list={['playground-card', `playground-card-${item.slug ?? item.name.toLowerCase()}`]}
         >
           <div class="playground-media">
