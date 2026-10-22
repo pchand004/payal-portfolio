@@ -409,6 +409,56 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     to { opacity: 1; transform: none; }
   }
 
+  /* ───── After send: the answer card follows the bubble ───── */
+  .answer.is-waiting {
+    opacity: 0;
+  }
+  .answer.is-entering {
+    transform-origin: 0 0;
+    animation: card-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ───── The answer streams in: blocks one after another, words typed in ───── */
+  /* blocks that haven't arrived take no space, so the panel grows as it fills */
+  .stream:not(.is-in):not(.tabs) {
+    display: none;
+  }
+  .stream.tabs {
+    opacity: 0;
+    transition: opacity 280ms ease;
+  }
+  .stream.tabs.is-in {
+    opacity: 1;
+  }
+  .stream.is-in:not(.tabs) {
+    animation: block-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes block-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .stream .w,
+  .stream .claim > .dot {
+    opacity: 0;
+  }
+  .stream.is-in .w,
+  .stream.is-in .claim > .dot {
+    animation: word-in 220ms ease-out both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes word-in {
+    from { opacity: 0; filter: blur(3px); }
+    to { opacity: 1; filter: none; }
+  }
+  /* a claim's background waits for its words, so it doesn't arrive as an empty bar */
+  .stream .claim {
+    transition: background 240ms ease var(--cd, 0ms), opacity 320ms ease;
+  }
+
   /* ───── Screen 2 · answer ───── */
   .chat {
     position: relative;
@@ -960,7 +1010,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     .proto-fx {
       display: none;
     }
-    .chat-user p.is-arriving {
+    .chat-user p.is-arriving,
+    .answer.is-entering {
       animation: none;
     }
   }
@@ -987,6 +1038,33 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     } catch { actx = null; }
   }
+  /* "your answer is here": two soft sine notes, a fifth apart */
+  function playChime() {
+    if (!soundOn()) return;
+    if (!actx) primeSound();
+    const c = actx;
+    if (!c) return;
+    const go = () => {
+      try {
+        const t0 = c.currentTime + 0.01;
+        [[880, 0], [1318.5, 0.09]].forEach(([f, dt]) => {
+          const o = c.createOscillator();
+          const g = c.createGain();
+          o.type = 'sine';
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t0 + dt);
+          g.gain.exponentialRampToValueAtTime(0.05, t0 + dt + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.42);
+          o.connect(g).connect(c.destination);
+          o.start(t0 + dt);
+          o.stop(t0 + dt + 0.45);
+        });
+      } catch { /* a sound must never break an interaction */ }
+    };
+    if (c.state === 'suspended') c.resume().then(go).catch(() => {});
+    else go();
+  }
+
   function playTick() {
     if (!soundOn()) return;
     if (!actx) primeSound();
@@ -1072,11 +1150,15 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   /* the claims that came back needing a check (reported or doubtful), in reading order */
   const toCheck = order.filter((id) => byId[id].status !== 'sourced');
 
+  /* the beat between things arriving after send (within 200–350ms) */
+  const GAP = 280;
+
   /* ───── Screen 1 → 2 ───── */
   function ask(q: string, instant = false) {
     const box = $<HTMLElement>('.ask-input-row')!;
     const swap = () => {
       userQ.textContent = q;
+      if (!(instant || reducedMotion)) answer.classList.add('is-waiting');
       askScreen.hidden = true;
       answerScreen.hidden = false;
       reset.hidden = false;
@@ -1085,6 +1167,13 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       userQ.classList.add('vt-question');
     };
     const go = () => runChecking(instant || reducedMotion);
+    // the card follows the bubble: it starts 280ms after the bubble has landed
+    const follow = () => window.setTimeout(() => {
+      answer.classList.remove('is-waiting');
+      answer.classList.add('is-entering');
+      answer.addEventListener('animationend', () => answer.classList.remove('is-entering'), { once: true });
+      go();
+    }, GAP);
     const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
     if (instant || reducedMotion) {
       swap();
@@ -1094,14 +1183,18 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       // the question box and the user bubble share a name, so one morphs into the other
       box.classList.add('vt-question');
       const vt = doc.startViewTransition(swap);
-      vt.finished.finally(() => userQ.classList.remove('vt-question'));
-      go();
+      vt.finished.finally(() => {
+        userQ.classList.remove('vt-question');
+        follow();
+      });
     } else {
       swap();
       userQ.classList.remove('vt-question');
       userQ.classList.add('is-arriving');
-      userQ.addEventListener('animationend', () => userQ.classList.remove('is-arriving'), { once: true });
-      go();
+      userQ.addEventListener('animationend', () => {
+        userQ.classList.remove('is-arriving');
+        follow();
+      }, { once: true });
     }
   }
 
@@ -1112,27 +1205,110 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
       return;
     }
     answer.classList.add('is-checking');
-    const at = [120, 760, 1420, 2140];
-    at.forEach((t, i) => {
+    // one line every GAP, starting once the card has settled
+    const start = 420;
+    steps.forEach((step, i) => {
       setTimeout(() => {
-        steps[i].classList.add('is-on');
+        step.classList.add('is-on');
         if (i > 0) steps[i - 1].classList.add('is-done');
-      }, t);
+      }, start + i * GAP);
     });
-    setTimeout(() => {
-      steps[steps.length - 1].classList.add('is-done');
-    }, 2900);
-    setTimeout(reveal, 3150);
+    const end = start + steps.length * GAP;
+    setTimeout(() => steps[steps.length - 1].classList.add('is-done'), end);
+    setTimeout(() => reveal(true), end + GAP);
   }
 
-  function reveal() {
+  function reveal(animate = false) {
     answer.classList.remove('is-checking');
     answer.removeAttribute('aria-busy');
     checking.hidden = true;
+    if (animate) prepareStream();
     body.hidden = false;
     setFilter('all', false);
     render();
+    if (animate) {
+      playChime();
+      runStream();
+    }
   }
+
+  /* ───── Streaming the answer in ─────
+     Blocks (tabs, summary, each heading and paragraph, the "left for you" line,
+     the legend) arrive one after another, GAP apart. Inside a paragraph the
+     words fade in one by one, WORD ms apart, like typing. The next block waits
+     for the previous one to finish typing. A click on the answer finishes it. */
+  const WORD = 6;
+  let blocks: { el: HTMLElement; typing: number }[] = [];
+  let streamTimer = 0;
+  let streaming = false;
+  function wrapWords(root: HTMLElement) {
+    let i = 0;
+    const walk = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const parts = (node.textContent ?? '').split(/(\s+)/);
+        if (parts.length < 2 && !parts[0]?.trim()) return;
+        const frag = document.createDocumentFragment();
+        for (const part of parts) {
+          if (!part) continue;
+          if (!part.trim()) {
+            frag.append(part);
+            continue;
+          }
+          const w = document.createElement('span');
+          w.className = 'w';
+          w.style.setProperty('--d', `${i++ * WORD}ms`);
+          w.textContent = part;
+          frag.append(w);
+        }
+        node.parentNode!.replaceChild(frag, node);
+        return;
+      }
+      if (!(node instanceof HTMLElement) || node.classList.contains('sr-only')) return;
+      Array.from(node.childNodes).forEach(walk);
+      if (node.classList.contains('claim')) {
+        // the mark lands right after the claim's last word; its highlight waits for its first
+        node.querySelector<HTMLElement>(':scope > .dot')?.style.setProperty('--d', `${i++ * WORD + 60}ms`);
+        const first = node.querySelector<HTMLElement>('.w');
+        if (first) node.style.setProperty('--cd', first.style.getPropertyValue('--d'));
+      }
+    };
+    walk(root);
+    return i * WORD + 220;
+  }
+  function prepareStream() {
+    const prose = $<HTMLElement>('[data-prose]')!;
+    const els = [$<HTMLElement>('.tabs')!, ...Array.from(prose.children) as HTMLElement[], left, $<HTMLElement>('.legend')!];
+    blocks = els.map((el) => {
+      el.classList.add('stream');
+      const typing = el.tagName === 'P' && el !== left ? wrapWords(el) : 0;
+      return { el, typing };
+    });
+  }
+  function runStream() {
+    streaming = true;
+    let i = 0;
+    const next = () => {
+      if (i >= blocks.length) return endStream();
+      const b = blocks[i++];
+      b.el.classList.add('is-in');
+      streamTimer = window.setTimeout(next, b.typing + GAP);
+    };
+    next();
+  }
+  function endStream() {
+    clearTimeout(streamTimer);
+    streaming = false;
+    blocks.forEach(({ el }) => {
+      el.classList.add('is-in');
+      el.querySelectorAll<HTMLElement>('.w, .claim > .dot').forEach((w) => w.style.setProperty('--d', '0ms'));
+      el.querySelectorAll<HTMLElement>('.claim').forEach((c) => c.style.removeProperty('--cd'));
+    });
+  }
+  answer.addEventListener('click', (e) => {
+    if (!streaming) return;
+    e.stopPropagation();
+    endStream();
+  }, true);
 
   /* ───── Tabs ───── */
   function moveIndicator(tab: HTMLElement) {
