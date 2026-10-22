@@ -368,12 +368,18 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   .vt-question {
     view-transition-name: question;
   }
-  ::view-transition-group(question) {
+  /* the same morph is used twice: question box → bubble, and loader card → reply */
+  .vt-card {
+    view-transition-name: answer-card;
+  }
+  ::view-transition-group(question),
+  ::view-transition-group(answer-card) {
     animation-duration: 520ms;
     animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   /* the box reshapes; the text inside keeps its real size, clipped by the box */
-  ::view-transition-image-pair(question) {
+  ::view-transition-image-pair(question),
+  ::view-transition-image-pair(answer-card) {
     overflow: clip;
     border-radius: 14px;
   }
@@ -383,11 +389,19 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     object-fit: none;
     object-position: left center;
   }
-  /* the tall box hands over early, so you see one shape travelling, not two */
-  ::view-transition-old(question) {
+  ::view-transition-old(answer-card),
+  ::view-transition-new(answer-card) {
+    height: 100%;
+    object-fit: none;
+    object-position: left top;
+  }
+  /* the old shape hands over early, so you see one shape changing, not two */
+  ::view-transition-old(question),
+  ::view-transition-old(answer-card) {
     animation: vt-out 160ms ease-out both;
   }
-  ::view-transition-new(question) {
+  ::view-transition-new(question),
+  ::view-transition-new(answer-card) {
     animation: vt-in 200ms ease-out 40ms both;
   }
   @keyframes vt-out {
@@ -427,7 +441,7 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
 
   /* ───── The answer streams in: blocks one after another, words typed in ───── */
   /* blocks that haven't arrived take no space, so the panel grows as it fills */
-  .stream:not(.is-in):not(.tabs) {
+  .stream:not(.is-in):not(.tabs):not(.stream-lead) {
     display: none;
   }
   .stream.tabs {
@@ -445,21 +459,21 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
-  /* lead paragraph: word by word, 20ms apart, each fading in over 200ms */
+  /* lead paragraph: word by word, 45ms apart, each fading in over 350ms */
   .stream-lead .w {
     opacity: 0;
   }
   .stream-lead.is-in .w {
-    animation: word-in 200ms ease-out both;
+    animation: word-in 350ms ease-out both;
     animation-delay: var(--d, 0ms);
   }
   @keyframes word-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  /* the rest: fade in and rise 8px, 300ms ease-out (started 70ms apart by the script) */
+  /* the rest: fade in and rise 8px, 450ms ease-out (started 160ms apart by the script) */
   .stream-rise.is-in {
-    animation: rise-in 300ms ease-out both;
+    animation: rise-in 450ms ease-out both;
   }
   @keyframes rise-in {
     from { opacity: 0; transform: translateY(8px); }
@@ -1234,29 +1248,46 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
   }
 
   function reveal(animate = false) {
-    answer.classList.remove('is-checking');
-    answer.removeAttribute('aria-busy');
-    checking.hidden = true;
-    if (animate) plan = prepareStream();
-    body.hidden = false;
-    setFilter('all', false);
-    render();
-    if (animate) {
-      playChime();
+    const apply = () => {
+      answer.classList.remove('is-checking');
+      answer.removeAttribute('aria-busy');
+      checking.hidden = true;
+      if (animate) {
+        plan = prepareStream();
+        // tabs arrive with the morph, so the loader turns into a card with tabs, never an empty one
+        plan.tabsEl.classList.add('is-in');
+      }
+      body.hidden = false;
+      setFilter('all', false);
+      render();
+    };
+    if (!animate) return apply();
+    playChime();
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (doc.startViewTransition) {
+      // same morph as the question box: the loader card reshapes into the reply
+      answer.classList.add('vt-card');
+      const vt = doc.startViewTransition(apply);
+      vt.finished.finally(() => {
+        answer.classList.remove('vt-card');
+        runStream();
+      });
+    } else {
+      apply();
       runStream();
     }
   }
 
   /* ───── Streaming the answer in ─────
-     Tabs arrive on the beat, then the lead paragraph streams in word by word
-     (20ms apart, 200ms fade each). The remaining headings and paragraphs fade
-     in and rise 8px, 70ms apart (300ms each). When the last one is in, the
+     Tabs arrive with the loader-to-reply morph, then the lead paragraph streams in word by word
+     (45ms apart, 350ms fade each). The remaining headings and paragraphs fade
+     in and rise 8px, 160ms apart (450ms each). When the last one is in, the
      marks land in reading order; then the "left for you" line and the legend
      follow on the beat. A click on the answer finishes it. */
-  const WORD_GAP = 20;
-  const WORD_FADE = 200;
-  const RISE_GAP = 70;
-  const RISE = 300;
+  const WORD_GAP = 45;
+  const WORD_FADE = 350;
+  const RISE_GAP = 160;
+  const RISE = 450;
   let streamEls: HTMLElement[] = [];
   let streamTimers: number[] = [];
   let streaming = false;
@@ -1307,8 +1338,8 @@ const SITE = 'https://payal-portfolio-five.vercel.app';
     const { tabsEl, lead, rest, legend, leadTime } = plan;
     streaming = true;
     let t = 0;
-    later(() => tabsEl.classList.add('is-in'), t);
-    t += GAP;
+    tabsEl.classList.add('is-in');
+    // the lead starts as the morph lands
     later(() => lead.classList.add('is-in'), t);
     t += leadTime;
     rest.forEach((el, i) => later(() => el.classList.add('is-in'), t + i * RISE_GAP));
