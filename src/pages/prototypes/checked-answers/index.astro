@@ -1,0 +1,1378 @@
+---
+/**
+ * Checked answers — a live prototype.
+ *
+ * An AI answer that carries verification status on every claim: the model has
+ * done the checking it can (sourced / reported / doubtful) and leaves the
+ * reader a short, concrete list for what it couldn't. Two screens: ask, then
+ * the answer. The question is canned: whatever you ask, you get the one
+ * pre-checked answer in src/data/checked-answers.ts.
+ *
+ *   #answer  in the URL submits the question on load (with the checking beat)
+ *   #now     skips the checking beat too (used for screenshots)
+ */
+import Prototype from '../../../layouts/Prototype.astro';
+import { question, suggestions, summary, sections, claims, claimById } from '../../../data/checked-answers';
+
+const STATUS_LABEL = { sourced: 'sourced', reported: 'reported', doubtful: 'doubtful' } as const;
+const count = (s: string) => claims.filter((c) => c.status === s).length;
+
+const SITE = 'https://payal-portfolio-five.vercel.app';
+---
+
+<Prototype
+  title="Checked answers · a prototype by Payal Chand"
+  description="An AI answer that carries verification status on every claim — sourced, reported or doubtful — and leaves you a short list of what it couldn't check."
+  image={`${SITE}/prototypes/checked-answers-og.png`}
+>
+  <div class="proto-bg" aria-hidden="true"></div>
+  {/* Dot field that lifts near the cursor, with a glow for depth */}
+  <canvas class="proto-fx" data-fx aria-hidden="true"></canvas>
+
+  <header class="proto-top">
+    <a href="/prototypes" class="proto-corner">← prototypes</a>
+    <div class="proto-corner-group">
+      <button type="button" class="proto-corner proto-corner-btn" data-reset hidden>start over</button>
+      <a href="/prototypes/checked-answers/notes" class="proto-corner">notes</a>
+    </div>
+  </header>
+
+  <main class="proto" data-proto>
+    {/* ───── Screen 1 · ask ───── */}
+    <section class="ask" data-screen="ask">
+      <h1 class="ask-title">What does literature say?</h1>
+      <form class="ask-box" data-ask-form>
+        <label class="ask-input-row">
+          <span class="sr-only">Your question</span>
+          <input type="text" name="q" value={question} autocomplete="off" spellcheck="false" data-ask-input />
+          <button type="submit" class="ask-submit" aria-label="Ask">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H6"/><path d="M9 10l-4 4 4 4"/></svg>
+          </button>
+        </label>
+        <ul class="ask-suggestions">
+          {suggestions.map((s) => (
+            <li>
+              <button type="button" class="ask-suggestion" data-suggest>
+                <span>{s}</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </form>
+      <p class="ask-note">A prototype. Whatever you ask, you get the one pre-checked answer.</p>
+    </section>
+
+    {/* ───── Screen 2 · answer ───── */}
+    <section class="chat" data-screen="answer" hidden>
+      <div class="chat-user">
+        <p data-user-q></p>
+      </div>
+
+      <article class="answer" data-answer data-filter="all" aria-busy="true">
+        {/* The checking beat: what the model did before handing over */}
+        <ol class="checking" data-checking aria-live="polite">
+          <li data-step>Drafting the answer</li>
+          <li data-step>Finding every claim that leans on a number or a study · <b>11</b></li>
+          <li data-step>Opening what the answer links to · <b>9 of 11</b> have a link</li>
+          <li data-step><b>2</b> say what the answer says · <b>4</b> are reports, not studies · <b>5</b> don't hold up</li>
+        </ol>
+
+        <div class="answer-body" data-body hidden>
+          <nav class="tabs" role="tablist" aria-label="Filter claims by status">
+            <button type="button" role="tab" class="tab" data-tab="all" aria-selected="true">All <span data-count="all">{claims.length}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="sourced" aria-selected="false"><i class="dot dot-sourced" aria-hidden="true"></i>Sourced <span data-count="sourced">{count('sourced')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="reported" aria-selected="false"><i class="dot dot-reported" aria-hidden="true"></i>Reported <span data-count="reported">{count('reported')}</span></button>
+            <button type="button" role="tab" class="tab" data-tab="doubtful" aria-selected="false"><i class="dot dot-doubtful" aria-hidden="true"></i>Doubtful <span data-count="doubtful">{count('doubtful')}</span></button>
+            <span class="tabs-ind" data-tabs-ind aria-hidden="true"></span>
+          </nav>
+
+          <div class="prose" data-prose>
+            <p class="prose-summary">{summary}</p>
+            {sections.map((sec) => (
+              <>
+                <h3>{sec.heading}</h3>
+                <p>
+                  {sec.parts.map((part) =>
+                    typeof part === 'string' ? (
+                      <span class="plain">{part}</span>
+                    ) : (
+                      <span
+                        class="claim"
+                        role="button"
+                        tabindex="0"
+                        id={`claim-${part.claim}`}
+                        data-claim={part.claim}
+                        data-status={claimById[part.claim].status}
+                        aria-haspopup="dialog"
+                      >{claimById[part.claim].text}<i class="dot" aria-hidden="true"></i><span class="sr-only"> ({STATUS_LABEL[claimById[part.claim].status]})</span></span>
+                    )
+                  )}
+                </p>
+              </>
+            ))}
+          </div>
+
+          <p class="left" data-left>
+            <span data-left-text></span>
+            <button type="button" class="left-walk" data-walk>Walk me through →</button>
+          </p>
+
+          <ul class="legend" aria-label="What the marks mean">
+            <li><i class="dot dot-sourced" aria-hidden="true"></i><span><b>Sourced</b>: the study is linked and says this</span></li>
+            <li><i class="dot dot-reported" aria-hidden="true"></i><span><b>Reported</b>: true as far as the link goes, but the link isn't the study</span></li>
+            <li><i class="dot dot-doubtful" aria-hidden="true"></i><span><b>Doubtful</b>: a detail is off, or nothing is behind the number</span></li>
+          </ul>
+        </div>
+      </article>
+
+      {/* Margin note: one claim, what was linked, and the one or two things you can do.
+          Sits beside the claim on wide screens, as a sheet at the bottom on small ones. */}
+      <aside class="note" data-card role="dialog" aria-modal="false" aria-labelledby="note-status" hidden>
+        <p class="note-status" id="note-status"><i class="dot" data-card-dot aria-hidden="true"></i><b data-card-status></b></p>
+        <button type="button" class="note-close" data-card-close aria-label="Close">×</button>
+        <p class="note-quote" data-card-quote></p>
+        <p class="note-link"><span class="note-label">Link given:</span> <a data-card-link></a></p>
+        <div class="note-actions" data-card-actions></div>
+        <p class="note-nav" data-card-nav><span data-card-left></span><button type="button" class="note-next" data-card-next>next →</button></p>
+      </aside>
+    </section>
+  </main>
+</Prototype>
+
+<style is:global>
+  /* Global on purpose: the claim card is built in JS, so scoped classes would miss it. */
+  /* ───── Palette ───── */
+  .proto,
+  .proto-top,
+  .proto-bg {
+    --p-bg1: #9a1ae0;
+    --p-bg2: #7110bd;
+    --p-bg3: #470a86;
+    --p-ink: #ffffff;
+    --p-ink-2: rgba(255, 255, 255, 0.72);
+    --p-line: rgba(255, 255, 255, 0.22);
+    --p-fill: rgba(255, 255, 255, 0.07);
+    --p-paper: #f7f2fb;
+    --p-paper-ink: #4a0b7a;
+    --s-sourced: #3fe08f;
+    --s-reported: #ffc14d;
+    --s-doubtful: #ff6b81;
+    --s-unconfirmed: rgba(255, 255, 255, 0.55);
+  }
+  html,
+  body.proto-body {
+    margin: 0;
+    background: #6c0bb4;
+    color: #fff;
+  }
+  body.proto-body ::selection {
+    background: #fff;
+    color: #4a0b7a;
+  }
+  .proto-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(90% 70% at 50% 36%, var(--p-bg1) 0%, var(--p-bg2) 46%, var(--p-bg3) 100%);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ───── Corner links ───── */
+  .proto-top {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 40;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px;
+    pointer-events: none;
+    font-size: 13px;
+  }
+  .proto-corner-group {
+    display: flex;
+    gap: 18px;
+  }
+  .proto-corner {
+    pointer-events: auto;
+    color: var(--p-ink-2);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .proto-corner:hover,
+  .proto-corner:focus-visible {
+    color: var(--p-ink);
+  }
+  .proto-corner-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .proto-corner:focus-visible,
+  .tab:focus-visible,
+  .claim:focus-visible,
+  .act:focus-visible,
+  .left-walk:focus-visible,
+  .ask-submit:focus-visible,
+  .ask-suggestion:focus-visible,
+  .note-close:focus-visible,
+  .note-next:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .proto-fx {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .proto {
+    position: relative;
+    z-index: 1;
+    min-height: 100dvh;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Screen 1 · ask ───── */
+  /* One column, 720px wide, centred: the field is a single line and the
+     suggestions are a quiet list under it. Nothing is framed. */
+  .ask {
+    min-height: 100dvh;
+    display: grid;
+    align-content: center;
+    width: min(720px, 100%);
+    margin: 0 auto;
+    padding: 72px 24px 64px;
+    box-sizing: border-box;
+  }
+  .ask-title {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(22px, 2.4vw, 28px);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0 0 16px 2px;
+  }
+  .ask-input-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 118px;
+    padding: 22px 12px 22px 24px;
+    border-radius: 14px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    cursor: text;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(40, 0, 80, 0.18);
+  }
+  .ask-input-row input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font: 500 17px / 1.3 inherit;
+    font-family: inherit;
+    color: inherit;
+    padding: 0;
+  }
+  .ask-input-row input::placeholder {
+    color: rgba(74, 11, 122, 0.5);
+  }
+  .ask-submit {
+    align-self: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    padding: 0;
+    background: rgba(74, 11, 122, 0.1);
+    color: var(--p-paper-ink);
+    cursor: pointer;
+    transition: background 200ms ease;
+  }
+  .ask-submit:hover {
+    background: rgba(74, 11, 122, 0.18);
+  }
+  .ask-submit svg {
+    width: 18px;
+    height: 18px;
+  }
+  .ask-suggestions {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0 4px;
+  }
+  .ask-suggestions li + li {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .ask-suggestion {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 2px;
+    background: none;
+    border: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font: 400 14.5px / 1.35 inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: color 200ms ease;
+  }
+  .ask-suggestion:hover {
+    color: #fff;
+  }
+  .ask-suggestion svg {
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+    opacity: 0.6;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+  .ask-suggestion:hover svg {
+    opacity: 1;
+    transform: translate(1px, -1px);
+  }
+  .ask-note {
+    margin: 22px 6px 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ───── Screen 2 · answer ───── */
+  .chat {
+    position: relative;
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    padding: 76px 24px 48px;
+    box-sizing: border-box;
+  }
+  .chat-user {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .chat-user p {
+    max-width: 560px;
+    margin: 0;
+    padding: 18px 22px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .answer {
+    position: relative;
+    margin-top: 44px;
+    width: min(760px, 100%);
+    box-sizing: border-box;
+    border: 1px solid var(--p-line);
+    border-radius: 14px;
+    padding: 6px 28px 24px;
+    background: var(--p-fill);
+  }
+  /* a running light around the card while the model is still checking */
+  @property --ang {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  .answer.is-checking::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 15px;
+    padding: 1.5px;
+    background: conic-gradient(from var(--ang), rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.95) 70deg, rgba(255, 255, 255, 0) 140deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: proto-spin 1.6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes proto-spin {
+    to { --ang: 360deg; }
+  }
+
+  .checking {
+    list-style: none;
+    margin: 0;
+    padding: 20px 0 16px;
+    display: grid;
+    gap: 9px;
+    font-size: 14px;
+    color: var(--p-ink-2);
+  }
+  .checking li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+  .checking li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    transform: translateY(-1px);
+    transition: background 240ms ease;
+  }
+  .checking li.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .checking li.is-done::before {
+    background: #fff;
+  }
+  .checking li b {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Tabs */
+  .tabs {
+    position: relative;
+    display: flex;
+    margin: 0 -28px;
+    padding: 0 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .tab {
+    flex: 1 1 0;
+    padding: 18px 6px 14px;
+    background: none;
+    border: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font: 700 16px / 1.2 inherit;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 200ms ease;
+    white-space: nowrap;
+  }
+  .tab:hover,
+  .tab[aria-selected='true'] {
+    color: #fff;
+  }
+  .tabs-ind {
+    position: absolute;
+    bottom: -1px;
+    left: 28px;
+    width: 0;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: left 380ms cubic-bezier(0.2, 0.7, 0.2, 1), width 380ms cubic-bezier(0.2, 0.7, 0.2, 1), height 150ms ease, box-shadow 150ms ease;
+  }
+  /* the galaxy stroke: only while the underline is on the move */
+  .tabs-ind.is-sweeping {
+    height: 3px;
+    background: linear-gradient(90deg, #fff 0%, #ffc3ee 22%, #b4e4ff 48%, #fff3b0 74%, #fff 100%);
+    background-size: 260% 100%;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    animation: ind-sweep 480ms linear;
+  }
+  @keyframes ind-sweep {
+    from { background-position: 120% 0; }
+    to { background-position: -20% 0; }
+  }
+
+  /* Prose */
+  .prose {
+    padding-top: 22px;
+    font-size: 15.5px;
+    line-height: 1.68;
+  }
+  .prose p {
+    margin: 0;
+  }
+  .prose h3 {
+    margin: 26px 0 12px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.86);
+  }
+  .claim {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px 0;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background 240ms ease, opacity 320ms ease;
+  }
+  .claim:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .claim.is-open {
+    background: rgba(255, 255, 255, 0.22);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.85);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  /* a tab highlights its claims and quietens the rest; plain text stays as it is */
+  .answer[data-filter='sourced'] .claim:not([data-status='sourced']),
+  .answer[data-filter='reported'] .claim:not([data-status='reported']),
+  .answer[data-filter='doubtful'] .claim:not([data-status='doubtful']) {
+    opacity: 0.36;
+  }
+  .answer[data-filter='sourced'] .claim[data-status='sourced'],
+  .answer[data-filter='reported'] .claim[data-status='reported'],
+  .answer[data-filter='doubtful'] .claim[data-status='doubtful'] {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .claim[data-status='unconfirmed'] {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .claim[data-status='unconfirmed']::after {
+    content: 'set aside';
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    vertical-align: 1px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  /* Status marks */
+  /* Status marks: a full disc with a tick, a half disc, a dashed ring, an empty ring. */
+  .dot {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: -1px;
+    box-sizing: border-box;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: background-color 240ms ease, border-color 240ms ease;
+  }
+  .dot-sourced,
+  .claim[data-status='sourced'] .dot {
+    background-color: var(--s-sourced);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='%23123b24' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 10px 10px;
+  }
+  .dot-reported,
+  .claim[data-status='reported'] .dot {
+    border: 2px solid var(--s-reported);
+    background-image: linear-gradient(90deg, var(--s-reported) 50%, transparent 50%);
+  }
+  .dot-doubtful,
+  .claim[data-status='doubtful'] .dot {
+    border: 2px dashed var(--s-doubtful);
+    background-color: rgba(255, 107, 129, 0.3);
+  }
+  .dot-unconfirmed,
+  .claim[data-status='unconfirmed'] .dot {
+    border: 2px solid var(--s-unconfirmed);
+    background: transparent;
+  }
+  .tab .dot {
+    margin: 0 7px 0 0;
+    vertical-align: -2px;
+  }
+  /* on a filter, the matching marks pulse once, top to bottom (delay set by script) */
+  .dot.is-pulse {
+    animation: dot-pulse 260ms cubic-bezier(0.3, 1.3, 0.5, 1) both;
+  }
+  @keyframes dot-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+
+  /* Left for you */
+  .left {
+    margin: 26px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 16px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .left b {
+    font-weight: 700;
+  }
+  .left-walk {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #fff;
+    font: 600 13.5px / 1.5 inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.45);
+    text-underline-offset: 3px;
+  }
+  .left-walk:hover {
+    text-decoration-color: #fff;
+  }
+  .left.is-done .left-walk {
+    display: none;
+  }
+
+  /* Legend */
+  .legend {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 7px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend .dot {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+  .legend b {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* ───── Margin note ─────
+     Paper, like the question bubble. One status line, the link given, the
+     actions as plain text, a footnote. No quote on wide screens: the claim it
+     belongs to is highlighted right beside it. */
+  .note {
+    position: absolute;
+    z-index: 30;
+    width: 336px;
+    box-sizing: border-box;
+    padding: 14px 18px 12px;
+    border-radius: 10px;
+    background: var(--p-paper);
+    color: var(--p-paper-ink);
+    font-size: 13.5px;
+    line-height: 1.5;
+    box-shadow: 0 12px 32px rgba(30, 0, 60, 0.28);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 220ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .note[hidden] {
+    display: none;
+  }
+  .note.is-open {
+    opacity: 1;
+    transform: none;
+  }
+  .note-status {
+    margin: 0 24px 0 0;
+  }
+  .note-status .dot {
+    margin: 0 7px 0 0;
+    vertical-align: 0;
+  }
+  .note-status .dot-unconfirmed {
+    border-color: rgba(74, 11, 122, 0.45);
+  }
+  .note-status b {
+    font-weight: 700;
+    color: var(--k, var(--p-paper-ink));
+  }
+  .note-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: none;
+    padding: 0;
+    color: rgba(74, 11, 122, 0.55);
+    font: 400 20px / 1 inherit;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .note-close:hover {
+    color: var(--p-paper-ink);
+  }
+  .note-quote {
+    display: none;
+  }
+  .note-link {
+    margin: 8px 0 0;
+    color: rgba(74, 11, 122, 0.85);
+  }
+  .note-link a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .note-link a[href] {
+    text-decoration: underline;
+    text-decoration-color: rgba(74, 11, 122, 0.3);
+    text-underline-offset: 3px;
+  }
+  .note-link a[href]:hover {
+    text-decoration-color: var(--p-paper-ink);
+  }
+  .note-label {
+    font-weight: 600;
+    color: var(--p-paper-ink);
+  }
+  .note-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .act {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--p-paper-ink);
+    background: var(--p-paper-ink);
+    color: #fff;
+    font: 600 12.5px / 1.2 inherit;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .act:hover {
+    background: #5e1a94;
+    border-color: #5e1a94;
+  }
+  .act-secondary {
+    background: transparent;
+    color: var(--p-paper-ink);
+    border-color: rgba(74, 11, 122, 0.35);
+  }
+  .act-secondary:hover {
+    background: rgba(74, 11, 122, 0.08);
+    border-color: var(--p-paper-ink);
+  }
+  .note-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(74, 11, 122, 0.14);
+    font-size: 12px;
+    color: rgba(74, 11, 122, 0.62);
+  }
+  .note-nav[hidden] {
+    display: none;
+  }
+  .note-next {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: 600 12.5px / 1.4 inherit;
+    font-family: inherit;
+    color: var(--p-paper-ink);
+    cursor: pointer;
+  }
+  .note-next:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  /* Not enough room beside the answer: the note becomes a sheet at the bottom,
+     and shows the claim it is about, since that may be off screen. */
+  @media (max-width: 1175px) {
+    .note {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: auto;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .note-quote {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      margin: 8px 0 0;
+      padding-left: 10px;
+      border-left: 2px solid rgba(74, 11, 122, 0.25);
+      color: rgba(74, 11, 122, 0.85);
+    }
+  }
+
+  /* ───── Small screens ───── */
+  @media (max-width: 720px) {
+    .proto-top {
+      padding: 14px 16px;
+    }
+    .ask {
+      padding: 64px 16px 40px;
+    }
+    .ask-input-row {
+      min-height: 100px;
+      padding: 18px 10px 18px 18px;
+    }
+    .chat {
+      padding: 64px 16px 140px;
+    }
+    .chat-user p {
+      font-size: 15px;
+      padding: 14px 16px;
+    }
+    .answer {
+      margin-top: 28px;
+      padding: 4px 18px 20px;
+    }
+    .tabs {
+      margin: 0 -18px;
+      padding: 0 18px;
+    }
+    .tabs-ind {
+      left: 18px;
+    }
+    .tab {
+      font-size: 13.5px;
+      padding: 15px 2px 12px;
+    }
+    .prose {
+      font-size: 15px;
+    }
+    .note {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 14px 14px 0 0;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .answer.is-checking::before {
+      animation: none;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .checking li,
+    .tabs-ind,
+    .note,
+    .claim {
+      transition: none;
+    }
+    .dot.is-pulse,
+    .tabs-ind.is-sweeping {
+      animation: none;
+    }
+    .proto-fx {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { claims, question, searchUrl } from '../../../data/checked-answers';
+  import type { Status } from '../../../data/checked-answers';
+
+  /* ───── A pencil tick on selection (Web Audio, 40–70ms of band-passed noise).
+     Same on/off key in localStorage ("sound") as the site-wide toggle. ───── */
+  let actx: AudioContext | null = null;
+  let noise: AudioBuffer | null = null;
+  const soundOn = () => {
+    try { return localStorage.getItem('sound') !== 'off'; } catch { return true; }
+  };
+  function primeSound() {
+    if (actx) { if (actx.state === 'suspended') actx.resume().catch(() => {}); return; }
+    try {
+      actx = new AudioContext();
+      const len = Math.round(actx.sampleRate * 0.1);
+      noise = actx.createBuffer(1, len, actx.sampleRate);
+      const d = noise.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    } catch { actx = null; }
+  }
+  function playTick() {
+    if (!soundOn()) return;
+    if (!actx) primeSound();
+    const c = actx;
+    if (!c || !noise) return;
+    const go = () => {
+      try {
+        const vary = () => 1 + (Math.random() * 2 - 1) * 0.15;
+        const dur = 0.04 + Math.random() * 0.03;
+        const t0 = c.currentTime;
+        const src = c.createBufferSource();
+        src.buffer = noise!;
+        src.playbackRate.value = vary();
+        const bp = c.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 2600 * vary();
+        bp.Q.value = 1.4;
+        const gain = c.createGain();
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.063, t0 + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        src.connect(bp).connect(gain).connect(c.destination);
+        src.start(t0);
+        src.stop(t0 + dur + 0.01);
+      } catch { /* a sound must never break an interaction */ }
+    };
+    if (c.state === 'suspended') c.resume().then(go).catch(() => {});
+    else go();
+  }
+
+  type Live = Status | 'unconfirmed';
+
+  const $ = <T extends Element>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
+  const $$ = <T extends Element>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(sel));
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const askScreen = $<HTMLElement>('[data-screen="ask"]')!;
+  const answerScreen = $<HTMLElement>('[data-screen="answer"]')!;
+  const form = $<HTMLFormElement>('[data-ask-form]')!;
+  const input = $<HTMLInputElement>('[data-ask-input]')!;
+  const userQ = $<HTMLElement>('[data-user-q]')!;
+  const answer = $<HTMLElement>('[data-answer]')!;
+  const checking = $<HTMLElement>('[data-checking]')!;
+  const steps = $$<HTMLElement>('[data-step]', checking);
+  const body = $<HTMLElement>('[data-body]')!;
+  const tabs = $$<HTMLButtonElement>('[data-tab]');
+  const ind = $<HTMLElement>('[data-tabs-ind]')!;
+  const left = $<HTMLElement>('[data-left]')!;
+  const leftText = $<HTMLElement>('[data-left-text]')!;
+  const walk = $<HTMLButtonElement>('[data-walk]')!;
+  const reset = $<HTMLButtonElement>('[data-reset]')!;
+  const card = $<HTMLElement>('[data-card]')!;
+  const cardDot = $<HTMLElement>('[data-card-dot]', card)!;
+  const cardStatus = $<HTMLElement>('[data-card-status]', card)!;
+  const cardQuote = $<HTMLElement>('[data-card-quote]', card)!;
+  const cardLink = $<HTMLAnchorElement>('[data-card-link]', card)!;
+  const cardActions = $<HTMLElement>('[data-card-actions]', card)!;
+  const cardNav = $<HTMLElement>('[data-card-nav]', card)!;
+  const cardLeft = $<HTMLElement>('[data-card-left]', card)!;
+  const cardNext = $<HTMLButtonElement>('[data-card-next]', card)!;
+  const wide = matchMedia('(min-width: 1176px)');
+
+  /* ───── State ───── */
+  const order = claims.map((c) => c.id);
+  const byId = Object.fromEntries(claims.map((c) => [c.id, c]));
+  const state: Record<string, Live> = Object.fromEntries(claims.map((c) => [c.id, c.status]));
+  const searched = new Set<string>(); // reported claims whose "Find the study" was opened
+  let openId: string | null = null;
+  let lastFocus: HTMLElement | null = null;
+
+  /* colours for the status word on the paper note (the marks in the answer keep the bright ones) */
+  const META: Record<Live, { label: string; color: string }> = {
+    sourced: { label: 'Sourced', color: '#1d8f55' },
+    reported: { label: 'Reported', color: '#a86a0c' },
+    doubtful: { label: 'Doubtful', color: '#c9405a' },
+    unconfirmed: { label: 'Unconfirmed', color: 'rgba(74, 11, 122, 0.6)' },
+  };
+
+  const countOf = (s: Live) => order.filter((id) => state[id] === s).length;
+  const unresolved = () => order.filter((id) => state[id] === 'reported' || state[id] === 'doubtful');
+  const claimEl = (id: string) => $<HTMLElement>(`[data-claim="${id}"]`)!;
+
+  /* ───── Screen 1 → 2 ───── */
+  function ask(q: string, instant = false) {
+    userQ.textContent = q;
+    askScreen.hidden = true;
+    answerScreen.hidden = false;
+    reset.hidden = false;
+    window.scrollTo({ top: 0 });
+    runChecking(instant || reducedMotion);
+  }
+
+  function runChecking(instant: boolean) {
+    if (instant) {
+      steps.forEach((s) => s.classList.add('is-on', 'is-done'));
+      reveal();
+      return;
+    }
+    answer.classList.add('is-checking');
+    const at = [120, 760, 1420, 2140];
+    at.forEach((t, i) => {
+      setTimeout(() => {
+        steps[i].classList.add('is-on');
+        if (i > 0) steps[i - 1].classList.add('is-done');
+      }, t);
+    });
+    setTimeout(() => {
+      steps[steps.length - 1].classList.add('is-done');
+    }, 2900);
+    setTimeout(reveal, 3150);
+  }
+
+  function reveal() {
+    answer.classList.remove('is-checking');
+    answer.removeAttribute('aria-busy');
+    checking.hidden = true;
+    body.hidden = false;
+    setFilter('all', false);
+    render();
+  }
+
+  /* ───── Tabs ───── */
+  function moveIndicator(tab: HTMLElement) {
+    const nav = tab.parentElement!;
+    const r = tab.getBoundingClientRect();
+    const n = nav.getBoundingClientRect();
+    ind.style.left = `${r.left - n.left}px`;
+    ind.style.width = `${r.width}px`;
+  }
+  let sweepTimer = 0;
+  function setFilter(f: string, tick = true) {
+    const changed = answer.dataset.filter !== f;
+    answer.dataset.filter = f;
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === f)));
+    const active = tabs.find((t) => t.dataset.tab === f)!;
+    moveIndicator(active);
+    if (!tick) return;
+    playTick();
+    if (!changed || reducedMotion) return;
+    // the underline sweeps as a galaxy stroke, then settles back to white
+    ind.classList.remove('is-sweeping');
+    void ind.offsetWidth;
+    ind.classList.add('is-sweeping');
+    clearTimeout(sweepTimer);
+    sweepTimer = window.setTimeout(() => ind.classList.remove('is-sweeping'), 480);
+    // the marks that match arrive one after another, in reading order
+    if (f !== 'all') {
+      $$<HTMLElement>(`.claim[data-status="${f}"] .dot`).forEach((d, i) => {
+        d.classList.remove('is-pulse');
+        void d.offsetWidth;
+        d.style.animationDelay = `${i * 40}ms`;
+        d.classList.add('is-pulse');
+        d.addEventListener('animationend', () => d.classList.remove('is-pulse'), { once: true });
+      });
+    }
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => setFilter(t.dataset.tab!));
+    t.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus();
+      setFilter(next.dataset.tab!);
+    });
+  });
+  window.addEventListener('resize', () => {
+    const active = tabs.find((t) => t.getAttribute('aria-selected') === 'true');
+    if (active && !body.hidden) moveIndicator(active);
+  });
+
+  /* ───── Counts + "left for you" ───── */
+  function render() {
+    (['all', 'sourced', 'reported', 'doubtful'] as const).forEach((k) => {
+      const el = $<HTMLElement>(`[data-count="${k}"]`)!;
+      el.textContent = String(k === 'all' ? order.length : countOf(k));
+    });
+    const r = countOf('reported');
+    const d = countOf('doubtful');
+    const u = countOf('unconfirmed');
+    const s = countOf('sourced');
+    const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+    if (r + d > 0) {
+      const bits: string[] = [];
+      if (r) bits.push(`<b>${plural(r, 'needs', 'need')} one more search</b>`);
+      if (d) bits.push(`<b>${plural(d, 'needs', 'need')} a call</b> from you`);
+      let html = `Left for you: ${bits.join(', ')}.`;
+      if (u) html += ` ${plural(u, 'claim', 'claims')} set aside.`;
+      leftText.innerHTML = html;
+      left.classList.remove('is-done');
+      walk.textContent = openId ? 'Continue' : 'Walk me through';
+    } else {
+      leftText.innerHTML = `Nothing left for you. <b>${s}</b> ${s === 1 ? 'claim holds' : 'claims hold'} up; ${u} set aside.`;
+      left.classList.add('is-done');
+    }
+  }
+
+  /* ───── Claim card ───── */
+  function button(label: string, opts: { href?: string; act?: string; primary?: boolean }) {
+    const el = document.createElement(opts.href ? 'a' : 'button');
+    el.className = opts.primary ? 'act' : 'act act-secondary';
+    el.textContent = label;
+    if (opts.href) {
+      el.setAttribute('href', opts.href);
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+      el.insertAdjacentHTML('beforeend', ' <span aria-hidden="true">↗</span>');
+    } else {
+      el.setAttribute('type', 'button');
+    }
+    if (opts.act) el.dataset.act = opts.act;
+    return el;
+  }
+
+  function renderCard(id: string) {
+    const c = byId[id];
+    const st = state[id];
+    const original = c.status;
+    card.style.setProperty('--k', META[st].color);
+    cardDot.className = `dot dot-${st}`;
+    cardStatus.textContent = META[st].label;
+    cardQuote.textContent = c.text;
+    cardLink.textContent = c.link;
+    // for a reported claim the link given is the news piece itself: open it from here
+    if (st === 'reported' && c.linkHref) {
+      cardLink.href = c.linkHref;
+      cardLink.target = '_blank';
+      cardLink.rel = 'noopener noreferrer';
+    } else {
+      cardLink.removeAttribute('href');
+    }
+    cardActions.replaceChildren();
+
+    if (st === 'sourced') {
+      cardActions.append(button('Open the study', { href: c.linkHref ?? searchUrl(c.search), primary: true }));
+      if (original !== 'sourced') cardActions.append(button('Undo', { act: 'undo' }));
+    } else if (st === 'reported') {
+      cardActions.append(button('Find the study', { href: searchUrl(c.search), act: 'find', primary: true }));
+      if (searched.has(id)) cardActions.append(button('It says this', { act: 'confirm' }));
+    } else if (st === 'doubtful') {
+      cardActions.append(button('Treat as unconfirmed', { act: 'unconfirm', primary: true }));
+      cardActions.append(button('Nearest study', { href: searchUrl(c.search) }));
+    } else {
+      cardActions.append(button('Undo', { act: 'undo' }));
+    }
+
+    const todo = unresolved();
+    cardNav.hidden = todo.length === 0;
+    cardLeft.textContent = todo.length ? `${todo.length} left for you` : '';
+    cardNext.disabled = todo.length === 0 || (todo.includes(id) && todo[todo.length - 1] === id);
+  }
+
+  /* Beside the claim on wide screens (absolute, inside .chat, so it scrolls with
+     the answer); the CSS turns it into a bottom sheet below 1140px. */
+  function placeCard() {
+    if (!openId) return;
+    if (!wide.matches) {
+      card.style.top = '';
+      card.style.left = '';
+      return;
+    }
+    const r = claimEl(openId).getClientRects()[0];
+    const a = answer.getBoundingClientRect();
+    const c = answerScreen.getBoundingClientRect();
+    card.style.top = `${Math.round(r.top - c.top - 8)}px`;
+    card.style.left = `${Math.round(a.right - c.left + 28)}px`;
+  }
+  window.addEventListener('resize', placeCard);
+
+  function openCard(id: string, scroll = false) {
+    if (openId) claimEl(openId).classList.remove('is-open');
+    openId = id;
+    const el = claimEl(id);
+    el.classList.add('is-open');
+    renderCard(id);
+    card.hidden = false;
+    placeCard();
+    requestAnimationFrame(() => card.classList.add('is-open'));
+    if (scroll) el.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
+    render();
+    playTick();
+  }
+  function closeCard() {
+    if (!openId) return;
+    claimEl(openId).classList.remove('is-open');
+    openId = null;
+    card.classList.remove('is-open');
+    setTimeout(() => { if (!openId) card.hidden = true; }, reducedMotion ? 0 : 260);
+    render();
+    lastFocus?.focus();
+    lastFocus = null;
+  }
+  function step(dir: 1 | -1) {
+    const todo = unresolved();
+    if (!todo.length) return closeCard();
+    let next: string | undefined;
+    if (openId && todo.includes(openId)) {
+      next = todo[todo.indexOf(openId) + dir];
+    } else if (openId) {
+      // the open claim was just resolved: carry on from its position in the answer
+      const pos = order.indexOf(openId);
+      next = dir === 1 ? todo.find((id) => order.indexOf(id) > pos) : [...todo].reverse().find((id) => order.indexOf(id) < pos);
+    } else {
+      next = dir === 1 ? todo[0] : todo[todo.length - 1];
+    }
+    if (next) openCard(next, true);
+  }
+
+  $$<HTMLElement>('.claim').forEach((el) => {
+    const go = () => {
+      lastFocus = el;
+      openId === el.dataset.claim ? closeCard() : openCard(el.dataset.claim!);
+    };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        go();
+      }
+    });
+  });
+
+  cardActions.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
+    if (!btn || !openId) return;
+    const id = openId;
+    const act = btn.dataset.act;
+    if (act === 'find') {
+      // the link opens in a new tab; here we only remember that the search happened
+      searched.add(id);
+      setTimeout(() => renderCard(id), 200);
+      return;
+    }
+    if (act === 'unconfirm') state[id] = 'unconfirmed';
+    if (act === 'confirm') state[id] = 'sourced';
+    if (act === 'undo') state[id] = byId[id].status;
+    claimEl(id).dataset.status = state[id];
+    playTick();
+    renderCard(id);
+    render();
+  });
+  $<HTMLElement>('[data-card-close]')!.addEventListener('click', closeCard);
+  cardNext.addEventListener('click', () => step(1));
+  walk.addEventListener('click', () => {
+    lastFocus = walk;
+    step(1);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openId) closeCard();
+  });
+
+  /* ───── Ask ───── */
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    primeSound();
+    ask(input.value.trim() || question);
+  });
+  $$<HTMLButtonElement>('[data-suggest]').forEach((b) => {
+    b.addEventListener('click', () => {
+      input.value = b.querySelector('span')!.textContent!.trim();
+      primeSound();
+      playTick();
+      ask(input.value);
+    });
+  });
+  reset.addEventListener('click', () => {
+    location.href = location.pathname;
+  });
+
+  /* ───── Background: a dot field that lifts near the cursor, with a lagging glow
+     for depth. ───── */
+  const fx = $<HTMLCanvasElement>('[data-fx]')!;
+  const fxc = fx.getContext('2d');
+  if (fxc && !reducedMotion) {
+    const SP = 34; // dot spacing
+    let W = 0;
+    let H = 0;
+    let fxRaf = 0;
+    const mouse = { x: -1e4, y: -1e4 };
+    const glow = { x: -1e4, y: -1e4 };
+    const frame = () => {
+      if (!fxRaf) fxRaf = requestAnimationFrame(drawFx);
+    };
+    function resizeFx() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      fx.width = Math.round(W * dpr);
+      fx.height = Math.round(H * dpr);
+      fxc!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      frame();
+    }
+    function drawFx() {
+      fxRaf = 0;
+      const c = fxc!;
+      c.clearRect(0, 0, W, H);
+      glow.x += (mouse.x - glow.x) * 0.14;
+      glow.y += (mouse.y - glow.y) * 0.14;
+      const near = mouse.x > -1000;
+      if (near) {
+        const g = c.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, 340);
+        g.addColorStop(0, 'rgba(214, 160, 255, 0.30)');
+        g.addColorStop(0.5, 'rgba(214, 160, 255, 0.10)');
+        g.addColorStop(1, 'rgba(214, 160, 255, 0)');
+        c.fillStyle = g;
+        c.fillRect(glow.x - 340, glow.y - 340, 680, 680);
+      }
+      const ox = ((W % SP) / 2) | 0;
+      const oy = ((H % SP) / 2) | 0;
+      for (let x = ox; x <= W; x += SP) {
+        for (let y = oy; y <= H; y += SP) {
+          const k = near ? Math.max(0, 1 - Math.hypot(x - glow.x, y - glow.y) / 210) : 0;
+          c.beginPath();
+          c.arc(x, y, 1.1 + k * k * 2, 0, Math.PI * 2);
+          c.fillStyle = `rgba(255,255,255,${(0.14 + k * 0.75).toFixed(3)})`;
+          c.fill();
+        }
+      }
+      const settled = Math.abs(mouse.x - glow.x) < 0.2 && Math.abs(mouse.y - glow.y) < 0.2;
+      if (!settled) frame();
+    }
+    window.addEventListener('resize', resizeFx, { passive: true });
+    window.addEventListener('pointermove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      frame();
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => {
+      mouse.x = -1e4;
+      mouse.y = -1e4;
+      frame();
+    });
+    resizeFx();
+  }
+
+  const hash = location.hash.replace('#', '');
+  if (hash === 'answer' || hash === 'now') ask(question, hash === 'now');
+</script>
