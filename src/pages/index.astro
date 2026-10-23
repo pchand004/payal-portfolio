@@ -36,8 +36,11 @@ const hotspots = [
     // Mug → mailto
     href: 'mailto:chandpayal3011@gmail.com',
     label: "let's chat",
+    sublabel: 'chandpayal3011@gmail.com',
+    ariaLabel: "Let's chat: copy email address chandpayal3011@gmail.com",
     style: 'left: 64%; top: 14%; width: 20%; height: 30%;',
-    labelClass: 'left-full top-1/2 ml-3 -translate-y-1/2',
+    // below the mug, centred, so the address never runs off a phone screen
+    labelClass: 'left-1/2 top-full mt-1 -translate-x-1/2 text-center rounded-md bg-white/90 px-2 py-1 shadow-sm',
   },
   {
     // Notepad → EVAM case study (same tab)
@@ -289,7 +292,7 @@ const playground = [
             rel={h.rel}
             class="hotspot group absolute block"
             style={h.style}
-            aria-label={h.label}
+            aria-label={h.ariaLabel ?? h.label}
           >
             <span
               class:list={[
@@ -298,6 +301,7 @@ const playground = [
               ]}
             >
               {h.label}
+              {h.sublabel && <span class="block font-sans text-[11px] not-italic">{h.sublabel}</span>}
             </span>
           </a>
         ))}

@@ -2,6 +2,7 @@
 import { Font } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
+import EmailCopy from '../components/EmailCopy.astro';
 
 interface Props {
   title?: string;
@@ -32,5 +33,6 @@ const {
     <div class="mx-auto w-full max-w-[1200px] px-6 py-8 md:px-10 md:py-12">
       <slot />
     </div>
+    <EmailCopy />
   </body>
 </html>
