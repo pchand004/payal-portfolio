@@ -1,0 +1,89 @@
+---
+/**
+ * <RoleTeam> — "Role & team" block for the top of a case study.
+ * Three short rows: what I was, what I owned, who I worked with.
+ * Rows without content are left out, so a missing team list never shows a blank.
+ * Fonts and colours come from the site tokens, so it sits in both case-study
+ * styles (EVAM/SDDS and Gravity Grip).
+ */
+interface Props {
+  role: string;
+  owned?: string;
+  team?: string;
+}
+const { role, owned, team } = Astro.props;
+const rows = [
+  { label: 'Role', value: role },
+  { label: 'What I owned', value: owned },
+  { label: 'Team', value: team },
+].filter((r) => r.value);
+---
+
+<section class="role-team" aria-labelledby="role-team-heading">
+  <h2 id="role-team-heading" class="role-team-heading">Role &amp; team</h2>
+  <dl class="role-team-rows">
+    {rows.map((r) => (
+      <div class="role-team-row">
+        <dt>{r.label}</dt>
+        <dd>{r.value}</dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .role-team {
+    margin-top: 32px;
+    padding: 20px 22px;
+    border-radius: 8px;
+    background: var(--row-hover);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 768px) {
+    .role-team {
+      grid-template-columns: 160px 1fr;
+      gap: 24px;
+      padding: 24px 28px;
+    }
+  }
+  .role-team-heading {
+    margin: 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+    color: var(--accent);
+  }
+  .role-team-rows {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .role-team-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  @media (min-width: 640px) {
+    .role-team-row {
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+    }
+  }
+  .role-team-row dt {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .role-team-row dd {
+    margin: 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+</style>

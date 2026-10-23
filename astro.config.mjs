@@ -6,6 +6,9 @@ import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
+  // used to build absolute URLs for share previews (og:image, og:url)
+  site: 'https://payal-portfolio-five.vercel.app',
+
   vite: {
     plugins: [tailwindcss()],
   },

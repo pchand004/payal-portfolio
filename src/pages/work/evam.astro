@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import RoleTeam from '../../components/RoleTeam.astro';
 import '../../styles/case-study.css';
 
 const principles = [
@@ -100,7 +101,7 @@ const findings = [
 ---
 
 <Layout
-  title="EVAM · Payal Chand"
+  title="EVAM: India's first government VR classrooms · Payal Chand"
   description="EVAM is a VR-based science education initiative developed at IIT Guwahati and deployed in government schools."
 >
   <Nav />
@@ -110,7 +111,7 @@ const findings = [
     <section class="pt-12 pb-2 md:pt-16">
       <div class="evam-prose evam-hero-grid">
         <div class="evam-hero-left">
-          <p class="evam-eyebrow">N°02 · Case Study</p>
+          <p class="evam-eyebrow">N°04 · Case Study</p>
           <h1 class="evam-h1">EVAM</h1>
           <p class="evam-subtitle">India's first VR classroom · 2023–24</p>
         </div>
@@ -128,7 +129,7 @@ const findings = [
       <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
         <div>
           <p class="evam-meta-label">Role</p>
-          <p class="evam-meta-value">Experience · Interaction · Concept Designer</p>
+          <p class="evam-meta-value">Product Designer</p>
         </div>
         <div>
           <p class="evam-meta-label">Duration</p>
@@ -149,6 +150,13 @@ const findings = [
         </div>
       </div>
     </section>
+
+    {/* ───── Role & team ───── */}
+    <RoleTeam
+      role="Product Designer"
+      owned="The interaction model and the visual design system behind 4 of 5 shipped modules."
+      team="EI Lab, IIT Guwahati, working in cross-functional sprints."
+    />
 
     {/* ───── Cover video — tighter gap from metadata strip (24/32) ───── */}
     <section class="mt-6 md:mt-8">

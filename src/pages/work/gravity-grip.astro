@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import RoleTeam from '../../components/RoleTeam.astro';
 
 const impactStats = [
   { value: '10s → 4s', caption: 'Reduced interaction hesitation for novice users.' },
@@ -99,7 +100,7 @@ const findings = [
 ---
 
 <Layout
-  title="Gravity's Grip · Payal Chand"
+  title="Gravity's Grip: VR physics learning · Payal Chand"
   description="A VR learning module exploring how immersive interaction can complement classroom teaching by making abstract physics — like gravity — experiential, action-led, and learnable."
 >
   <Nav />
@@ -109,7 +110,7 @@ const findings = [
     <section class="pt-8 pb-2 md:pt-12">
       <div class="gg-prose gg-hero-grid">
         <div class="gg-hero-left">
-          <p class="gg-eyebrow">N°03 · Case Study</p>
+          <p class="gg-eyebrow">N°06 · Case Study</p>
           <h1 class="gg-h1">Gravity's Grip</h1>
           <p class="gg-subtitle">VR physics for grades 8-12 · 2023–24</p>
         </div>
@@ -149,6 +150,12 @@ const findings = [
         </div>
       </div>
     </section>
+
+    {/* ───── Role & team ───── */}
+    <RoleTeam
+      role="Spatial UX Designer · Interaction Designer"
+      team="EI Lab, IIT Guwahati, as one of the EVAM VR modules."
+    />
 
     {/* ───── Cover video ───── */}
     <section class="mt-6 md:mt-8">

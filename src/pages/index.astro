@@ -9,18 +9,28 @@ import deskHero from '../assets/desk-hero.png';
 import logoAmazon from '../assets/logos/amazon.png';
 import logoAstraZeneca from '../assets/logos/astrazeneca.png';
 import logoGsk from '../assets/logos/gsk.png';
-import logoDuracell from '../assets/logos/duracell.png';
 import logoIit from '../assets/logos/iit-guwahati.png';
 
-// "Designed for" — individual logos (cut from one strip at a shared height,
-// so they sit on a common baseline and can wrap on narrow screens).
+// Optional logos: picked up automatically once the file exists in src/assets/logos/
+// (JSW: drop jsw.png or jsw.svg there and it appears in the row, with its caption).
+const optionalLogos = import.meta.glob<{ default: ImageMetadata }>('../assets/logos/jsw.{png,svg,jpg,webp}', { eager: true });
+const logoJsw = Object.values(optionalLogos)[0]?.default;
+
+// "Shipped work for" — individual logos (cut from one strip at a shared height,
+// so they sit on a common baseline and can wrap on narrow screens). Each has a
+// caption shown on hover, keyboard focus or tap, and read by screen readers.
 const brands = [
-  { name: 'Amazon', src: logoAmazon },
-  { name: 'AstraZeneca', src: logoAstraZeneca },
-  { name: 'GSK', src: logoGsk },
-  { name: 'Duracell', src: logoDuracell },
+  { name: 'Amazon', src: logoAmazon, caption: 'VR onboarding that replaced 2 shifts of shadowing (AutoVRse)' },
+  { name: 'GSK', src: logoGsk, caption: 'Browser-based 3D onboarding for 5 business units (AutoVRse)' },
+  { name: 'AstraZeneca', src: logoAstraZeneca, caption: 'MR launch demo and lab training module (AutoVRse)' },
+  ...(logoJsw ? [{ name: 'JSW', src: logoJsw, caption: 'VR safety induction for a steel plant (AutoVRse)' }] : []),
   // IIT's lockup has much smaller lettering than the others, so it runs a little larger
-  { name: 'Indian Institute of Technology Guwahati', src: logoIit, scale: 1.25 },
+  {
+    name: 'IIT Guwahati',
+    src: logoIit,
+    scale: 1.25,
+    caption: "Interaction model for Gyaandhara, India's first government VR platform",
+  },
 ];
 
 // Hotspot regions are % of the desk image so they hold up at any size.
@@ -75,6 +85,7 @@ const projects = [
     n: 'N°01',
     title: 'Making data donation feel like a fair exchange',
     meta: 'Crypto Mirror × SDDS · Imperial & University of York · May – Sep 2026',
+    role: 'Product Designer & Researcher · with the SDDS team',
     tags: ['Research', 'Product', 'Mobile'],
     image: '/images/sdds-images/sdds-hero.jpg',
     imageAlt: 'Three mobile screens from the Crypto Mirror donation flow.',
@@ -85,8 +96,31 @@ const projects = [
   },
   {
     n: 'N°02',
+    title: 'Conversation design for a Hinglish voice agent',
+    meta: 'Shree · Concept project on Bolna · Jun – Jul 2026',
+    role: 'Solo concept project · tested with 3 users on live calls',
+    tags: ['Voice', 'Conversation design', 'AI'],
+    image: '/images/work-shree.jpg',
+    imageAlt: 'Title slide of the Shree deck: conversation design for a Hinglish voice agent for returns.',
+    href: 'https://www.figma.com/deck/onFxTwgwUD8iTrtCS09zFV/Shree',
+    external: true,
+  },
+  {
+    n: 'N°03',
+    title: 'Crypto Mirror design system and GenUI contract',
+    meta: 'Crypto Mirror × SDDS · Self-initiated · 2026',
+    role: 'Solo · built in Figma with an AI agent',
+    tags: ['Design systems', 'Generative UI', 'AI'],
+    image: '/images/work-crypto-ds.jpg',
+    imageAlt: 'Crypto Mirror design system.',
+    placeholder: 'Design system',
+    // no public link yet: the card renders without one until `href` is set
+  },
+  {
+    n: 'N°04',
     title: "Designing India's first government VR classrooms",
     meta: 'EVAM · EI Lab, IIT Guwahati · Sep 2023 – May 2024',
+    role: 'Product Designer · cross-functional sprints at EI Lab',
     tags: ['XR', 'Interaction', 'Research'],
     image: '/images/evam-process.jpg',
     imageAlt: 'A student wearing a VR headset being guided through an EVAM session.',
@@ -94,25 +128,27 @@ const projects = [
     external: false,
   },
   {
-    n: 'N°03',
-    title: 'Keeping presence intact in VR physics learning',
-    meta: 'Gravity Grip · 2023–24',
-    tags: ['XR', 'Interaction'],
-    image: '/images/gg-object-selection.jpg',
-    imageAlt: 'A VR scene on a rocky planet with three objects floating above selection pads and two virtual hands.',
-    href: '/work/gravity-grip',
-    external: false,
-  },
-  {
-    n: 'N°04',
+    n: 'N°05',
     title: 'Designing VR safety training for heavy industry',
     meta: 'AutoVRse · Bengaluru · Jun – Nov 2024',
+    role: 'Product Designer · led 0→1 modules from brief to ship',
     tags: ['XR', 'Learning design', 'Systems'],
     image: '/images/work-autovrse.jpg',
     imageAlt: 'Inside a steel plant: ladle buckets hang from a crane above a furnace opening glowing with fire.',
     placeholder: 'AutoVRse',
     href: 'https://www.figma.com/deck/qPCQlnmCjtWMpJbN8QBcLw/AutoVRse?node-id=11-17&t=7WVUUSpIXixszrnQ-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1',
     external: true,
+  },
+  {
+    n: 'N°06',
+    title: 'Keeping presence intact in VR physics learning',
+    meta: 'Gravity Grip · 2023–24',
+    role: 'Spatial UX Designer · Interaction Designer',
+    tags: ['XR', 'Interaction'],
+    image: '/images/gg-object-selection.jpg',
+    imageAlt: 'A VR scene on a rocky planet with three objects floating above selection pads and two virtual hands.',
+    href: '/work/gravity-grip',
+    external: false,
   },
 ];
 
@@ -198,20 +234,27 @@ const playground = [
 ];
 ---
 
-<Layout title="Payal Chand · UX & Interaction Designer">
+<Layout
+  title="Payal Chand · Product Designer"
+  description="Product designer working on AI, voice and XR products, grounded in behaviour science. MSc Imperial College London."
+>
   {/* ───── Top nav (overlays the hero) ───── */}
   <Nav variant="overlay" />
 
   {/*
     ───── Hero ─────
-    Split layout: name, tagline, bio and "Designed for" logos on the left
-    (40%), desk illustration with hotspots on the right (60%). Stacks
+    Split layout: name, positioning, experience and "Shipped work for" logos on
+    the left (40%), desk illustration with hotspots on the right (60%). Stacks
     single-column on mobile.
   */}
   <section id="hero" class="relative pt-16 md:pt-20">
-    <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-[2fr_3fr] md:gap-16">
-      {/* Left — name + tagline + bio details */}
-      <div class="md:pr-4">
+    {/* Grid: text (col 1, top) · desk (col 2, spans both rows) · logos (col 1, bottom).
+        The logo row comes after the desk in the page source, so the first image
+        is the illustration, not a client logo; on phones `order` keeps the
+        reading order text → logos → desk. */}
+    <div class="grid grid-cols-1 gap-y-8 md:grid-cols-[2fr_3fr] md:grid-rows-[auto_auto] md:gap-x-16 md:gap-y-10">
+      {/* Left — name, positioning, personal line, experience */}
+      <div class="order-1 md:col-start-1 md:row-start-1 md:self-end">
         <h1
           data-anim="name"
           class="font-serif font-semibold leading-[1.02] tracking-tight text-text text-[44px] md:text-[56px] lg:text-[64px]"
@@ -220,60 +263,37 @@ const playground = [
         </h1>
         <p
           data-anim="tagline"
-          class="relative z-10 mt-7 max-w-[28rem] font-serif text-lg italic leading-snug text-muted md:text-xl lg:text-[1.375rem]"
+          class="relative z-10 mt-7 max-w-[28rem] font-serif text-lg italic leading-snug text-text md:text-xl lg:text-[1.375rem]"
         >
           {/* "designer" opens four sticky notes on hover / focus / tap.
               Screen readers get the list as hidden text; the notes are decorative. */}
-          A <span class="dz"><span class="dz-trigger" tabindex="0">designer<span class="sr-only">: product, interaction, UX and brand</span></span><span class="dz-notes" aria-hidden="true">{
+          Product <span class="dz"><span class="dz-trigger" tabindex="0">designer<span class="sr-only">: product, interaction, UX and brand</span></span><span class="dz-notes" aria-hidden="true">{
             ['Product', 'Interaction', 'UX', 'Brand'].map((word, i) => (
               <span class={`dz-note dz-note-${i + 1}`} style={`--i:${i};`}><span class="dz-note-paper">{word}</span></span>
             ))
-          }</span></span>. Notepad hoarder. Filling a doodle-a-day, one wobbly sketch at a time.
+          }</span></span> for AI and voice interfaces, grounded in behaviour science.
+        </p>
+        <p data-anim="tagline" class="mt-2 max-w-[28rem] font-serif text-[15px] italic leading-snug text-muted md:text-base">
+          Notepad hoarder. Filling a doodle-a-day, one wobbly sketch at a time.
         </p>
 
-        <div data-anim="bio" class="relative z-20 mt-8">
-          {/* Two words here hide a sticky note, like "designer" above:
-              "Imperial College London" → QS ranking, "Previously" → years of experience.
-              Lines wrap on phones and stay on one line from md up. */}
-          <div class="space-y-1 text-[13px] leading-relaxed text-muted">
+        <div data-anim="bio" class="relative z-20 mt-7">
+          {/* Experience, prominent; then the smaller education and focus lines.
+              "Imperial College London" hides a sticky note with its QS ranking. */}
+          <p class="max-w-[30rem] text-[15px] font-medium leading-relaxed text-text">
+            3 years across product, research and agency roles · Product Designer at AutoVRse and <span class="whitespace-nowrap">EI Lab, IIT Guwahati</span>
+          </p>
+          <div class="mt-3 space-y-1 text-[13px] leading-relaxed text-muted">
             <p class="md:whitespace-nowrap">
               MSc Design with Behaviour Science (<span class="dz dz--sm"><span class="dz-trigger" tabindex="0">Imperial College London<span class="sr-only">, ranked 2nd in the QS World University Rankings</span></span><span class="dz-notes" aria-hidden="true"><span class="dz-note" style="--i:0; --x:8px; --y:0px; --w:118px; --r:-3deg; --paper:#CFE4FA;"><span class="dz-note-paper">QS World Rank #2</span></span></span></span>)
             </p>
-            <p class="md:whitespace-nowrap">
-              <span class="dz dz--sm"><span class="dz-trigger" tabindex="0">Previously<span class="sr-only"> (3 years of experience)</span></span><span class="dz-notes" aria-hidden="true"><span class="dz-note" style="--i:0; --x:0px; --y:0px; --w:122px; --r:3deg; --paper:#FAD3E0;"><span class="dz-note-paper">3 years’ experience</span></span></span></span> UX &amp; Interaction Designer at IIT Guwahati and AutoVRse
-            </p>
             <p class="md:whitespace-nowrap">Voice · AI · XR · Web</p>
-          </div>
-
-          {/* Designed for — quiet logo row */}
-          <div class="mt-8">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Designed for</p>
-            <ul class="brand-row mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5">
-              {brands.map((b, i) => (
-                <>
-                  {/* phones: break after the third logo so the row wraps 3 + 2 */}
-                  {i === 3 && <li aria-hidden="true" role="presentation" class="h-0 basis-full sm:hidden"></li>}
-                  <li class="shrink-0">
-                    <Image
-                      src={b.src}
-                      alt={b.name}
-                      height={64}
-                      densities={[1, 2]}
-                      class="brand-logo block w-auto select-none"
-                      style={`height: ${Math.round(26 * (b.scale ?? 1))}px;`}
-                      loading="eager"
-                      draggable={false}
-                    />
-                  </li>
-                </>
-              ))}
-            </ul>
           </div>
         </div>
       </div>
 
       {/* Right — desk illustration + hotspots */}
-      <div data-anim="desk" id="desk-stage" class="relative w-full">
+      <div data-anim="desk" id="desk-stage" class="relative order-3 w-full self-center md:order-none md:col-start-2 md:row-span-2 md:row-start-1">
         <Image
           src={deskHero}
           alt="A hand-drawn illustration of a desk with a laptop, pink mug, yellow crochet duck, books, notepad, sticky notes and pens."
@@ -306,11 +326,36 @@ const playground = [
           </a>
         ))}
       </div>
+
+      {/* Shipped work for — client logos with captions */}
+      <div data-anim="bio" class="relative z-30 order-2 md:order-none md:col-start-1 md:row-start-2 md:self-start">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent" id="shipped-for">Shipped work for</p>
+        <ul class="brand-row mt-3 flex flex-wrap items-center gap-x-5 gap-y-3" aria-labelledby="shipped-for">
+          {brands.map((b, i) => (
+            <li
+              class:list={['brand', i >= Math.ceil(brands.length / 2) ? 'brand--end' : 'brand--start']}
+              tabindex="0"
+            >
+              <Image
+                src={b.src}
+                alt={b.name}
+                height={64}
+                densities={[1, 2]}
+                class="brand-logo block w-auto select-none"
+                style={`height: ${Math.round(26 * (b.scale ?? 1))}px;`}
+                loading="eager"
+                draggable={false}
+              />
+              <span class="brand-tip">{b.caption}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
 
   </section>
 
-  {/* ───── Selected Work (4) ───── */}
+  {/* ───── Selected Work (6) ───── */}
   <section id="selected-work" class="mt-16 scroll-mt-20 md:mt-24">
     <p class="mb-6 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:mb-8">
       Selected Work
@@ -320,9 +365,9 @@ const playground = [
         <li>
           <a
             href={p.href}
-            target={p.external ? '_blank' : undefined}
-            rel={p.external ? 'noopener noreferrer' : undefined}
-            class="work-card group block"
+            target={p.href && p.external ? '_blank' : undefined}
+            rel={p.href && p.external ? 'noopener noreferrer' : undefined}
+            class:list={['work-card group block', !p.href && 'work-card--nolink']}
           >
             <div
               class:list={['work-card-media', p.imagePanel && 'work-card-media--panel', p.imageContain && 'work-card-media--contain']}
@@ -350,6 +395,7 @@ const playground = [
               <span class="work-card-n shrink-0 font-serif italic text-accent">{p.n}</span>
               <span>{p.meta}</span>
             </p>
+            {p.role && <p class="work-card-role text-text">{p.role}{!p.href && <span class="text-muted"> · link coming soon</span>}</p>}
             <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
               {p.tags.map((t) => (
                 <li class="work-tag">{t}</li>
@@ -445,14 +491,56 @@ const playground = [
 </Layout>
 
 <style>
-  /* ───── "Designed for" logos — greyscale + faded, full colour on hover ───── */
+  /* ───── "Shipped work for" logos — greyscale + faded, full colour and a
+     caption on hover, keyboard focus or tap ───── */
+  .brand {
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 4px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .brand:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
   .brand-logo {
     filter: grayscale(1);
     opacity: 0.55;
     transition: filter 250ms ease, opacity 250ms ease;
   }
-  .brand-row li:hover .brand-logo {
+  .brand:hover .brand-logo,
+  .brand:focus .brand-logo,
+  .brand.is-open .brand-logo {
     filter: grayscale(0);
+    opacity: 1;
+  }
+  /* The caption is in the DOM for screen readers at all times, but only takes
+     space on screen while shown, so it can never widen the page. */
+  .brand-tip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    width: max-content;
+    max-width: min(240px, 70vw);
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: left;
+    box-shadow: 0 8px 20px rgba(44, 38, 32, 0.18);
+    clip-path: inset(50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+  .brand--start .brand-tip { left: 0; }
+  .brand--end .brand-tip { right: 0; }
+  .brand:hover .brand-tip,
+  .brand:focus .brand-tip,
+  .brand.is-open .brand-tip {
+    clip-path: none;
     opacity: 1;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -525,6 +613,15 @@ const playground = [
     font-size: 13px;
     line-height: 1.5;
   }
+  .work-card-role {
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  /* cards without a link yet: no pointer, no hover effects */
+  .work-card--nolink {
+    cursor: default;
+  }
   .work-card-n {
     font-size: 1.08em;
   }
@@ -572,7 +669,7 @@ const playground = [
     border-radius: 8px;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .work-card:hover .work-card-img,
+    .work-card:not(.work-card--nolink):hover .work-card-img,
     .work-card:focus-visible .work-card-img {
       transform: scale(1.02);
     }
@@ -1038,7 +1135,7 @@ const playground = [
   // stretched under the title's (last) line and drawn in; it fades out on leave.
   function initWorkUnderlines() {
     let lastName = '';
-    document.querySelectorAll<HTMLAnchorElement>('.work-card:not([data-underline])').forEach((card) => {
+    document.querySelectorAll<HTMLAnchorElement>('.work-card:not([data-underline]):not(.work-card--nolink)').forEach((card) => {
       card.dataset.underline = '1';
       const heading = card.querySelector<HTMLElement>('.work-card-h');
       const title = card.querySelector<HTMLElement>('.work-card-title');
@@ -1084,6 +1181,24 @@ const playground = [
         if (card.matches(':focus-visible')) show();
       });
       card.addEventListener('blur', () => hide());
+    });
+  }
+
+  // Logo captions — hover and keyboard focus are CSS; a tap toggles the caption
+  // (touch browsers don't reliably focus a tapped logo), a tap elsewhere closes it.
+  let brandsBound = false;
+  function initBrandCaptions() {
+    if (brandsBound) return;
+    brandsBound = true;
+    document.addEventListener('click', (e) => {
+      const hit = (e.target as Element | null)?.closest?.('.brand');
+      document.querySelectorAll('.brand.is-open').forEach((b) => {
+        if (b !== hit) b.classList.remove('is-open');
+      });
+      if (hit) hit.classList.toggle('is-open');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') document.querySelectorAll('.brand.is-open').forEach((b) => b.classList.remove('is-open'));
     });
   }
 
@@ -1148,6 +1263,7 @@ const playground = [
 
   function init() {
     initHero();
+    initBrandCaptions();
     initIdleDoodle();
     initWorkUnderlines();
     initDesignerNotes();

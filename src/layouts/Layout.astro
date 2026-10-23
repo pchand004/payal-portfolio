@@ -7,12 +7,24 @@ import EmailCopy from '../components/EmailCopy.astro';
 interface Props {
   title?: string;
   description?: string;
+  /** Share-preview overrides; default to title / description. */
+  ogTitle?: string;
+  ogDescription?: string;
+  /** Path or URL of a 1200×630 share image; defaults to the site card. */
+  ogImage?: string;
 }
 
 const {
-  title = 'Payal Chand — Portfolio',
-  description = 'Selected work and case studies.',
+  title = 'Payal Chand · Product Designer',
+  description = 'Product designer working on AI, voice and XR products, grounded in behaviour science. MSc Imperial College London.',
+  ogTitle = title,
+  ogDescription = description,
+  ogImage = '/og.png',
 } = Astro.props;
+
+const site = Astro.site ?? new URL('https://payal-portfolio-five.vercel.app');
+const pageUrl = new URL(Astro.url.pathname, site).href;
+const imageUrl = new URL(ogImage, site).href;
 ---
 
 <html lang="en">
@@ -23,6 +35,21 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={pageUrl} />
+    {/* Share previews (LinkedIn, Slack, WhatsApp, X…) */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Payal Chand" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Payal Chand, Product Designer · AI, voice & XR, beside a hand-drawn desk illustration." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={imageUrl} />
     <Font cssVariable="--font-fraunces" preload />
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-tiro-devanagari" preload />

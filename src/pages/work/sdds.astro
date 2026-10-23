@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import RoleTeam from '../../components/RoleTeam.astro';
 import '../../styles/case-study.css';
 
 /* Images live in public/images/sdds-images/. width/height are the files' real
@@ -244,7 +245,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
 <Layout
-  title="Crypto Mirror · Payal Chand"
+  title="Crypto Mirror × SDDS · Payal Chand"
   description="UK research needs real data on how young people invest in crypto, but these investors don't donate data for the public good. I designed a mobile tool that gives them a mirror of their own trading in return."
 >
   <Nav />
@@ -297,6 +298,13 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
         </div>
       </div>
     </section>
+
+    {/* ───── Role & team ───── */}
+    <RoleTeam
+      role="Product Designer & Researcher"
+      owned="The design process, from stakeholder scoping to hi-fi prototypes and recommendations to SDDS."
+      team="With the SDDS team (Imperial College London × University of York); supervised by Prof Sebastian Deterding."
+    />
 
     {/* ───── Hero image ───── */}
     <section class="mt-6 md:mt-8">
