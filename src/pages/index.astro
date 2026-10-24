@@ -107,12 +107,13 @@ const projects = [
   },
   {
     n: 'N°03',
-    title: 'Crypto Mirror design system and GenUI contract',
-    meta: 'Crypto Mirror × SDDS · Self-initiated · 2026',
+    title: 'A design system for data donation',
+    meta: 'Finance data donation · Self-initiated · 2026',
     role: 'Solo · built in Figma with an AI agent',
     tags: ['Design systems', 'Generative UI', 'AI'],
     image: '/images/work-crypto-ds.jpg',
-    imageAlt: 'Crypto Mirror design system.',
+    imageAlt: 'Data donation design system.',
+    wip: true,
     placeholder: 'Design system',
     // no public link yet: the card renders without one until `href` is set
   },
@@ -129,6 +130,17 @@ const projects = [
   },
   {
     n: 'N°05',
+    title: 'Keeping presence intact in VR physics learning',
+    meta: 'Gravity Grip · 2023–24',
+    role: 'Spatial UX Designer · Interaction Designer',
+    tags: ['XR', 'Interaction'],
+    image: '/images/gg-object-selection.jpg',
+    imageAlt: 'A VR scene on a rocky planet with three objects floating above selection pads and two virtual hands.',
+    href: '/work/gravity-grip',
+    external: false,
+  },
+  {
+    n: 'N°06',
     title: 'Designing VR safety training for heavy industry',
     meta: 'AutoVRse · Bengaluru · Jun – Nov 2024',
     role: 'Product Designer · led 0→1 modules from brief to ship',
@@ -139,34 +151,14 @@ const projects = [
     href: 'https://www.figma.com/deck/qPCQlnmCjtWMpJbN8QBcLw/AutoVRse?node-id=11-17&t=7WVUUSpIXixszrnQ-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1',
     external: true,
   },
-  {
-    n: 'N°06',
-    title: 'Keeping presence intact in VR physics learning',
-    meta: 'Gravity Grip · 2023–24',
-    role: 'Spatial UX Designer · Interaction Designer',
-    tags: ['XR', 'Interaction'],
-    image: '/images/gg-object-selection.jpg',
-    imageAlt: 'A VR scene on a rocky planet with three objects floating above selection pads and two virtual hands.',
-    href: '/work/gravity-grip',
-    external: false,
-  },
 ];
 
 const explorations = [
   {
-    name: 'Hume: Interaction States for Expressive Voice AI',
-    year: '2026',
-    tagline:
-      "Identifying 4 failure modes in Hume EVI-3's turn-taking, and proposing a 3-state floor model so voice AI knows when to listen, wait or respond.",
-    image: '/images/expl-hume.jpg',
-    alt: 'Hume: Interaction States for Expressive Voice AI exploration.',
-    href: 'https://www.figma.com/deck/LOyuwMTxibQIe7M6RQYpHN/HumeXPayal?node-id=1-96&t=n23q5ahl0SFd97zI-1',
-  },
-  {
     name: 'Exploring AI-Initiated Interruptions in Voice AI',
     year: '2026',
     tagline:
-      'Mixed-methods study using 30 synthetic LLM-generated participants to investigate the friction point of voice AI interrupting at the wrong time — the same problem that later became the focus of Hume.',
+      'Mixed-methods study using 30 synthetic LLM-generated participants to investigate the friction point of voice AI interrupting at the wrong time.',
     image: '/images/expl-ai-interruptions.jpg',
     alt: 'AI-Initiated Interruptions in Voice AI exploration.',
     href: '/work/ai-interruptions-study.pdf',
@@ -395,8 +387,9 @@ const playground = [
               <span class="work-card-n shrink-0 font-serif italic text-accent">{p.n}</span>
               <span>{p.meta}</span>
             </p>
-            {p.role && <p class="work-card-role text-text">{p.role}{!p.href && <span class="text-muted"> · link coming soon</span>}</p>}
+            {p.role && <p class="work-card-role text-text">{p.role}</p>}
             <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
+              {p.wip && <li class="work-tag work-tag--wip">Work in progress</li>}
               {p.tags.map((t) => (
                 <li class="work-tag">{t}</li>
               ))}
@@ -612,6 +605,11 @@ const playground = [
     margin-top: 6px;
     font-size: 13px;
     line-height: 1.5;
+  }
+  .work-tag.work-tag--wip {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    font-weight: 600;
   }
   .work-card-role {
     margin-top: 2px;
