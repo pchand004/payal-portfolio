@@ -2,7 +2,6 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import RoleTeam from '../../components/RoleTeam.astro';
 import '../../styles/case-study.css';
 
 const principles = [
@@ -126,7 +125,7 @@ const findings = [
 
     {/* ───── Metadata strip ───── */}
     <section class="evam-meta">
-      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <p class="evam-meta-label">Role</p>
           <p class="evam-meta-value">Product Designer</p>
@@ -134,6 +133,10 @@ const findings = [
         <div>
           <p class="evam-meta-label">Duration</p>
           <p class="evam-meta-value">Aug 2023 – May 2024</p>
+        </div>
+        <div>
+          <p class="evam-meta-label">Team</p>
+          <p class="evam-meta-value">EI Lab, IIT Guwahati · cross-functional sprints</p>
         </div>
         <div>
           <p class="evam-meta-label">Live at</p>
@@ -151,12 +154,6 @@ const findings = [
       </div>
     </section>
 
-    {/* ───── Role & team ───── */}
-    <RoleTeam
-      role="Product Designer"
-      owned="The interaction model and the visual design system behind 4 of 5 shipped modules."
-      team="EI Lab, IIT Guwahati, working in cross-functional sprints."
-    />
 
     {/* ───── Cover video — tighter gap from metadata strip (24/32) ───── */}
     <section class="mt-6 md:mt-8">
