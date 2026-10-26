@@ -1,0 +1,153 @@
+---
+/**
+ * <FlowSteps> — the static step list that goes with a <FlowWalkthrough> elsewhere on the
+ * page. Clicking a step scrolls up to the walkthrough and jumps it to that step; the step
+ * the walkthrough is currently showing is highlighted.
+ */
+interface Props {
+  steps: { title: string; bullets: { lead: string; rest?: string }[] }[];
+  /** id of the <FlowWalkthrough> to drive */
+  target: string;
+  /** where "Playing at the top of the page" links to */
+  anchor?: string;
+}
+const { steps, target, anchor = '#top' } = Astro.props;
+const pad = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<div class="fs" data-fs data-target={target} data-anchor={anchor}>
+  <p class="fs-note"><a href={anchor} class="evam-link">Playing at the top of the page ↑</a></p>
+  <ol class="fs-list">
+    {steps.map((s, i) => (
+      <li>
+        <button type="button" class:list={['fs-item', i === 0 && 'is-active']} data-fs-item={i} aria-label={`Show step ${i + 1}, ${s.title}, in the walkthrough at the top of the page`}>
+          <span class="fs-n">{pad(i)}</span>
+          <span class="fs-body">
+            <span class="fs-title">{s.title}</span>
+            <span class="fs-bullets">
+              {s.bullets.map((b) => (
+                <span class="fs-bullet"><strong>{b.lead}</strong>{b.rest}</span>
+              ))}
+            </span>
+          </span>
+        </button>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .fs {
+    margin-top: 20px;
+  }
+  .fs-note {
+    margin: 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+  }
+  .fs-list {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  @media (min-width: 900px) {
+    .fs-list {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 24px;
+    }
+  }
+  .fs-item {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 14px;
+    text-align: left;
+    padding: 14px 16px 14px 14px;
+    border: 0;
+    border-left: 3px solid transparent;
+    border-radius: 0 8px 8px 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: border-color 200ms ease, background 200ms ease;
+  }
+  .fs-item:hover {
+    background: #FAF8FF;
+  }
+  .fs-item.is-active {
+    border-left-color: #4105DB;
+    background: #F5F0FF;
+  }
+  .fs-item:focus-visible {
+    outline: 2px solid #4105DB;
+    outline-offset: 2px;
+  }
+  .fs-n {
+    flex-shrink: 0;
+    min-width: 24px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 600;
+    color: #4105DB;
+    line-height: 1.6;
+  }
+  .fs-body {
+    display: grid;
+    gap: 6px;
+  }
+  .fs-title {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2C2620;
+  }
+  .fs-bullets {
+    display: grid;
+    gap: 4px;
+  }
+  .fs-bullet {
+    position: relative;
+    padding-left: 14px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2C2620;
+  }
+  .fs-bullet::before {
+    content: '·';
+    position: absolute;
+    left: 2px;
+    color: #6B6354;
+  }
+  .fs-bullet strong {
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  function initSteps() {
+    document.querySelectorAll<HTMLElement>('[data-fs]:not([data-ready])').forEach((list) => {
+      list.dataset.ready = '1';
+      const target = list.dataset.target!;
+      const items = Array.from(list.querySelectorAll<HTMLButtonElement>('[data-fs-item]'));
+      const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+      items.forEach((b, i) => b.addEventListener('click', () => {
+        const anchor = document.querySelector(list.dataset.anchor || '#top');
+        anchor?.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' });
+        document.dispatchEvent(new CustomEvent('fw:jump', { detail: { id: target, index: i } }));
+      }));
+      document.addEventListener('fw:step', (e) => {
+        const d = (e as CustomEvent<{ id: string; index: number }>).detail;
+        if (d.id !== target) return;
+        items.forEach((b, k) => b.classList.toggle('is-active', k === d.index));
+      });
+    });
+  }
+  initSteps();
+  document.addEventListener('astro:page-load', initSteps);
+</script>

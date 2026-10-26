@@ -4,17 +4,11 @@ import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import '../../styles/case-study.css';
 import FlowWalkthrough from '../../components/FlowWalkthrough.astro';
+import FlowSteps from '../../components/FlowSteps.astro';
 
 /* Images live in public/images/sdds-images/. width/height are the files' real
    pixel sizes, so the browser reserves the right space before they lazy-load. */
 const img = (file: string) => `/images/sdds-images/${file}`;
-
-const hero = {
-  src: img('sdds-hero.jpg'),
-  w: 1781,
-  h: 1927,
-  alt: 'Three mobile screens from the final design: an optional update step, a "Shared with SDDS" receipt showing the donation\'s journey, and the trading reflection with charts of asset allocation, trading rhythm and outcomes.',
-};
 
 const glanceLine = '11 interviews · 8 think-aloud sessions in 4 rounds · 5 prototype versions · 22 measures computed on the phone · 4 recommendations to SDDS';
 
@@ -250,86 +244,54 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   {/* Uses the shared case-study system (class "evam"); "sdds" adds the few
       patterns EVAM doesn't have: stat row, zoomable images, iteration blocks, table. */}
   <article class="evam sdds">
-    {/* ───── Hero ───── */}
-    <section class="pt-12 pb-2 md:pt-16">
-      <div class="evam-prose evam-hero-grid">
-        <div class="evam-hero-left">
-          <p class="evam-eyebrow">N°01 · Case Study</p>
-          <h1 class="evam-h1">Crypto Mirror</h1>
-          <p class="evam-subtitle">Data donation for UK research · 2026</p>
-        </div>
-        <div class="evam-hero-right">
-          <p class="evam-body">
-            UK research needs real data on how young people invest in crypto, but these
-            investors don't donate data for the public good. I designed a mobile tool that
-            gives them a mirror of their own trading in return, and found that it only works
-            if they decide to donate <em>before</em> they see it.
-          </p>
-        </div>
+    {/* ───── Hero: intro + meta on the left, the walkthrough phone on the right ─────
+        Desktop (≥900px): two columns, phone vertically centred against the left column.
+        Mobile: intro → phone → meta. */}
+    <section class="sdds-hero" id="top">
+      <div class="sdds-hero-intro">
+        <p class="evam-eyebrow">N°01 · Case Study</p>
+        <h1 class="evam-h1">Crypto Mirror</h1>
+        <p class="evam-subtitle">Data donation for UK research · 2026</p>
+        <p class="evam-body sdds-hero-summary">
+          UK research needs real data on how young people invest in crypto, but these investors
+          don't donate data for the public good. I designed a mobile tool that gives them a mirror
+          of their own trading in return, and found that it only works if they decide to donate
+          <em>before</em> they see it.
+        </p>
       </div>
-    </section>
 
-    {/* ───── Metadata strip ───── */}
-    <section class="evam-meta">
-      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 lg:grid-cols-4">
+      <div class="sdds-hero-phone">
+        <FlowWalkthrough steps={walkthrough} id="final-walkthrough" />
+      </div>
+
+      <dl class="sdds-hero-meta">
         <div>
-          <p class="evam-meta-label">Role</p>
-          <p class="evam-meta-value">
+          <dt class="evam-meta-label">Role</dt>
+          <dd class="evam-meta-value">
             Product Designer &amp; Researcher (solo): research, mobile UI, testing, client
             recommendations
-          </p>
+          </dd>
         </div>
         <div>
-          <p class="evam-meta-label">Partner</p>
-          <p class="evam-meta-value">
+          <dt class="evam-meta-label">Partner</dt>
+          <dd class="evam-meta-value">
             <a
               href="https://www.sdruk.ukri.org/data/financial-data-service/"
               target="_blank"
               rel="noopener noreferrer"
               class="evam-link"
             >Smart Data Donation Service (SDDS) ↗</a>, University of York × Imperial College London
-          </p>
+          </dd>
         </div>
         <div>
-          <p class="evam-meta-label">Duration</p>
-          <p class="evam-meta-value">May – Sep 2026 · MSc Design with Behaviour Science</p>
+          <dt class="evam-meta-label">Duration</dt>
+          <dd class="evam-meta-value">May – Sep 2026 · MSc Design with Behaviour Science</dd>
         </div>
         <div>
-          <p class="evam-meta-label">Supervised by</p>
-          <p class="evam-meta-value">Prof Sebastian Deterding</p>
+          <dt class="evam-meta-label">Supervised by</dt>
+          <dd class="evam-meta-value">Prof Sebastian Deterding</dd>
         </div>
-      </div>
-    </section>
-
-
-    {/* ───── Walkthrough video ─────
-        TODO: when these files exist, replace the hero image below with the walkthrough:
-          public/videos/sdds-walkthrough.webm, public/videos/sdds-walkthrough.mp4,
-          public/images/sdds-images/sdds-walkthrough-poster.jpg
-        <figure class="sdds-video"> with <video autoplay muted loop playsinline controls
-        preload="metadata" poster=…> (webm source first, then mp4), aria-label and caption
-        "The final flow in 40 seconds: decide first, get a receipt, then your reflection."
-        Phone-framed (rounded, max-width ~360px, centred); under prefers-reduced-motion,
-        don't autoplay: show the poster with controls only. */}
-    {/* ───── Hero image (until the walkthrough video exists) ───── */}
-    <section class="mt-6 md:mt-8">
-      <a
-        href={hero.src}
-        target="_blank"
-        rel="noopener"
-        class="sdds-zoom sdds-hero-frame"
-        aria-label="Open full-size image in a new tab"
-      >
-        <img
-          src={hero.src}
-          alt={hero.alt}
-          width={hero.w}
-          height={hero.h}
-          class="sdds-hero-img"
-          loading="lazy"
-          decoding="async"
-        />
-      </a>
+      </dl>
     </section>
 
     {/* ───── At a glance ───── */}
@@ -515,7 +477,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </div>
     </section>
 
-    {/* ───── The final design: auto-playing phone walkthrough ───── */}
+    {/* ───── The final design: the five steps (the phone plays in the hero) ───── */}
     <section class="evam-block" aria-labelledby="final-design-heading">
       <div class="evam-prose">
         <h2 class="evam-h2" id="final-design-heading">The final design</h2>
@@ -523,7 +485,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
           Five steps, in the order that made it work: decide first, then the reflection.
         </p>
       </div>
-      <FlowWalkthrough steps={walkthrough} id="final-walkthrough" />
+      <FlowSteps steps={walkthrough} target="final-walkthrough" anchor="#top" />
     </section>
 
     {/* ───── Testing: what changed and why ───── */}
@@ -724,39 +686,55 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     height: auto;
   }
 
-  /* Hero image: three tall phone screens on white — sits in a soft panel
-     at a readable size instead of stretching to the full page width. */
-  .sdds-hero-frame {
-    background: #F6F4F1;
-    padding: 24px 16px;
-    transition: background-color 200ms ease;
+  /* ───── Hero: intro + meta | walkthrough phone ───── */
+  .sdds-hero {
+    padding-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: 'intro' 'phone' 'meta';
+    gap: 28px;
+    scroll-margin-top: 16px;
   }
-  .sdds-hero-frame:hover {
-    background: #F1EEEA;
+  .sdds-hero-intro { grid-area: intro; }
+  .sdds-hero-phone {
+    grid-area: phone;
+    display: flex;
+    justify-content: center;
   }
-  .sdds-hero-img {
-    display: block;
-    width: 100%;
-    max-width: 720px;
-    height: auto;
-    margin: 0 auto;
-    mix-blend-mode: multiply;
+  .sdds-hero-phone :global(.fw) {
+    --fw-w: 240px;
   }
-  @media (min-width: 768px) {
-    .sdds-hero-frame {
-      padding: 48px 32px;
+  .sdds-hero-meta {
+    grid-area: meta;
+    margin: 0;
+    padding-top: 20px;
+    border-top: 0.5px solid #E8E4E0;
+    display: grid;
+    gap: 14px;
+  }
+  .sdds-hero-meta dd {
+    margin: 0;
+  }
+  .sdds-hero-summary {
+    margin-top: 20px;
+  }
+  @media (min-width: 900px) {
+    .sdds-hero {
+      padding-top: 24px;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      grid-template-areas: 'intro phone' 'meta phone';
+      grid-template-rows: auto 1fr;
+      column-gap: 64px;
+      row-gap: 22px;
     }
-  }
-
-  /* Participant quote inside a section — the pull-quote style, one step smaller */
-  .sdds-quote--inline {
-    margin-top: 32px;
-    font-size: 17px;
-    max-width: 720px;
-  }
-  @media (min-width: 768px) {
-    .sdds-quote--inline {
-      font-size: 19px;
+    .sdds-hero-phone {
+      align-self: center;
+    }
+    .sdds-hero-phone :global(.fw) {
+      --fw-w: 270px;
+    }
+    .sdds-hero-meta {
+      align-self: start;
     }
   }
 

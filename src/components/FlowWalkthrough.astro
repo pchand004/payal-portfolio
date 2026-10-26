@@ -5,8 +5,10 @@
  * Each step: hold at the top (1.2 s) → scroll smoothly to the bottom of that screen
  * (~2.5 s, ease-in-out; skipped if the screen fits) → hold (1 s) → crossfade (300 ms)
  * to the next. Loops after the last step.
- * Under the phone: step dots, pause/play, and the current step's title. Beside it
- * (desktop) or below it (mobile): the step list; the active step is highlighted.
+ * Under the phone: step dots, pause/play, and one caption line with the current step's
+ * number and title. The step list lives elsewhere (<FlowSteps>), and jumps the phone
+ * by dispatching a `fw:jump` event with { detail: { id, index } } on document.
+ * Loading: step 1 loads eagerly (fetchpriority high); steps 2+ load after window load.
  * Pauses when out of view or when the tab is hidden. With prefers-reduced-motion:
  * no autoplay and no scrolling — step 1 is shown, and the dots and list step manually.
  */
@@ -28,7 +30,7 @@ const { steps, id = 'flow-walkthrough' } = Astro.props;
 const pad = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
-<div class="fw" data-fw id={id} data-labels={JSON.stringify(steps.map((s) => s.label))}>
+<div class="fw" data-fw id={id} data-labels={JSON.stringify(steps.map((s) => s.label))} data-titles={JSON.stringify(steps.map((s) => s.title))}>
   <div class="fw-stage">
     <div
       class="fw-phone"
@@ -40,8 +42,16 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
         {steps.map((s, i) => (
           <div class:list={['fw-layer', i === 0 && 'is-active']} data-fw-layer data-w={s.w} data-h={s.h} aria-hidden="true">
             <picture>
-              <source srcset={`${s.src}.webp`} type="image/webp" />
-              <img src={`${s.src}.png`} alt="" width={s.w} height={s.h} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" data-fw-img />
+              {i === 0 ? (
+                <source srcset={`${s.src}.webp`} type="image/webp" />
+              ) : (
+                <source data-srcset={`${s.src}.webp`} type="image/webp" />
+              )}
+              {i === 0 ? (
+                <img src={`${s.src}.png`} alt="" width={s.w} height={s.h} loading="eager" fetchpriority="high" decoding="async" data-fw-img />
+              ) : (
+                <img data-src={`${s.src}.png`} alt="" width={s.w} height={s.h} decoding="async" data-fw-img />
+              )}
             </picture>
           </div>
         ))}
@@ -62,52 +72,20 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     <p class="fw-caption" data-fw-caption aria-live="polite">{pad(0)} · {steps[0].title}</p>
   </div>
 
-  <ol class="fw-list">
-    {steps.map((s, i) => (
-      <li>
-        <button type="button" class:list={['fw-item', i === 0 && 'is-active']} data-fw-item={i} aria-current={i === 0 ? 'step' : undefined}>
-          <span class="fw-item-n">{pad(i)}</span>
-          <span class="fw-item-body">
-            <span class="fw-item-title">{s.title}</span>
-            <span class="fw-item-bullets">
-              {s.bullets.map((b) => (
-                <span class="fw-bullet"><strong>{b.lead}</strong>{b.rest}</span>
-              ))}
-            </span>
-          </span>
-        </button>
-      </li>
-    ))}
-  </ol>
 </div>
 
 <style>
   .fw {
-    margin-top: 32px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
-    justify-items: center;
-  }
-  @media (min-width: 900px) {
-    .fw {
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 56px;
-      align-items: start;
-      justify-items: stretch;
-    }
-  }
-  .fw-stage {
-    width: 100%;
-    max-width: 320px;
+    --fw-w: 270px;
+    width: var(--fw-w);
+    max-width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
   /* Phone: 6px dark bezel, 40px radius, soft shadow, screen at 393:852 */
   .fw-phone {
     width: 100%;
-    max-width: 320px;
     padding: 6px;
     box-sizing: border-box;
     border-radius: 40px;
@@ -137,14 +115,15 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     will-change: transform;
   }
   .fw-controls {
-    margin-top: 18px;
+    align-self: center;
+    margin-top: 12px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
   .fw-dots {
     display: flex;
-    gap: 4px;
+    gap: 2px;
   }
   .fw-dot {
     width: 24px;
@@ -169,8 +148,8 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     background: #4105DB;
   }
   .fw-toggle {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 999px;
     border: 1px solid #E8E4E0;
     background: #fff;
@@ -180,8 +159,8 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     cursor: pointer;
   }
   .fw-toggle svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     fill: currentColor;
   }
   .fw-toggle .fw-ico-play,
@@ -192,93 +171,17 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     display: block;
   }
   .fw-dot:focus-visible,
-  .fw-toggle:focus-visible,
-  .fw-item:focus-visible {
+  .fw-toggle:focus-visible {
     outline: 2px solid #4105DB;
     outline-offset: 2px;
     border-radius: 8px;
   }
   .fw-caption {
-    margin: 10px 0 0;
+    margin: 6px 0 0;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 13px;
     color: #6B6354;
     text-align: center;
-  }
-
-  /* Step list */
-  .fw-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    display: grid;
-    gap: 6px;
-  }
-  .fw-item {
-    width: 100%;
-    display: flex;
-    gap: 14px;
-    text-align: left;
-    padding: 14px 16px 14px 14px;
-    border: 0;
-    border-left: 3px solid transparent;
-    border-radius: 0 8px 8px 0;
-    background: none;
-    cursor: pointer;
-    opacity: 0.6;
-    font: inherit;
-    color: inherit;
-    transition: opacity 200ms ease, border-color 200ms ease, background 200ms ease;
-  }
-  .fw-item:hover {
-    opacity: 0.85;
-  }
-  .fw-item.is-active {
-    opacity: 1;
-    border-left-color: #4105DB;
-    background: #F5F0FF;
-  }
-  .fw-item-n {
-    flex-shrink: 0;
-    min-width: 24px;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    font-style: italic;
-    font-weight: 600;
-    color: #4105DB;
-    line-height: 1.6;
-  }
-  .fw-item-body {
-    display: grid;
-    gap: 6px;
-  }
-  .fw-item-title {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: #2C2620;
-  }
-  .fw-item-bullets {
-    display: grid;
-    gap: 4px;
-  }
-  .fw-bullet {
-    position: relative;
-    padding-left: 14px;
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #2C2620;
-  }
-  .fw-bullet::before {
-    content: '·';
-    position: absolute;
-    left: 2px;
-    color: #6B6354;
-  }
-  .fw-bullet strong {
-    font-weight: 600;
   }
 </style>
 
@@ -296,10 +199,9 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     const layers = Array.from(root.querySelectorAll<HTMLElement>('[data-fw-layer]'));
     const imgs = layers.map((l) => l.querySelector<HTMLImageElement>('[data-fw-img]')!);
     const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-fw-dot]'));
-    const items = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-fw-item]'));
     const toggle = root.querySelector<HTMLButtonElement>('[data-fw-toggle]')!;
     const caption = root.querySelector<HTMLElement>('[data-fw-caption]')!;
-    const titles = items.map((b) => b.querySelector('.fw-item-title')!.textContent!.trim());
+    const titles = JSON.parse(root.dataset.titles || '[]') as string[];
     const stepLabels = JSON.parse(root.dataset.labels || '[]') as string[];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -323,7 +225,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       index = (i + layers.length) % layers.length;
       layers.forEach((l, k) => l.classList.toggle('is-active', k === index));
       dots.forEach((d, k) => { d.classList.toggle('is-active', k === index); if (k === index) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current'); });
-      items.forEach((b, k) => { b.classList.toggle('is-active', k === index); if (k === index) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+      document.dispatchEvent(new CustomEvent('fw:step', { detail: { id: root.id, index } }));
       caption.textContent = `${String(index + 1).padStart(2, '0')} · ${titles[index]}`;
       phone.setAttribute('aria-label', `Step ${index + 1} of ${layers.length}: ${stepLabels[index] || titles[index]}`);
       setY(index, 0);
@@ -363,7 +265,17 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     }
 
     dots.forEach((d, i) => d.addEventListener('click', () => { stop(); show(i); start(); }));
-    items.forEach((b, i) => b.addEventListener('click', () => { stop(); show(i); start(); }));
+    document.addEventListener('fw:jump', (e) => {
+      const d = (e as CustomEvent<{ id?: string; index: number }>).detail;
+      if (d.id && d.id !== root.id) return;
+      stop(); show(d.index); start();
+    });
+    // steps 2+ load after the page has loaded, so the hero stays fast
+    const loadRest = () => root.querySelectorAll<HTMLElement>('[data-srcset],[data-src]').forEach((el) => {
+      if (el.dataset.srcset) { el.setAttribute('srcset', el.dataset.srcset); delete el.dataset.srcset; }
+      if (el.dataset.src) { el.setAttribute('src', el.dataset.src); delete el.dataset.src; }
+    });
+    if (document.readyState === 'complete') loadRest(); else window.addEventListener('load', loadRest, { once: true });
     toggle.addEventListener('click', () => {
       userPaused = !userPaused;
       syncToggle();
