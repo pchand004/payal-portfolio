@@ -10,17 +10,22 @@ interface Props {
   target: string;
   /** where "Playing at the top of the page" links to */
   anchor?: string;
+  /** show the "Playing at the top of the page ↑" line */
+  note?: boolean;
+  /** scroll to the walkthrough on click (set false when it sits right beside the list) */
+  scroll?: boolean;
+  columns?: 1 | 2;
 }
-const { steps, target, anchor = '#top' } = Astro.props;
+const { steps, target, anchor = '#top', note = true, scroll = true, columns = 2 } = Astro.props;
 const pad = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
-<div class="fs" data-fs data-target={target} data-anchor={anchor}>
-  <p class="fs-note"><a href={anchor} class="evam-link">Playing at the top of the page ↑</a></p>
-  <ol class="fs-list">
+<div class="fs" data-fs data-target={target} data-anchor={anchor} data-scroll={scroll ? '1' : '0'}>
+  {note && <p class="fs-note"><a href={anchor} class="evam-link">Playing at the top of the page ↑</a></p>}
+  <ol class:list={['fs-list', columns === 2 && 'fs-list--two']}>
     {steps.map((s, i) => (
       <li>
-        <button type="button" class:list={['fs-item', i === 0 && 'is-active']} data-fs-item={i} aria-label={`Show step ${i + 1}, ${s.title}, in the walkthrough at the top of the page`}>
+        <button type="button" class:list={['fs-item', i === 0 && 'is-active']} data-fs-item={i} aria-label={scroll ? `Show step ${i + 1}, ${s.title}, in the walkthrough at the top of the page` : `Show step ${i + 1}, ${s.title}, in the walkthrough`}>
           <span class="fs-n">{pad(i)}</span>
           <span class="fs-body">
             <span class="fs-title">{s.title}</span>
@@ -38,23 +43,26 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 
 <style>
   .fs {
-    margin-top: 20px;
+    margin-top: 0;
   }
   .fs-note {
     margin: 0;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
   }
+  .fs-note + .fs-list {
+    margin-top: 16px;
+  }
   .fs-list {
     list-style: none;
-    margin: 16px 0 0;
+    margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: 1fr;
     gap: 6px;
   }
   @media (min-width: 900px) {
-    .fs-list {
+    .fs-list--two {
       grid-template-columns: 1fr 1fr;
       gap: 10px 24px;
     }
@@ -137,8 +145,10 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       const items = Array.from(list.querySelectorAll<HTMLButtonElement>('[data-fs-item]'));
       const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
       items.forEach((b, i) => b.addEventListener('click', () => {
-        const anchor = document.querySelector(list.dataset.anchor || '#top');
-        anchor?.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' });
+        if (list.dataset.scroll === '1') {
+          const anchor = document.querySelector(list.dataset.anchor || '#top');
+          anchor?.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' });
+        }
         document.dispatchEvent(new CustomEvent('fw:jump', { detail: { id: target, index: i } }));
       }));
       document.addEventListener('fw:step', (e) => {

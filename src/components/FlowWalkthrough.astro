@@ -25,8 +25,10 @@ interface Step {
 interface Props {
   steps: Step[];
   id?: string;
+  /** true when the walkthrough is above the fold: step 1 loads eagerly with high priority */
+  priority?: boolean;
 }
-const { steps, id = 'flow-walkthrough' } = Astro.props;
+const { steps, id = 'flow-walkthrough', priority = false } = Astro.props;
 const pad = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
@@ -48,7 +50,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
                 <source data-srcset={`${s.src}.webp`} type="image/webp" />
               )}
               {i === 0 ? (
-                <img src={`${s.src}.png`} alt="" width={s.w} height={s.h} loading="eager" fetchpriority="high" decoding="async" data-fw-img />
+                <img src={`${s.src}.png`} alt="" width={s.w} height={s.h} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} decoding="async" data-fw-img />
               ) : (
                 <img data-src={`${s.src}.png`} alt="" width={s.w} height={s.h} decoding="async" data-fw-img />
               )}

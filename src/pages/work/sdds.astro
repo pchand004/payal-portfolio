@@ -244,54 +244,82 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   {/* Uses the shared case-study system (class "evam"); "sdds" adds the few
       patterns EVAM doesn't have: stat row, zoomable images, iteration blocks, table. */}
   <article class="evam sdds">
-    {/* ───── Hero: intro + meta on the left, the walkthrough phone on the right ─────
-        Desktop (≥900px): two columns, phone vertically centred against the left column.
-        Mobile: intro → phone → meta. */}
-    <section class="sdds-hero" id="top">
-      <div class="sdds-hero-intro">
-        <p class="evam-eyebrow">N°01 · Case Study</p>
-        <h1 class="evam-h1">Crypto Mirror</h1>
-        <p class="evam-subtitle">Data donation for UK research · 2026</p>
-        <p class="evam-body sdds-hero-summary">
-          UK research needs real data on how young people invest in crypto, but these investors
-          don't donate data for the public good. I designed a mobile tool that gives them a mirror
-          of their own trading in return, and found that it only works if they decide to donate
-          <em>before</em> they see it.
-        </p>
+    {/* ───── Hero: the site's case-study hero, then a stage of the five final screens ───── */}
+    <section class="pt-12 pb-2 md:pt-16" id="top">
+      <div class="evam-prose evam-hero-grid">
+        <div class="evam-hero-left">
+          <p class="evam-eyebrow">N°01 · Case Study</p>
+          <h1 class="evam-h1">Crypto Mirror</h1>
+          <p class="evam-subtitle">Data donation for UK research · 2026</p>
+        </div>
+        <div class="evam-hero-right">
+          <p class="evam-body">
+            UK research needs real data on how young people invest in crypto, but these investors
+            don't donate data for the public good. I designed a mobile tool that gives them a mirror
+            of their own trading in return, and found that it only works if they decide to donate
+            <em>before</em> they see it.
+          </p>
+        </div>
       </div>
+    </section>
 
-      <div class="sdds-hero-phone">
-        <FlowWalkthrough steps={walkthrough} id="final-walkthrough" />
-      </div>
-
-      <dl class="sdds-hero-meta">
+    {/* ───── Metadata strip ───── */}
+    <section class="evam-meta">
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt class="evam-meta-label">Role</dt>
-          <dd class="evam-meta-value">
+          <p class="evam-meta-label">Role</p>
+          <p class="evam-meta-value">
             Product Designer &amp; Researcher (solo): research, mobile UI, testing, client
             recommendations
-          </dd>
+          </p>
         </div>
         <div>
-          <dt class="evam-meta-label">Partner</dt>
-          <dd class="evam-meta-value">
+          <p class="evam-meta-label">Partner</p>
+          <p class="evam-meta-value">
             <a
               href="https://www.sdruk.ukri.org/data/financial-data-service/"
               target="_blank"
               rel="noopener noreferrer"
               class="evam-link"
             >Smart Data Donation Service (SDDS) ↗</a>, University of York × Imperial College London
-          </dd>
+          </p>
         </div>
         <div>
-          <dt class="evam-meta-label">Duration</dt>
-          <dd class="evam-meta-value">May – Sep 2026 · MSc Design with Behaviour Science</dd>
+          <p class="evam-meta-label">Duration</p>
+          <p class="evam-meta-value">May – Sep 2026 · MSc Design with Behaviour Science</p>
         </div>
         <div>
-          <dt class="evam-meta-label">Supervised by</dt>
-          <dd class="evam-meta-value">Prof Sebastian Deterding</dd>
+          <p class="evam-meta-label">Supervised by</p>
+          <p class="evam-meta-value">Prof Sebastian Deterding</p>
         </div>
-      </dl>
+      </div>
+    </section>
+
+    {/* ───── Stage: the five final screens, in order. Each opens that step in the walkthrough. ───── */}
+    <section class="sdds-stage" aria-label="The final design, five screens in order">
+      <ol class="sdds-stage-row">
+        {walkthrough.map((w, i) => (
+          <li class="sdds-stage-item" style={`--i:${i}`}>
+            <button type="button" class="sdds-stage-btn" data-stage-step={i} aria-label={`Step ${i + 1}: ${w.title}. Play this step in the walkthrough below.`}>
+              <span class="sdds-stage-phone">
+                <picture>
+                  <source srcset={w.src.replace(/flow\/(.*)$/, 'flow/thumb-$1') + '.webp'} type="image/webp" />
+                  <img
+                    src={w.src.replace(/flow\/(.*)$/, 'flow/thumb-$1') + '.png'}
+                    alt=""
+                    width="380"
+                    height="696"
+                    loading={i < 3 ? 'eager' : 'lazy'}
+                    fetchpriority={i === 0 ? 'high' : undefined}
+                    decoding="async"
+                  />
+                </picture>
+              </span>
+              <span class="sdds-stage-label"><span class="sdds-stage-n">{String(i + 1).padStart(2, '0')}</span> {w.title}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
     </section>
 
     {/* ───── At a glance ───── */}
@@ -477,15 +505,20 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </div>
     </section>
 
-    {/* ───── The final design: the five steps (the phone plays in the hero) ───── */}
-    <section class="evam-block" aria-labelledby="final-design-heading">
+    {/* ───── The final design: the walkthrough phone beside its step list ───── */}
+    <section class="evam-block" id="final-design" aria-labelledby="final-design-heading">
       <div class="evam-prose">
         <h2 class="evam-h2" id="final-design-heading">The final design</h2>
         <p class="evam-body evam-body--mt-md">
           Five steps, in the order that made it work: decide first, then the reflection.
         </p>
       </div>
-      <FlowSteps steps={walkthrough} target="final-walkthrough" anchor="#top" />
+      <div class="sdds-final">
+        <div class="sdds-final-phone">
+          <FlowWalkthrough steps={walkthrough} id="final-walkthrough" />
+        </div>
+        <FlowSteps steps={walkthrough} target="final-walkthrough" note={false} scroll={false} columns={1} />
+      </div>
     </section>
 
     {/* ───── Testing: what changed and why ───── */}
@@ -686,55 +719,129 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     height: auto;
   }
 
-  /* ───── Hero: intro + meta | walkthrough phone ───── */
-  .sdds-hero {
-    padding-top: 40px;
+  /* ───── Hero stage: the five final screens in a row on a soft panel ───── */
+  .sdds-stage {
+    margin-top: 28px;
+    padding: 36px 0 26px;
+    border-radius: 16px;
+    background: #F4F1EC;
+    overflow: hidden;
+  }
+  .sdds-stage-row {
+    list-style: none;
+    margin: 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .sdds-stage-row::-webkit-scrollbar {
+    display: none;
+  }
+  .sdds-stage-item {
+    flex: 0 0 42%;
+    scroll-snap-align: center;
+  }
+  @media (min-width: 768px) {
+    .sdds-stage {
+      margin-top: 32px;
+      padding: 48px 0 30px;
+    }
+    .sdds-stage-row {
+      justify-content: center;
+      overflow: visible;
+      gap: 22px;
+      padding: 0 32px;
+    }
+    .sdds-stage-item {
+      flex: 0 1 190px;
+    }
+    /* a gentle stagger, like phones laid out on a desk */
+    .sdds-stage-item:nth-child(even) {
+      transform: translateY(22px);
+    }
+  }
+  .sdds-stage-btn {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+  }
+  .sdds-stage-phone {
+    display: block;
+    padding: 4px;
+    border-radius: 26px;
+    background: #121217;
+    box-shadow: 0 18px 36px -18px rgba(26, 19, 60, 0.45);
+    transition: transform 250ms ease;
+  }
+  .sdds-stage-phone img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 380 / 696;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 22px;
+    background: #fff;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .sdds-stage-btn:hover .sdds-stage-phone {
+      transform: translateY(-6px);
+    }
+  }
+  .sdds-stage-btn:focus-visible {
+    outline: 2px solid #4105DB;
+    outline-offset: 6px;
+    border-radius: 26px;
+  }
+  .sdds-stage-label {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #2C2620;
+  }
+  .sdds-stage-n {
+    font-style: italic;
+    font-weight: 600;
+    color: #4105DB;
+    margin-right: 2px;
+  }
+
+  /* ───── The final design: phone + step list ───── */
+  .sdds-final {
+    margin-top: 32px;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-areas: 'intro' 'phone' 'meta';
     gap: 28px;
-    scroll-margin-top: 16px;
+    justify-items: center;
   }
-  .sdds-hero-intro { grid-area: intro; }
-  .sdds-hero-phone {
-    grid-area: phone;
-    display: flex;
-    justify-content: center;
-  }
-  .sdds-hero-phone :global(.fw) {
-    --fw-w: 240px;
-  }
-  .sdds-hero-meta {
-    grid-area: meta;
-    margin: 0;
-    padding-top: 20px;
-    border-top: 0.5px solid #E8E4E0;
-    display: grid;
-    gap: 14px;
-  }
-  .sdds-hero-meta dd {
-    margin: 0;
-  }
-  .sdds-hero-summary {
-    margin-top: 20px;
+  .sdds-final :global(.fw) {
+    --fw-w: 260px;
   }
   @media (min-width: 900px) {
-    .sdds-hero {
-      padding-top: 24px;
-      grid-template-columns: minmax(0, 1fr) 300px;
-      grid-template-areas: 'intro phone' 'meta phone';
-      grid-template-rows: auto 1fr;
-      column-gap: 64px;
-      row-gap: 22px;
+    .sdds-final {
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 48px;
+      align-items: start;
+      justify-items: stretch;
     }
-    .sdds-hero-phone {
-      align-self: center;
+    .sdds-final-phone {
+      display: flex;
+      justify-content: center;
+      position: sticky;
+      top: 24px;
     }
-    .sdds-hero-phone :global(.fw) {
-      --fw-w: 270px;
-    }
-    .sdds-hero-meta {
-      align-self: start;
+    .sdds-final :global(.fw) {
+      --fw-w: 290px;
     }
   }
 
@@ -854,3 +961,18 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   }
 </style>
 
+<script>
+  // Hero stage: a screen opens that step in the walkthrough in "The final design"
+  function initStage() {
+    document.querySelectorAll<HTMLButtonElement>('[data-stage-step]:not([data-ready])').forEach((b) => {
+      b.dataset.ready = '1';
+      b.addEventListener('click', () => {
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.getElementById('final-design')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        document.dispatchEvent(new CustomEvent('fw:jump', { detail: { id: 'final-walkthrough', index: Number(b.dataset.stageStep) } }));
+      });
+    });
+  }
+  initStage();
+  document.addEventListener('astro:page-load', initStage);
+</script>
