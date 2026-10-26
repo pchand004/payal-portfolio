@@ -15,36 +15,40 @@ const hero = {
   alt: 'Three mobile screens from the final design: an optional update step, a "Shared with SDDS" receipt showing the donation\'s journey, and the trading reflection with charts of asset allocation, trading rhythm and outcomes.',
 };
 
-const glance = [
-  { n: '11', label: 'interviews with young UK crypto investors' },
-  { n: '8', label: 'think-aloud test sessions, in 4 rounds' },
-  { n: '5', label: 'prototype versions' },
-  { n: '22', label: 'measures computed on the phone; nothing raw leaves it' },
-  { n: '4', label: 'recommendations to SDDS' },
-];
+const glanceLine = '11 interviews · 8 think-aloud sessions in 4 rounds · 5 prototype versions · 22 measures computed on the phone · 4 recommendations to SDDS';
 
-const questions = [
-  'Could giving investors insight about themselves motivate them to donate?',
-  'What do they want to understand about their own investing, and what drives or blocks donating?',
-  'Which of that information is also valuable for researchers?',
-];
-
-const processCards = [
-  { n: '01', title: 'Scope', body: 'literature review to map the gap.' },
+// How I worked, and why: five steps, each with its method and the reason for it
+const process = [
   {
-    n: '02',
-    title: 'Listen',
-    body: '11 semi-structured interviews with UK investors aged 18–35 who trade at least monthly, recruited through Reddit, Telegram and snowballing (8–17 July 2026).',
+    label: 'Scope',
+    when: 'May–June',
+    method: 'Literature review.',
+    why: "the usual explanations for donating didn't fit this group, so I needed to know what was unknown before deciding what to ask.",
   },
   {
-    n: '03',
-    title: 'Make sense',
-    body: "affinity mapping to keep participants' own words, then COM-B to diagnose why donation doesn't happen.",
+    label: 'Listen',
+    when: '8–17 July',
+    method: '11 laddering interviews, 45–60 minutes, with UK investors aged 18–35 who trade at least monthly, recruited through Reddit, Telegram and snowballing.',
+    why: '"would you donate?" gets a polite yes. Repeated "why" questions get to the conditions behind it. I raised donation last, after people had described their own trading, so their reactions were anchored in real behaviour. That\'s why "a fair exchange" came up unprompted.',
+    whyLabel: 'Why laddering',
   },
   {
-    n: '04',
-    title: 'Design & test',
-    body: 'a mobile prototype tested with think-aloud under RITE (fix after every round), 8 sessions in 4 rounds (7–17 August 2026), plus a stakeholder session with SDDS.',
+    label: 'Check what exists',
+    method: 'I opened a Binance account and requested its full data export.',
+    why: 'participants described patterns they had no record of. Before designing what leaves an export, I needed to see what an export actually contains.',
+  },
+  {
+    label: 'Make sense',
+    method: 'Affinity mapping, then a COM-B diagnosis.',
+    why: "affinity mapping keeps participants' own words; COM-B says which barrier blocks the behaviour (capability, opportunity or motivation). Six clusters became three gaps without losing the evidence.",
+    whyLabel: 'Why two passes',
+  },
+  {
+    label: 'Design and test',
+    when: '7–17 August',
+    method: 'Think-aloud under RITE: 8 sessions in 4 rounds of 2, fixing the prototype after every round (5 versions), then a stakeholder session with SDDS.',
+    why: 'a solo project, an unexplored problem and three weeks. Fixing between rounds found what broke fastest. The trade-off: changing the prototype changed the choices being counted, so it measured willingness less well than it found problems.',
+    whyLabel: 'Why RITE',
   },
 ];
 
@@ -56,15 +60,24 @@ const deficits = {
 };
 
 const gaps = [
-  { name: 'Capability', body: "they grasp the idea of donating, but can't picture what they'd actually be giving." },
+  { name: 'Capability', body: "they grasp the idea of donating, but can't picture what they'd be giving." },
   {
     name: 'Opportunity',
     body: 'the clearest gap. No medium means no record, and no record means nothing to donate, however willing they are.',
   },
   {
     name: 'Motivation',
-    body: 'they were willing in principle, but on conditions. Above all, they wanted something back: an objective view of their own habits.',
+    body: 'willing in principle, but on terms. Willingness ran on exchange, not contribution: no participant named research as a reason to donate.',
   },
+];
+
+const conditions = [
+  { name: 'Control, including withdrawal', raised: '8 of 11', met: 'A toggle per measure; withdraw any time, which deletes the data' },
+  { name: 'Limits on use', raised: '8 of 11', met: '"Research only, never marketing, never resold", repeated on the receipt' },
+  { name: 'Security and anonymity', raised: '8 of 11', met: 'Identity removed on the device; no per-donor contact held' },
+  { name: 'Transparency', raised: '7 of 11', met: 'Recipient named before any choice; receipt lists exactly what left' },
+  { name: 'Updates', raised: '6 of 11', met: 'Journey timeline, plus collective updates to the whole donor community' },
+  { name: 'Something returned', raised: '4 of 11', met: 'The reflection, delivered as the return for donating' },
 ];
 
 const overlap = {
@@ -78,117 +91,74 @@ const principles = [
   {
     n: '01',
     name: 'The donation is derived, and the derivation is local.',
-    body: 'Identity is removed on the device; only the derived measures can leave.',
+    body: 'Identity is removed on the device; only derived measures can leave.',
   },
   {
     n: '02',
     name: 'The reflection completes the exchange.',
-    body: 'The mirror of their trading is the return they asked for, not a bonus.',
+    body: "It's the return they asked for, not a bonus.",
   },
   {
     n: '03',
     name: 'Consent is granular and reversible.',
-    body: 'Choose measure by measure, change your mind later, withdraw any time.',
+    body: 'Measure by measure, changeable later.',
+  },
+  {
+    n: '04',
+    name: 'Descriptive, never advice.',
+    body: 'One participant predicted that seeing his patterns would make him trade more. So the reflection describes and never prompts: no targets, no "you should".',
   },
 ];
 
-const iterations = [
-  {
-    title: 'Iteration 1: Purpose blindness',
-    image: {
-      src: img('sdds-iteration-1.jpg'),
-      w: 2400,
-      h: 648,
-      alt: 'Version 1 screens next to version 3 screens, showing the flow reordered so the donation decision comes before the reflection.',
-    },
-    parts: [
-      { label: 'Before', body: 'see your reflection first, then choose what to donate.' },
-      {
-        label: 'What happened',
-        body: 'participants saw a reflection tool with a donation tacked on "like a cookie policy". Once they\'d read their reflection, they clicked through the donation with no attention to it.',
-      },
-      {
-        label: 'After',
-        body: 'the purpose is stated up front, data types are explained, the decision comes next, and the reflection arrives after the donation as its return.',
-      },
-    ],
-  },
-  {
-    title: 'Iteration 3: Making consent legible',
-    image: {
-      src: img('sdds-iteration-3.jpg'),
-      w: 2400,
-      h: 884,
-      alt: 'Version 2 consent screens next to version 4, which adds a "Where does it go?" block naming SDDS and per-measure toggles with a breakdown of what each category contains.',
-    },
-    parts: [
-      {
-        label: 'Before',
-        body: "labels didn't say what they held, people assumed their selection went straight to SDDS, and they were never asked about updates.",
-      },
-      {
-        label: 'What testers asked',
-        body: '"choose what research receives? What does that mean? Is SDDS the one who\'s researching? Why should I share this?"',
-      },
-      {
-        label: 'After',
-        body: "a clear block naming who holds the data, a breakdown inside every category with per-measure toggles, and an opt-in to follow the data's journey.",
-      },
-    ],
-  },
-  {
-    title: 'Iteration 5: Updates without giving up anonymity',
-    image: {
-      src: img('sdds-iteration-5.jpg'),
-      w: 2400,
-      h: 1133,
-      alt: 'Version 4 email opt-in screens next to version 5, which replaces the email with a collective "Your donation travels in a package" update and an optional donor community survey.',
-    },
-    parts: [
-      {
-        label: 'The conflict',
-        body: 'updates were a condition for 6 of 11 participants, but signing up needed an email. "Without entering the email address how do I sign up? If I do put my email, they\'ll recognise me and the data I shared."',
-      },
-      {
-        label: 'The fix',
-        body: "in the stakeholder session, SDDS proposed collective updates to the whole donor community, so there's no per-donor link but people are still told what happens.",
-      },
-      {
-        label: 'Why it matters',
-        body: 'the six conditions can conflict, and resolving it needed the recipient to change alongside the interface.',
-      },
-    ],
-  },
+const finalFig = {
+  src: img('sdds-final-v5.png'),
+  w: 2680,
+  h: 1672,
+  alt: 'Three screens from the final design: the donation decision, the receipt and the reflection, with numbered markers.',
+};
+
+const legend = [
+  { name: 'Recipient named before any choice', rest: '', tag: 'transparency' },
+  { name: 'A toggle for every measure', rest: ', changeable later', tag: 'control' },
+  { name: 'The receipt lists what left', rest: ", who holds it and what it's for", tag: 'transparency, limits on use' },
+  { name: 'A journey timeline', rest: ' from sent to analysis', tag: 'updates' },
+  { name: 'Updates reported collectively', rest: ', no email held', tag: 'anonymity' },
+  { name: 'The mirror arrives after the decision', rest: '', tag: 'something returned' },
+  { name: 'Descriptive cards', rest: ', no prompts or targets', tag: 'guardrail' },
 ];
 
-const flow = [
+const rounds = [
   {
-    name: 'Entry',
-    body: 'says what you give, what you get and who receives it, and lists "what data we get" before any upload.',
+    title: 'Rounds 1–2: Purpose blindness',
+    image: {
+      src: img('sdds-r12-purpose.png'),
+      w: 1920,
+      h: 1520,
+      alt: 'Before: the v1 reflection screen shown before any donation. After: the v5 receipt, where the reflection comes after donating.',
+    },
+    body: 'In v1 the reflection came first and the donation after it. Testers read their reflection, then clicked through the donation without reading it; to them it was tacked on, like a cookie policy. From v3 the purpose is stated at entry, the decision comes first, and the reflection arrives after it as the return.',
   },
   {
-    name: 'Export & local derivation',
-    body: 'identity removed on the device; 22 measures computed locally, nothing leaves.',
+    title: 'Round 3: Making consent legible',
+    image: {
+      src: img('sdds-r3-consent.png'),
+      w: 1920,
+      h: 1520,
+      alt: "Before: v2 category toggles with no explanation. After: v5 'Where does it go?' block naming SDDS.",
+    },
+    quote: '"Choose what research receives? What does that mean? Is SDDS the one who\'s researching?"',
+    body: 'Labels didn\'t say what they held, and people assumed their selection went straight to researchers. v4 added a "Where does it go?" block naming SDDS, and every category now opens into its measures, each with its own toggle.',
   },
   {
-    name: 'Donation decision',
-    body: 'four category cards, per-measure toggles, a live preview of the package, the recipient named, a journey timeline including withdrawal, and a preview of the reflection.',
-  },
-  {
-    name: 'Confirmation & receipt',
-    body: 'the action names the donation; the receipt lists exactly what left.',
-  },
-  {
-    name: 'Reflection',
-    body: 'an overview card, then one card per category: trading rhythm, trades and timing, outcomes, allocation.',
-  },
-  {
-    name: 'Revisit',
-    body: 'change your choices any time; withdrawing deletes the data, but the reflection stays.',
-  },
-  {
-    name: 'Updates',
-    body: 'collective, to the whole donor community; no per-donor contact held.',
+    title: 'Round 4: Updates without giving up anonymity',
+    image: {
+      src: img('sdds-r4-updates.png'),
+      w: 1920,
+      h: 1520,
+      alt: 'Before: v4 email opt-in checkboxes. After: v5 collective updates with no email.',
+    },
+    quote: '"If I do put my email, they\'ll recognise me and the data I shared."',
+    body: 'Updates were a condition for 6 of 11 interviewees, but the opt-in needed an email, which broke anonymity. In the stakeholder session SDDS proposed collective updates to the whole donor community: no per-donor link, and people are still told what happens. Resolving it needed the recipient to change, not just the screen.',
   },
 ];
 
@@ -196,42 +166,30 @@ const results = [
   {
     measure: 'Task completion',
     result: '8 of 8',
-    drove: 'Every version was completed end to end, but in v1–v2 nobody paid attention to the donation',
+    drove: 'Completed end to end in every version, but in v1–v2 without attention to the donation',
   },
   {
     measure: 'Understanding the purpose',
     result: '8 of 8',
-    drove: 'Understood late in v1–v2; at entry from v3 onwards',
+    drove: 'Understood late in v1–v2; at entry from v3',
   },
   {
     measure: 'Control and trust',
     result: '7 of 8',
-    drove: 'Recipient clarity was the round 2 issue; control was stated present by rounds 3–4',
+    drove: 'Recipient clarity was the round 2 issue; control stated present by rounds 3–4',
   },
   {
     measure: 'Reflection valued as the return',
-    result: '3 of 8',
-    drove: 'Recognised as the incentive once delivered',
+    result: '0 of 4 before the reorder · 3 of 4 after',
+    drove: 'Reflection first (rounds 1–2): the exchange felt complete and nothing was owed. Reflection after the decision (rounds 3–4): recognised as the incentive ("very visual insight")',
   },
 ];
 
 const recommendations = [
-  {
-    name: 'Decision before reflection',
-    body: 'ask first, preview the return, keep it revisable. SDDS gets donations people know they made.',
-  },
-  {
-    name: 'Measure-level consent',
-    body: 'a toggle per measure, stored with the donation. SDDS gets a consent record per package.',
-  },
-  {
-    name: 'Collective updates, no contact held',
-    body: 'report progress to the whole donor community. Anonymity becomes a property of what SDDS stores.',
-  },
-  {
-    name: 'The package as a research offer',
-    body: 'SDDS receives the derived package, not the raw export, a new donated data type confirmed by SDDS as fitting its financial data types.',
-  },
+  { name: 'Decision before reflection', body: 'ask first, preview the return, keep it revisable.' },
+  { name: 'Measure-level consent', body: 'a toggle per measure, stored with the donation: a consent record per package.' },
+  { name: 'Collective updates, no contact held', body: 'anonymity becomes a property of what SDDS stores.' },
+  { name: 'The package as a research offer', body: 'SDDS receives the derived package, not the raw export: a new donated data type.' },
 ];
 
 const limits = [
@@ -304,7 +262,16 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     </section>
 
 
-    {/* ───── Hero image ───── */}
+    {/* ───── Walkthrough video ─────
+        TODO: when these files exist, replace the hero image below with the walkthrough:
+          public/videos/sdds-walkthrough.webm, public/videos/sdds-walkthrough.mp4,
+          public/images/sdds-images/sdds-walkthrough-poster.jpg
+        <figure class="sdds-video"> with <video autoplay muted loop playsinline controls
+        preload="metadata" poster=…> (webm source first, then mp4), aria-label and caption
+        "The final flow in 40 seconds: decide first, get a receipt, then your reflection."
+        Phone-framed (rounded, max-width ~360px, centred); under prefers-reduced-motion,
+        don't autoplay: show the poster with controls only. */}
+    {/* ───── Hero image (until the walkthrough video exists) ───── */}
     <section class="mt-6 md:mt-8">
       <a
         href={hero.src}
@@ -326,20 +293,21 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     </section>
 
     {/* ───── At a glance ───── */}
-    <section class="sdds-glance" aria-label="At a glance">
-      <dl class="sdds-glance-grid">
-        {glance.map((g) => (
-          <div class="sdds-stat">
-            <dt class="sdds-stat-label">{g.label}</dt>
-            <dd class="sdds-stat-num">{g.n}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-
-    {/* ───── Pull quote ───── */}
-    <section class="evam-quote-section">
-      <blockquote class="evam-quote evam-prose">"The order is the mechanism."</blockquote>
+    <section class="evam-block sdds-glance-block" aria-labelledby="glance-heading">
+      <div class="evam-prose">
+        <h2 class="evam-h2" id="glance-heading">At a glance</h2>
+        <p class="sdds-glance-line">{glanceLine}</p>
+        <p class="evam-body evam-body--mt-md">
+          <strong class="sdds-strong">What I found:</strong> reflection motivated donation only when it
+          came after the decision. When it came first (rounds 1–2), no tester treated it as a return for
+          donating. Once it came after (rounds 3–4), 3 of 4 did. I call this <em>the order is the
+          mechanism</em>.
+        </p>
+        <p class="evam-body evam-body--mt-sm">
+          <strong class="sdds-strong">What it led to:</strong> SDDS confirmed the derived package fits its
+          financial data types, and proposed the collective-updates model now in the final design.
+        </p>
+      </div>
     </section>
 
     {/* ───── Context ───── */}
@@ -347,66 +315,53 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       <div class="evam-prose">
         <h2 class="evam-h2">Context</h2>
         <p class="evam-body evam-body--mt-md">
-          SDDS is the UK's first national research infrastructure built on people's right to
-          a machine-readable copy of their own data. It helps people obtain, understand and
-          donate their digital trace data for research. Its central challenge is keeping
-          donations coming without relying on costly paid panels, especially from valuable
-          populations researchers can't yet reach.
+          SDDS is the UK's first national research infrastructure built on people's right to a
+          machine-readable copy of their own data. It helps people obtain, understand and donate their
+          digital trace data for research, and needs donations to keep coming without relying on costly
+          paid panels.
         </p>
         <p class="evam-body evam-body--mt-sm">
-          Young retail crypto investors are one of those populations. UK adult crypto
-          ownership went from 4% in 2021 to a peak of 12% in 2024, much of it young,
-          first-time investors who follow community signals more than analysis.
+          Young retail crypto investors are a population researchers can't yet reach. UK adult crypto
+          ownership rose from 4% in 2021 to a peak of 12% in 2024, much of it young, first-time investors
+          who follow community signals more than analysis.
         </p>
         <p class="evam-body evam-body--mt-sm">
-          The first idea was gambling data. I steered away from it: it meant seeking out
-          people at risk of harm. Crypto investors were just as rich to study, without
-          targeting anyone for harm, and relevant to finance researchers. That scoping call
-          was the project's first ethical decision, made before any screen existed.
+          The first idea was gambling data. I steered away from it: it meant seeking out people at risk
+          of harm. Crypto investors were as rich to study, relevant to finance researchers, and didn't
+          require targeting anyone for harm. That scoping call was the project's first ethical decision,
+          made before any screen existed.
+        </p>
+        <p class="evam-body evam-body--mt-sm">
+          Research on data donation explains it through prosocial motivation, trust and the collective
+          good. Crypto investing is private, self-directed and about personal gain, so those drivers don't
+          apply, and no published study had looked at this group. So I asked: could giving investors
+          insight about themselves motivate them to donate, and what would that insight need to be?
         </p>
       </div>
     </section>
 
-    {/* ───── The gap ───── */}
+    {/* ───── How I worked, and why ───── */}
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">The gap</h2>
+        <h2 class="evam-h2">How I worked, and why</h2>
         <p class="evam-body evam-body--mt-md">
-          Research on data donation finds people donate out of prosocial motivation, trust
-          in the institution and belief in the collective good. Crypto investing is private,
-          self-directed and focused on personal gain, so those drivers don't apply, and
-          often become barriers. No published study had looked at data donation among crypto
-          investors.
+          An asymmetric double diamond: nobody had studied this group, so I gave the research phase most
+          of the time and kept the design phase short and fast.
         </p>
-        <p class="evam-body evam-body--mt-sm">So I asked:</p>
-        <ol class="evam-list sdds-list--mt-sm">
-          {questions.map((q, i) => (
+        <ol class="evam-list evam-list--mt">
+          {process.map((step, i) => (
             <li class="evam-row">
-              <span class="evam-num evam-num--finding">{pad(i)}</span>
-              <p class="evam-row-finding">{q}</p>
+              <span class="evam-num evam-num--principle">{pad(i)}</span>
+              <div class="flex-1">
+                <p class="evam-row-name">
+                  {step.label}{step.when && <span class="sdds-when"> · {step.when}</span>}
+                </p>
+                <p class="evam-row-finding sdds-step-method">{step.method}</p>
+                <p class="evam-row-desc sdds-step-why"><em>{step.whyLabel ?? 'Why'}: {step.why}</em></p>
+              </div>
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-
-    {/* ───── Process ───── */}
-    <section class="evam-block">
-      <div class="evam-prose">
-        <h2 class="evam-h2">Process</h2>
-        <p class="evam-body evam-body--mt-md">
-          An asymmetric double diamond: the problem space was unexplored, so the research
-          phase was deliberately heavier.
-        </p>
-      </div>
-      <div class="evam-process-grid">
-        {processCards.map((c) => (
-          <div class="evam-process-card">
-            <p class="evam-process-num">{c.n}</p>
-            <h3 class="evam-process-card-title">{c.title}</h3>
-            <p class="evam-process-card-body sdds-cap">{c.body}</p>
-          </div>
-        ))}
       </div>
     </section>
 
@@ -442,15 +397,31 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
           ))}
         </ul>
         <blockquote class="evam-quote sdds-quote--inline">
-          "If I receive useful insights about my own trading in return, it feels like a fair
-          exchange rather than just giving away my data for free."
+          "If I receive useful insights about my own trading in return, it feels like a fair exchange
+          rather than just giving away my data for free." <span class="sdds-attrib">— interview participant</span>
         </blockquote>
-        <p class="evam-body evam-body--mt-md">
-          Willingness was never unconditional. Across all 11 interviews the same six
-          conditions kept coming back, including anonymity, the right to withdraw, no
-          resale, knowing exactly what's collected, and being told what happens next. The
-          interface had to visibly meet each one.
-        </p>
+
+        <h3 class="sdds-h3 sdds-h3--mt-lg">Six conditions, and where the design meets each one</h3>
+        <div class="sdds-table-wrap" tabindex="0" role="region" aria-label="Six conditions table">
+          <table class="sdds-table">
+            <thead>
+              <tr>
+                <th scope="col">Condition</th>
+                <th scope="col">Raised by</th>
+                <th scope="col">Where the final design meets it</th>
+              </tr>
+            </thead>
+            <tbody>
+              {conditions.map((c) => (
+                <tr>
+                  <th scope="row">{c.name}</th>
+                  <td class="sdds-table-result">{c.raised}</td>
+                  <td>{c.met}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <h3 class="sdds-h3 sdds-h3--mt-lg">The data that exists isn't the data they'll give</h3>
       </div>
@@ -473,15 +444,10 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </a>
       <div class="evam-prose">
         <p class="evam-body evam-body--mt-md">
-          I opened a real Binance account and requested its full data export to see what's
-          actually available. The data that exists, like exact balances and addresses, is
-          what investors refuse. The data they'd happily give, like their trading rhythm,
-          doesn't exist as a field.
-        </p>
-        <p class="evam-body evam-body--mt-sm">
-          That located the design: a layer between the export and the researcher that turns
-          one into the other. It computes 22 identity-free measures on the phone, in a form
-          investors accept.
+          I opened a real Binance account and requested its export. The data that exists, like exact
+          balances and addresses, is what investors refuse. The data they'd happily give, like their
+          trading rhythm, doesn't exist as a field. That located the design: a layer between the export
+          and the researcher that computes 22 identity-free measures on the phone.
         </p>
       </div>
     </section>
@@ -491,9 +457,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       <div class="evam-prose evam-hero-grid">
         <div>
           <h2 class="evam-h2">How I thought about the work</h2>
-          <p class="evam-subhead">
-            Three principles, each traced back to what participants said:
-          </p>
+          <p class="evam-subhead">Four principles, each traced back to what participants said:</p>
         </div>
         <div>
           <ul class="evam-list">
@@ -511,20 +475,58 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </div>
     </section>
 
+    {/* ───── The final design ───── */}
+    <section class="evam-block">
+      <div class="evam-prose">
+        <h2 class="evam-h2">The final design</h2>
+      </div>
+      <a
+        href={finalFig.src}
+        target="_blank"
+        rel="noopener"
+        class="sdds-zoom sdds-figure"
+        aria-label="Open full-size image in a new tab"
+      >
+        <img
+          src={finalFig.src}
+          alt={finalFig.alt}
+          width={finalFig.w}
+          height={finalFig.h}
+          class="sdds-image"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+      <div class="evam-prose">
+        <ol class="evam-list evam-list--mt">
+          {legend.map((l, i) => (
+            <li class="evam-row">
+              <span class="evam-num evam-num--finding">{i + 1}</span>
+              <p class="evam-row-finding"><strong class="sdds-strong">{l.name}</strong>{l.rest} <span class="sdds-tag">· {l.tag}</span></p>
+            </li>
+          ))}
+        </ol>
+        <p class="evam-body evam-body--mt-md">
+          The full flow runs in 7 steps: entry → export and on-device derivation → decision → receipt →
+          reflection → revisit (withdrawing deletes the data; the reflection stays) → collective updates.
+        </p>
+      </div>
+    </section>
+
     {/* ───── Testing: what changed and why ───── */}
     <section class="evam-block">
       <div class="evam-prose">
         <h2 class="evam-h2">Testing: what changed and why</h2>
       </div>
 
-      {iterations.map((it) => (
+      {rounds.map((it) => (
         <div class="sdds-iteration">
           <h3 class="sdds-h3">{it.title}</h3>
           <a
             href={it.image.src}
             target="_blank"
             rel="noopener"
-            class="sdds-zoom sdds-figure sdds-figure--tight"
+            class="sdds-zoom sdds-figure sdds-figure--tight sdds-figure--round"
             aria-label="Open full-size image in a new tab"
           >
             <img
@@ -537,13 +539,9 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
               decoding="async"
             />
           </a>
-          <div class="sdds-parts">
-            {it.parts.map((part) => (
-              <div class="sdds-part">
-                <p class="evam-meta-label">{part.label}</p>
-                <p class="sdds-part-body sdds-cap">{part.body}</p>
-              </div>
-            ))}
+          <div class="evam-prose">
+            {it.quote && <blockquote class="evam-quote sdds-quote--inline sdds-quote--round">{it.quote}</blockquote>}
+            <p class="evam-body evam-body--mt-sm">{it.body}</p>
           </div>
         </div>
       ))}
@@ -551,58 +549,41 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       <div class="evam-prose sdds-iteration">
         <h3 class="sdds-h3">The hardest call</h3>
         <p class="evam-body evam-body--mt-sm">
-          Reversing my own founding principle after round 2. "Consent by seeing" was the
-          starting idea, and two rounds showed it produced donations nobody paid attention
-          to. Moving the decision first fixed that and made the reflection the price. I kept
-          the risk small with a literal preview of the reflection and a decision you can
+          Reversing my own founding principle after round 2. "Consent by seeing" produced donations
+          nobody paid attention to. Moving the decision first fixed that but made the reflection the
+          price, so I kept the risk small with a literal preview of the reflection and a decision you can
           revise afterwards.
         </p>
-      </div>
-    </section>
-
-    {/* ───── The final design ───── */}
-    <section class="evam-block">
-      <div class="evam-prose">
-        <h2 class="evam-h2">The final design</h2>
-        <p class="evam-body evam-body--mt-md">The flow, in 7 steps:</p>
-        <ol class="evam-list sdds-list--mt-sm">
-          {flow.map((f, i) => (
-            <li class="evam-row">
-              <span class="evam-num evam-num--finding">{pad(i)}</span>
-              <p class="evam-row-finding"><strong class="sdds-strong">{f.name}:</strong> {f.body}</p>
-            </li>
-          ))}
-        </ol>
       </div>
     </section>
 
     {/* ───── What testing showed ───── */}
     <section class="evam-block">
       <div class="evam-prose">
-        <h2 class="evam-h2">What testing showed (8 sessions)</h2>
-        <table class="sdds-table">
-          <thead>
-            <tr>
-              <th scope="col">Measure</th>
-              <th scope="col">Result</th>
-              <th scope="col">What it drove</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((r) => (
+        <h2 class="evam-h2">What testing showed</h2>
+        <div class="sdds-table-wrap" tabindex="0" role="region" aria-label="What testing showed table">
+          <table class="sdds-table">
+            <thead>
               <tr>
-                <th scope="row" data-label="Measure">{r.measure}</th>
-                <td data-label="Result" class="sdds-table-result">{r.result}</td>
-                <td data-label="What it drove">{r.drove}</td>
+                <th scope="col">Measure</th>
+                <th scope="col">Result</th>
+                <th scope="col">What it drove</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {results.map((r) => (
+                <tr>
+                  <th scope="row">{r.measure}</th>
+                  <td class="sdds-table-result">{r.result}</td>
+                  <td>{r.drove}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p class="evam-body evam-body--mt-md">
-          The headline: yes, reflection can motivate donation, but conditionally. Delivered
-          after the ask, people recognised it as the incentive ("very visual insight").
-          Delivered before, the exchange felt complete and nothing was owed. The order is the
-          mechanism.
+          <strong class="sdds-strong">The headline:</strong> reflection can motivate donation, but only
+          after the ask. The order is the mechanism.
         </p>
       </div>
     </section>
@@ -615,7 +596,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
           {recommendations.map((r, i) => (
             <li class="evam-row">
               <span class="evam-num evam-num--finding">{pad(i)}</span>
-              <p class="evam-row-finding"><strong class="sdds-strong">{r.name}:</strong> {r.body}</p>
+              <p class="evam-row-finding"><strong class="sdds-strong">{r.name}</strong> — {r.body}</p>
             </li>
           ))}
         </ol>
@@ -754,52 +735,6 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     }
   }
 
-  /* ───── At a glance — quiet row of big numbers ───── */
-  .sdds-glance {
-    margin-top: 48px;
-  }
-  .sdds-glance-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px 24px;
-    margin: 0;
-  }
-  .sdds-stat {
-    display: flex;
-    flex-direction: column-reverse; /* number first visually, label first for screen readers */
-    justify-content: flex-end;
-  }
-  .sdds-stat-num {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 40px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: #2C2620;
-    margin: 0;
-    font-variant-numeric: tabular-nums;
-  }
-  .sdds-stat-label {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 13px;
-    line-height: 1.45;
-    color: #6B6354;
-    margin-top: 10px;
-    max-width: 22ch;
-  }
-  @media (min-width: 768px) {
-    .sdds-glance {
-      margin-top: 64px;
-    }
-    .sdds-glance-grid {
-      grid-template-columns: repeat(5, 1fr);
-      gap: 32px;
-    }
-    .sdds-stat-num {
-      font-size: 52px;
-    }
-  }
-
   /* Participant quote inside a section — the pull-quote style, one step smaller */
   .sdds-quote--inline {
     margin-top: 32px;
@@ -812,44 +747,75 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     }
   }
 
-  /* ───── Iterations — image, then three labelled parts ───── */
+  /* ───── At a glance ───── */
+  .sdds-glance-line {
+    margin: 20px 0 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #4105DB;
+  }
+  @media (min-width: 768px) {
+    .sdds-glance-line {
+      font-size: 17px;
+    }
+  }
+
+  /* ───── How I worked: method line, then an italic "why" ───── */
+  .sdds-when {
+    font-weight: 400;
+    color: #6B6354;
+  }
+  .sdds-step-method {
+    margin-top: 4px;
+  }
+  .sdds-step-why {
+    margin-top: 6px;
+  }
+  .sdds-tag {
+    color: #6B6354;
+  }
+  .sdds-attrib {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #6B6354;
+  }
+  .sdds-quote--round {
+    margin-top: 20px;
+  }
+
+  /* ───── Iterations ───── */
   .sdds-iteration {
     margin-top: 40px;
   }
   .sdds-iteration + .sdds-iteration {
     margin-top: 64px;
   }
-  .sdds-parts {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .sdds-part {
-    padding-top: 16px;
-    border-top: 0.5px solid #E8E4E0;
-  }
-  .sdds-part-body {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 15px;
-    color: #2C2620;
-    line-height: 1.55;
-    margin-top: 8px;
-  }
   @media (min-width: 768px) {
     .sdds-iteration + .sdds-iteration {
       margin-top: 80px;
     }
-    .sdds-parts {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-    }
+  }
+  .sdds-figure--round {
+    max-width: 880px;
   }
 
-  /* ───── Results table — a table on desktop, stacked blocks on phones ───── */
+  /* ───── Tables — scroll sideways inside their own box on narrow screens ───── */
+  .sdds-table-wrap {
+    margin-top: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 4px;
+  }
+  .sdds-table-wrap:focus-visible {
+    outline: 2px solid #4105DB;
+    outline-offset: 4px;
+  }
   .sdds-table {
     width: 100%;
-    margin-top: 24px;
+    min-width: 560px;
     border-collapse: collapse;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: 15px;
@@ -878,60 +844,10 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     width: 28%;
   }
   .sdds-table .sdds-table-result {
-    width: 14%;
-    white-space: nowrap;
+    width: 16%;
     font-weight: 600;
     color: #4105DB;
     font-variant-numeric: tabular-nums;
-  }
-  @media (max-width: 639px) {
-    .sdds-table thead {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      white-space: nowrap;
-    }
-    .sdds-table,
-    .sdds-table tbody,
-    .sdds-table tr,
-    .sdds-table tbody th,
-    .sdds-table tbody td {
-      display: block;
-      width: auto;
-    }
-    .sdds-table tr {
-      padding: 16px 0;
-      border-top: 0.5px solid #E8E4E0;
-    }
-    .sdds-table tbody tr:last-child {
-      border-bottom: 0.5px solid #E8E4E0;
-    }
-    .sdds-table tbody th,
-    .sdds-table tbody td {
-      padding: 0;
-      border: 0;
-    }
-    .sdds-table tbody th {
-      font-size: 16px;
-    }
-    .sdds-table tbody td {
-      margin-top: 10px;
-    }
-    .sdds-table tbody th::before {
-      content: none;
-    }
-    .sdds-table tbody td::before {
-      content: attr(data-label);
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #6B6354;
-      margin-bottom: 2px;
-    }
   }
 
   .sdds-back {
