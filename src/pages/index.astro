@@ -1133,6 +1133,9 @@ const playground = [
     window.addEventListener('scroll', () => window.clearTimeout(timer), { passive: true });
   }
 
+  // Logo captions — hover and keyboard focus are CSS; a tap toggles the caption
+  // (touch browsers don't reliably focus a tapped logo), a tap elsewhere closes it.
+  let brandsBound = false;
   function initBrandCaptions() {
     if (brandsBound) return;
     brandsBound = true;
@@ -1216,5 +1219,14 @@ const playground = [
     initPlayground();
   }
 
-  document.addEventListener('astro:page-load', init);
+  // This module can finish loading after astro:page-load has already fired (it's a
+  // big bundle), so start now as well as on every page load. The flag lives on
+  // <body>, which the router swaps on navigation, so each page initialises once.
+  function boot() {
+    if (document.body.dataset.homeInit) return;
+    document.body.dataset.homeInit = '1';
+    init();
+  }
+  boot();
+  document.addEventListener('astro:page-load', boot);
 </script>
