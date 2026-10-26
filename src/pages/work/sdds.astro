@@ -12,41 +12,6 @@ const img = (file: string) => `/images/sdds-images/${file}`;
 
 const glanceLine = '11 interviews · 8 think-aloud sessions in 4 rounds · 5 prototype versions · 22 measures computed on the phone · 4 recommendations to SDDS';
 
-// How I worked, and why: five steps, each with its method and the reason for it
-const process = [
-  {
-    label: 'Scope',
-    when: 'May–June',
-    method: 'Literature review.',
-    why: "the usual reasons for donating didn't fit this group.",
-  },
-  {
-    label: 'Listen',
-    when: '8–17 July',
-    method: '11 laddering interviews with UK investors aged 18–35 who trade at least monthly.',
-    why: "'would you donate?' gets a polite yes; repeated 'why' gets the conditions behind it.",
-    whyLabel: 'Why laddering',
-  },
-  {
-    label: 'Check what exists',
-    method: 'I opened a Binance account and requested its full data export.',
-    why: "before designing what leaves an export, I needed to see what's in one.",
-  },
-  {
-    label: 'Make sense',
-    method: 'Affinity mapping, then a COM-B diagnosis.',
-    why: 'affinity mapping keeps their words; COM-B names which barrier blocks donating.',
-    whyLabel: 'Why two passes',
-  },
-  {
-    label: 'Design and test',
-    when: '7–17 August',
-    method: 'Think-aloud under RITE: 8 sessions in 4 rounds of 2, fixing the prototype after every round (5 versions), then a stakeholder session with SDDS.',
-    why: 'solo, unexplored, three weeks; fixing between rounds found what broke fastest.',
-    whyLabel: 'Why RITE',
-  },
-];
-
 const deficits = {
   src: img('sdds-three-deficits.jpg'),
   w: 2400,
@@ -370,42 +335,26 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </div>
     </section>
 
-    {/* ───── How I worked, and why ───── */}
-    <section class="evam-block">
-      <div class="evam-prose">
-        <h2 class="evam-h2">How I worked, and why</h2>
-        <a
-          href="/images/sdds-images/sdds-double-diamond.png"
-          target="_blank"
-          rel="noopener"
-          class="sdds-zoom sdds-figure-plain sdds-dd"
-          aria-label="Open full-size image in a new tab"
-        >
-          <img
-            src="/images/sdds-images/sdds-double-diamond.png"
-            alt="An asymmetric double diamond running from May to August. Phase 1, Discover and Define, is the larger diamond: 1 literature review, 2 semi-structured interviews, 3 affinity mapping and COM-B analysis, 4 design requirements and data types. Phase 2, Develop and Deliver, is smaller: 5 field specification, 6 RITE and think-aloud, 7 SDDS consultation, 8 design recommendation."
-            width="1800"
-            height="1221"
-            class="sdds-image"
-            loading="lazy"
-            decoding="async"
-          />
-        </a>
-        <ol class="evam-list evam-list--mt">
-          {process.map((step, i) => (
-            <li class="evam-row">
-              <span class="evam-num evam-num--principle">{pad(i)}</span>
-              <div class="flex-1">
-                <p class="evam-row-name">
-                  {step.label}{step.when && <span class="sdds-when"> · {step.when}</span>}
-                </p>
-                <p class="evam-row-finding sdds-step-method">{step.method}</p>
-                <p class="evam-row-desc sdds-step-why"><em>{step.whyLabel ?? 'Why'}: {step.why}</em></p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
+    {/* ───── Design process: heading beside the double diamond ───── */}
+    <section class="evam-block sdds-process" aria-labelledby="process-heading">
+      <h2 class="evam-h2" id="process-heading">Design process</h2>
+      <a
+        href="/images/sdds-images/sdds-double-diamond.png"
+        target="_blank"
+        rel="noopener"
+        class="sdds-zoom sdds-process-fig"
+        aria-label="Open full-size image in a new tab"
+      >
+        <img
+          src="/images/sdds-images/sdds-double-diamond.png"
+          alt="An asymmetric double diamond running from May to August. Phase 1, Discover and Define, is the larger diamond: 1 literature review, 2 semi-structured interviews, 3 affinity mapping and COM-B analysis, 4 design requirements and data types. Phase 2, Develop and Deliver, is smaller: 5 field specification, 6 RITE and think-aloud, 7 SDDS consultation, 8 design recommendation."
+          width="1800"
+          height="1221"
+          class="sdds-image"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
     </section>
 
     {/* ───── What I found ───── */}
@@ -873,17 +822,6 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     }
   }
 
-  /* ───── How I worked: method line, then an italic "why" ───── */
-  .sdds-when {
-    font-weight: 400;
-    color: #6B6354;
-  }
-  .sdds-step-method {
-    margin-top: 4px;
-  }
-  .sdds-step-why {
-    margin-top: 6px;
-  }
   .sdds-tag {
     color: #6B6354;
   }
@@ -915,8 +853,27 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     max-width: 720px;
     margin: 16px auto 0;
   }
-  .sdds-dd {
-    margin: 24px 0 0;
+  /* ───── Design process: heading | diagram, full article width ───── */
+  .sdds-process {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .sdds-process-fig {
+    display: block;
+    width: 100%;
+  }
+  .sdds-process-fig .sdds-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  @media (min-width: 900px) {
+    .sdds-process {
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 48px;
+      align-items: start;
+    }
   }
   .sdds-figure-plain .sdds-image {
     display: block;
