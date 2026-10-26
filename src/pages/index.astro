@@ -623,20 +623,36 @@ const playground = [
       font-size: clamp(11px, 2.35cqw, 13px);
     }
   }
-  /* Title underline: one of Payal's loops, stretched to the title's width and
-     drawn in on hover/focus by a script (initWorkUnderlines). Absolutely
-     positioned inside the heading, so it never moves the layout. */
-  .work-card-h {
+  /* Title underline: a hand-drawn wobbly wave under the title, revealed left → right
+     on hover or keyboard focus. It's a decoration on the title (absolutely positioned),
+     so it never moves the layout; the wave tiles every 64px so its rhythm stays even. */
+  .work-card-title {
     position: relative;
+    display: inline-block;
   }
-  .work-card-h :global(.work-underline) {
+  .work-card-title::after {
+    content: '';
     position: absolute;
-    height: 8px;
-    color: var(--accent);
-    transition: opacity 300ms ease;
+    left: 0;
+    right: 0;
+    bottom: -0.34em;
+    height: 0.4em;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 12'%3E%3Cpath d='M0 6.6 C 4 3.4, 8 3.2, 12 5.9 S 20 9.4, 24 6.7 S 31 3.1, 36 5.8 S 44 9.2, 48 6.4 S 56 3.5, 60 5.9 S 63 7.4, 64 6.6' fill='none' stroke='%234105DB' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: 0 50%;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 560ms cubic-bezier(0.3, 0.6, 0.3, 1);
+    pointer-events: none;
   }
-  .work-card-h :global(.work-underline.is-leaving) {
-    opacity: 0;
+  .work-card:hover .work-card-title::after,
+  .work-card:focus-visible .work-card-title::after {
+    clip-path: inset(0 0 0 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .work-card-title::after {
+      transition: none;
+    }
   }
   .work-tag {
     font-size: 10px;
@@ -1117,62 +1133,6 @@ const playground = [
     window.addEventListener('scroll', () => window.clearTimeout(timer), { passive: true });
   }
 
-  // Selected Work title underline — on hover or keyboard focus, a random loop is
-  // stretched under the title's (last) line and drawn in; it fades out on leave.
-  function initWorkUnderlines() {
-    let lastName = '';
-    document.querySelectorAll<HTMLAnchorElement>('.work-card:not([data-underline]):not(.work-card--nolink)').forEach((card) => {
-      card.dataset.underline = '1';
-      const heading = card.querySelector<HTMLElement>('.work-card-h');
-      const title = card.querySelector<HTMLElement>('.work-card-title');
-      if (!heading || !title) return;
-      let current: SVGSVGElement | null = null;
-
-      const show = () => {
-        hide(true);
-        const doodle = pickRandom(loops, lastName);
-        lastName = doodle.name;
-        const lines = title.getClientRects();
-        const line = lines[lines.length - 1];
-        const hb = heading.getBoundingClientRect();
-        if (!line) return;
-        const svg = createDoodle(doodle, { className: 'work-underline', stretch: true, strokeWidth: 1.6, duration: 700 });
-        const offset = rand(-3, 3);
-        const fontSize = parseFloat(getComputedStyle(heading).fontSize) || 24;
-        svg.style.left = `${(line.left - hb.left + offset).toFixed(1)}px`;
-        svg.style.width = `${line.width.toFixed(1)}px`;
-        // the line box bottom sits ~0.22em below the baseline; start 2px under the baseline,
-        // which keeps the 8px-tall loop clear of the meta line below
-        svg.style.top = `${(line.bottom - hb.top - fontSize * 0.22 + 2).toFixed(1)}px`;
-        heading.appendChild(svg);
-        drawDoodle(svg);
-        current = svg;
-      };
-      const hide = (instant = false) => {
-        if (!current) return;
-        const svg = current;
-        current = null;
-        if (instant) {
-          svg.remove();
-          return;
-        }
-        svg.classList.add('is-leaving');
-        window.setTimeout(() => svg.remove(), 320);
-      };
-
-      card.addEventListener('click', () => playTick()); // selecting a project
-      card.addEventListener('pointerenter', show);
-      card.addEventListener('pointerleave', () => hide());
-      card.addEventListener('focus', () => {
-        if (card.matches(':focus-visible')) show();
-      });
-      card.addEventListener('blur', () => hide());
-    });
-  }
-
-  // Logo captions — hover and keyboard focus are CSS; a tap toggles the caption
-  // (touch browsers don't reliably focus a tapped logo), a tap elsewhere closes it.
-  let brandsBound = false;
   function initBrandCaptions() {
     if (brandsBound) return;
     brandsBound = true;
@@ -1251,7 +1211,6 @@ const playground = [
     initHero();
     initBrandCaptions();
     initIdleDoodle();
-    initWorkUnderlines();
     initDesignerNotes();
     initCursor();
     initPlayground();
