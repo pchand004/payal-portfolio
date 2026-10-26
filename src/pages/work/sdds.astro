@@ -374,10 +374,23 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     <section class="evam-block">
       <div class="evam-prose">
         <h2 class="evam-h2">How I worked, and why</h2>
-        <p class="evam-body evam-body--mt-md">
-          An asymmetric double diamond: nobody had studied this group, so I gave the research phase most
-          of the time and kept the design phase short and fast.
-        </p>
+        <a
+          href="/images/sdds-images/sdds-double-diamond.png"
+          target="_blank"
+          rel="noopener"
+          class="sdds-zoom sdds-figure-plain sdds-dd"
+          aria-label="Open full-size image in a new tab"
+        >
+          <img
+            src="/images/sdds-images/sdds-double-diamond.png"
+            alt="An asymmetric double diamond running from May to August. Phase 1, Discover and Define, is the larger diamond: 1 literature review, 2 semi-structured interviews, 3 affinity mapping and COM-B analysis, 4 design requirements and data types. Phase 2, Develop and Deliver, is smaller: 5 field specification, 6 RITE and think-aloud, 7 SDDS consultation, 8 design recommendation."
+            width="1800"
+            height="1221"
+            class="sdds-image"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
         <ol class="evam-list evam-list--mt">
           {process.map((step, i) => (
             <li class="evam-row">
@@ -901,6 +914,9 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     display: block;
     max-width: 720px;
     margin: 16px auto 0;
+  }
+  .sdds-dd {
+    margin: 24px 0 0;
   }
   .sdds-figure-plain .sdds-image {
     display: block;
