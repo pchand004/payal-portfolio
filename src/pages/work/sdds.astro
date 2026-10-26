@@ -110,21 +110,70 @@ const principles = [
   },
 ];
 
-const finalFig = {
-  src: img('sdds-final-v5.png'),
-  w: 2680,
-  h: 1672,
-  alt: 'Three screens from the final design: the donation decision, the receipt and the reflection, with numbered markers.',
-};
-
-const legend = [
-  { name: 'Recipient named before any choice', rest: '', tag: 'transparency' },
-  { name: 'A toggle for every measure', rest: ', changeable later', tag: 'control' },
-  { name: 'The receipt lists what left', rest: ", who holds it and what it's for", tag: 'transparency, limits on use' },
-  { name: 'A journey timeline', rest: ' from sent to analysis', tag: 'updates' },
-  { name: 'Updates reported collectively', rest: ', no email held', tag: 'anonymity' },
-  { name: 'The mirror arrives after the decision', rest: '', tag: 'something returned' },
-  { name: 'Descriptive cards', rest: ', no prompts or targets', tag: 'guardrail' },
+// The final design, as five steps in the order that made it work. Screens are 2x exports of
+// the real v5 frames (393 x 920 at 1x).
+const flowSteps = [
+  {
+    n: '01',
+    step: "On the phone",
+    title: "Identity removed",
+    src: img('sdds-flow-01-identity.png'),
+    alt: "Step 2 of 4: personal identity deleted, balances hidden, wallet addresses never read, then the four categories to choose from.",
+    bullets: [
+      { lead: "Identity deleted first", rest: ", before anything else happens" },
+      { lead: "Balances hidden, wallet addresses never read", rest: "" },
+      { lead: "Nothing has left yet:", rest: " everything happens on this device" },
+    ],
+  },
+  {
+    n: '02',
+    step: "Decide",
+    title: "Measure by measure",
+    src: img('sdds-flow-02-decide.png'),
+    alt: "Consent screen naming SDDS as the recipient, with Looking & trading frequency expanded into five measures, each with a toggle.",
+    bullets: [
+      { lead: "Recipient named first:", rest: " \"Where does it go?\" names SDDS before any choice" },
+      { lead: "Consent per measure:", rest: " each category opens into its measures, each with its own toggle" },
+      { lead: "Real values shown", rest: ", like 8.0 checks a day, so you see exactly what you'd give" },
+    ],
+  },
+  {
+    n: '03',
+    step: "Updates",
+    title: "Without an email",
+    src: img('sdds-flow-03-updates.png'),
+    alt: "Updates screen: three promises, then collective updates and an optional donor survey, with no email field.",
+    bullets: [
+      { lead: "The terms, restated:", rest: " held by SDDS, research only, withdraw any time" },
+      { lead: "Collective updates:", rest: " your donation travels in a package; no email asked" },
+      { lead: "Optional:", rest: " skipping both doesn't affect the donation" },
+    ],
+  },
+  {
+    n: '04',
+    step: "Receipt",
+    title: "Exactly what left",
+    src: img('sdds-flow-04-receipt.png'),
+    alt: "Shared with SDDS: a receipt of the donation, its journey so far, and a button to see the reflection.",
+    bullets: [
+      { lead: "A receipt:", rest: " what was sent, who holds it, what it's used for" },
+      { lead: "Its journey:", rest: " sent → received → in analysis" },
+      { lead: "Then the return:", rest: " \"Now, your side of the reflection\"" },
+    ],
+  },
+  {
+    n: '05',
+    step: "Reflection",
+    title: "The return",
+    src: img('sdds-flow-05-reflection.png'),
+    alt: "Reflection: six months of trading as an overview card, then one descriptive card per category.",
+    bullets: [
+      { lead: "Arrives after the decision", rest: ", as the return for donating" },
+      { lead: "Descriptive only:", rest: " 8 checks a day, 1 trade for every 9 looks; no advice, no targets" },
+      { lead: "Amounts hidden:", rest: " allocation shown in percentages only" },
+      { lead: "Revisable:", rest: " review or withdraw any time; withdrawing deletes the data, the reflection stays" },
+    ],
+  },
 ];
 
 const rounds = [
@@ -475,41 +524,47 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
       </div>
     </section>
 
-    {/* ───── The final design ───── */}
-    <section class="evam-block">
+    {/* ───── The final design: a 5-step strip ─────
+        Horizontal scroll-snap strip. ~2.5 cards visible on desktop, ~1.15 on phones so the next
+        card peeks in. Prev/next + counter on desktop; swipe on touch; arrow keys when the strip
+        is focused. Smooth scrolling only when reduced motion is off. */}
+    <section class="evam-block" aria-labelledby="final-design-heading">
       <div class="evam-prose">
-        <h2 class="evam-h2">The final design</h2>
+        <h2 class="evam-h2" id="final-design-heading">The final design</h2>
+        <p class="evam-body evam-body--mt-md">
+          Five steps, in the order that made it work: decide first, then the reflection.
+        </p>
       </div>
-      <a
-        href={finalFig.src}
-        target="_blank"
-        rel="noopener"
-        class="sdds-zoom sdds-figure"
-        aria-label="Open full-size image in a new tab"
-      >
-        <img
-          src={finalFig.src}
-          alt={finalFig.alt}
-          width={finalFig.w}
-          height={finalFig.h}
-          class="sdds-image"
-          loading="lazy"
-          decoding="async"
-        />
-      </a>
-      <div class="evam-prose">
-        <ol class="evam-list evam-list--mt">
-          {legend.map((l, i) => (
-            <li class="evam-row">
-              <span class="evam-num evam-num--finding">{i + 1}</span>
-              <p class="evam-row-finding"><strong class="sdds-strong">{l.name}</strong>{l.rest} <span class="sdds-tag">· {l.tag}</span></p>
+      <div class="flow" data-flow>
+        <div class="flow-controls" aria-hidden="false">
+          <span class="flow-count" data-flow-count aria-live="polite">1 / {flowSteps.length}</span>
+          <div class="flow-buttons">
+            <button type="button" class="flow-btn" data-flow-prev aria-label="Previous step">←</button>
+            <button type="button" class="flow-btn" data-flow-next aria-label="Next step">→</button>
+          </div>
+        </div>
+        <ol class="flow-strip" data-flow-strip tabindex="0" aria-label="The final design, five steps. Use the arrow keys to move between steps.">
+          {flowSteps.map((f) => (
+            <li class="flow-card">
+              <p class="flow-step">{f.n} · {f.step}</p>
+              <h3 class="flow-title">{f.title}</h3>
+              <a
+                href={f.src}
+                target="_blank"
+                rel="noopener"
+                class="sdds-zoom flow-shot"
+                aria-label={`Open the ${f.step} screen full size in a new tab`}
+              >
+                <img src={f.src} alt={f.alt} width="786" height="1840" loading="lazy" decoding="async" />
+              </a>
+              <ul class="flow-bullets">
+                {f.bullets.map((b) => (
+                  <li><strong>{b.lead}</strong>{b.rest}</li>
+                ))}
+              </ul>
             </li>
           ))}
         </ol>
-        <p class="evam-body evam-body--mt-md">
-          The full flow runs in 7 steps: entry → export and on-device derivation → decision → receipt →
-          reflection → revisit (withdrawing deletes the data; the reflection stays) → collective updates.
-        </p>
       </div>
     </section>
 
@@ -850,7 +905,182 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     font-variant-numeric: tabular-nums;
   }
 
+  /* ───── The final design: 5-step strip ───── */
+  .flow {
+    margin-top: 28px;
+  }
+  .flow-controls {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .flow-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+  }
+  .flow-count {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: #6B6354;
+  }
+  .flow-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  .flow-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid #E8E4E0;
+    background: #fff;
+    color: #2C2620;
+    font-size: 16px;
+    cursor: pointer;
+    transition: border-color 200ms ease, color 200ms ease, opacity 200ms ease;
+  }
+  .flow-btn:hover:not(:disabled) {
+    border-color: #4105DB;
+    color: #4105DB;
+  }
+  .flow-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .flow-btn:focus-visible,
+  .flow-strip:focus-visible {
+    outline: 2px solid #4105DB;
+    outline-offset: 4px;
+  }
+  .flow-strip {
+    --gap: 16px;
+    --visible: 1.15;
+    display: flex;
+    gap: var(--gap);
+    margin: 0;
+    padding: 4px 0 12px;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    border-radius: 8px;
+  }
+  @media (min-width: 768px) {
+    .flow-strip {
+      --gap: 24px;
+      --visible: 2.5;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .flow-strip {
+      scroll-behavior: smooth;
+    }
+  }
+  .flow-card {
+    flex: 0 0 calc((100% - (var(--visible) - 0.5) * var(--gap) - 0.5 * var(--gap)) / var(--visible));
+    scroll-snap-align: start;
+    box-sizing: border-box;
+    padding: 20px;
+    border: 1px solid #E8E4E0;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .flow-step {
+    margin: 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4105DB;
+  }
+  .flow-title {
+    margin: 6px 0 0;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+    color: #2C2620;
+  }
+  .flow-shot {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    margin: 16px auto 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #E8E4E0;
+    background: #F6F4F1;
+  }
+  .flow-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .flow-bullets {
+    margin: 18px 0 0;
+    padding: 0 0 0 18px;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #2C2620;
+  }
+  .flow-bullets li + li {
+    margin-top: 8px;
+  }
+  .flow-bullets strong {
+    font-weight: 600;
+  }
+
   .sdds-back {
     margin-top: 0;
   }
 </style>
+
+<script>
+  // Final-design strip: prev/next, "n / 5" counter, arrow keys. Scrolling is instant
+  // under prefers-reduced-motion (the CSS only turns on smooth scrolling otherwise).
+  function initFlow() {
+    document.querySelectorAll<HTMLElement>('[data-flow]:not([data-ready])').forEach((flow) => {
+      flow.dataset.ready = '1';
+      const strip = flow.querySelector<HTMLElement>('[data-flow-strip]')!;
+      const cards = Array.from(strip.children) as HTMLElement[];
+      const count = flow.querySelector<HTMLElement>('[data-flow-count]');
+      const prev = flow.querySelector<HTMLButtonElement>('[data-flow-prev]');
+      const next = flow.querySelector<HTMLButtonElement>('[data-flow-next]');
+      const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const step = () => (cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : strip.clientWidth);
+      const index = () => Math.round(strip.scrollLeft / step());
+      const go = (i: number) => {
+        const t = Math.max(0, Math.min(cards.length - 1, i));
+        strip.scrollTo({ left: cards[t].offsetLeft - cards[0].offsetLeft, behavior: reduce() ? 'auto' : 'smooth' });
+      };
+      const update = () => {
+        const max = strip.scrollWidth - strip.clientWidth;
+        const atEnd = strip.scrollLeft >= max - 2;
+        const i = atEnd ? cards.length - 1 : index();
+        if (count) count.textContent = `${i + 1} / ${cards.length}`;
+        if (prev) prev.disabled = strip.scrollLeft <= 2;
+        if (next) next.disabled = atEnd;
+      };
+      prev?.addEventListener('click', () => go(index() - 1));
+      next?.addEventListener('click', () => go(index() + 1));
+      strip.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(index() + 1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); go(index() - 1); }
+        else if (e.key === 'Home') { e.preventDefault(); go(0); }
+        else if (e.key === 'End') { e.preventDefault(); go(cards.length - 1); }
+      });
+      let raf = 0;
+      strip.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; update(); }); }, { passive: true });
+      update();
+    });
+  }
+  initFlow();
+  document.addEventListener('astro:page-load', initFlow);
+</script>
