@@ -22,26 +22,27 @@ const { stats, label = 'Impact' } = Astro.props;
 </div>
 
 <style>
-  /* ───── Impact stats — thin accent rule above each metric ───── */
+  /* Sized to sit with the case-study type: the label matches the small-caps meta labels,
+     numbers sit between the section heading (28px) and body (17px) sizes. */
   .gg-impact-label {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: #4105DB;
-    margin: 0 0 28px;
+    margin: 0;
   }
   @media (min-width: 768px) {
     .gg-impact-label {
-      font-size: 22px;
+      font-size: 13px;
     }
   }
   .gg-impact-grid {
-    margin-top: 32px;
+    margin-top: 16px;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
     align-items: stretch;
   }
   @media (min-width: 768px) {
@@ -51,35 +52,30 @@ const { stats, label = 'Impact' } = Astro.props;
     }
   }
   .gg-impact-card {
-    border-top: 2px solid #4105DB;
-    padding-top: 20px;
+    border-top: 1.5px solid #4105DB;
+    padding-top: 16px;
   }
   .gg-impact-num {
-    font-size: 48px;
-    font-weight: 700;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 26px;
+    font-weight: 600;
     color: #4105DB;
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    margin: 0 0 16px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
     font-style: normal;
   }
-
-  @media (max-width: 767px) {
+  @media (min-width: 768px) {
     .gg-impact-num {
-      font-size: 36px;
+      font-size: 30px;
     }
   }
   .gg-impact-caption {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
     color: #2C2620;
     line-height: 1.5;
     margin: 0;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-caption {
-      font-size: 13px;
-    }
   }
 </style>
