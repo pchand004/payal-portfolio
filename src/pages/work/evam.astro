@@ -162,12 +162,7 @@ const findings = [
     </section>
 
 
-    {/* ───── Impact — shared with Gravity Grip (<ImpactStats>) ───── */}
-    <section class="evam-impact">
-      <ImpactStats stats={impactStats} />
-    </section>
-
-    {/* ───── Cover video ───── */}
+    {/* ───── Cover video — tighter gap from metadata strip (24/32) ───── */}
     <section class="mt-6 md:mt-8">
       <div class="evam-video">
         <iframe
@@ -184,6 +179,11 @@ const findings = [
         Falltopia: a theatrical experience where one experiments with objects falling
         through environments with different air densities.
       </p>
+    </section>
+
+    {/* ───── Impact — shared with Gravity Grip (<ImpactStats>) ───── */}
+    <section class="evam-impact">
+      <ImpactStats stats={impactStats} />
     </section>
 
     {/* ───── Pull quote — bridge between cover video and Context ───── */}
