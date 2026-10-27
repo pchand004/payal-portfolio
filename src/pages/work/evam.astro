@@ -2,7 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ImpactStats from '../../components/ImpactStats.astro';
 import '../../styles/case-study.css';
+
+const impactStats = [
+  { value: '20% → 90%', caption: 'Unassisted completion after the cued-step pattern was rolled out across 3 modules.' },
+  { value: '7 → 20+', caption: 'Instruction recall (of 30 users per phase) after pairing narration with on-screen text.' },
+  { value: '4 of 5', caption: "Shipped modules built on my design system, adopted as the platform's reference framework." },
+];
 
 const principles = [
   {
@@ -155,7 +162,12 @@ const findings = [
     </section>
 
 
-    {/* ───── Cover video — tighter gap from metadata strip (24/32) ───── */}
+    {/* ───── Impact — shared with Gravity Grip (<ImpactStats>) ───── */}
+    <section class="evam-impact">
+      <ImpactStats stats={impactStats} />
+    </section>
+
+    {/* ───── Cover video ───── */}
     <section class="mt-6 md:mt-8">
       <div class="evam-video">
         <iframe
@@ -368,3 +380,15 @@ const findings = [
 
   <Footer flowers />
 </Layout>
+
+<style>
+  /* Impact block spacing: the Gravity Grip block's 48 / 64px gap */
+  .evam-impact {
+    margin-top: 48px;
+  }
+  @media (min-width: 768px) {
+    .evam-impact {
+      margin-top: 64px;
+    }
+  }
+</style>

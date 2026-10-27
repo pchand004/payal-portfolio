@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ImpactStats from '../../components/ImpactStats.astro';
 
 const impactStats = [
   { value: '10s → 4s', caption: 'Reduced interaction hesitation for novice users.' },
@@ -186,15 +187,7 @@ const findings = [
 
     {/* ───── Impact stats — boxed cards (full media-container width) ───── */}
     <section class="gg-block">
-      <p class="gg-impact-label">Impact</p>
-      <div class="gg-impact-grid">
-        {impactStats.map((s) => (
-          <div class="gg-impact-card">
-            <p class="gg-impact-num">{s.value}</p>
-            <p class="gg-impact-caption">{s.caption}</p>
-          </div>
-        ))}
-      </div>
+      <ImpactStats stats={impactStats} />
     </section>
 
     {/* ───── Context (2-column: prose left, question + image right) ───── */}
@@ -677,67 +670,6 @@ const findings = [
        Calc: eyebrow (~19.2px) + .gg-h1 margin-top (24px) ≈ 43px. */
     .gg-hero-right {
       padding-top: 43px;
-    }
-  }
-
-  /* ───── Impact stats — thin accent rule above each metric ───── */
-  .gg-impact-label {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #4105DB;
-    margin: 0 0 28px;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-label {
-      font-size: 22px;
-    }
-  }
-  .gg-impact-grid {
-    margin-top: 32px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    align-items: stretch;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-    }
-  }
-  .gg-impact-card {
-    border-top: 2px solid #4105DB;
-    padding-top: 20px;
-  }
-  .gg-impact-num {
-    font-size: 48px;
-    font-weight: 700;
-    color: #4105DB;
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    margin: 0 0 16px;
-    font-style: normal;
-  }
-
-  @media (max-width: 767px) {
-    .gg-impact-num {
-      font-size: 36px;
-    }
-  }
-  .gg-impact-caption {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    color: #2C2620;
-    line-height: 1.5;
-    margin: 0;
-  }
-  @media (min-width: 768px) {
-    .gg-impact-caption {
-      font-size: 13px;
     }
   }
 
