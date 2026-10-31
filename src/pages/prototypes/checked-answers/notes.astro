@@ -286,10 +286,11 @@ import '../../../styles/case-study.css';
     );
     els.forEach((el) => io.observe(el));
   }
-  // runs on first load and after each client-side navigation to this page
-  document.addEventListener('astro:page-load', () => {
+  // runs once the page loads (full page loads; the site has no client-side router)
+  function start() {
     if (!document.querySelector('[data-reveal]')) return;
     if (document.fonts?.ready) document.fonts.ready.then(init);
     else init();
-  });
+  }
+  start();
 </script>

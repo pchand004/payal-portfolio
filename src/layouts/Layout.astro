@@ -1,6 +1,5 @@
 ---
 import { Font } from 'astro:assets';
-import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import EmailCopy from '../components/EmailCopy.astro';
 
@@ -54,7 +53,6 @@ const imageUrl = new URL(ogImage, site).href;
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-tiro-devanagari" preload />
     <Font cssVariable="--font-caveat" />
-    <ClientRouter />
   </head>
   <body>
     <div class="mx-auto w-full max-w-[1200px] px-6 py-8 md:px-10 md:py-12">
