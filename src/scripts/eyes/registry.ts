@@ -1,12 +1,14 @@
 /**
  * Eyes register their behaviour here; the stage looks them up by name.
- * The stage owns appearing and fading (opacity on the slot). An eye owns
- * what happens inside it: opening, its loop, and going back to rest.
+ * The stage decides when an eye wakes and leaves (which cell the cursor is
+ * in, for how long). The eye owns how that looks: opening, its loop, closing.
  */
 export interface EyeBehaviour {
   /** Open and start the loop. `still`: reduced motion, show it open and hold. */
   wake(el: HTMLElement, still: boolean): void;
-  /** Stop every animation and put the eye back in its closed rest state. */
+  /** Close and disappear. Resolves when the eye is gone. */
+  leave(el: HTMLElement, still: boolean): Promise<void>;
+  /** Stop every animation and put the eye back in its hidden rest state. */
   reset(el: HTMLElement): void;
 }
 

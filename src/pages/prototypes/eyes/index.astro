@@ -2,21 +2,24 @@
 /**
  * Eyes — a live prototype.
  *
- * A pitch-black stage with "Hi there!" in the middle, cycling through five
- * typefaces, and ten invisible eye points around it. Click (or tap) near a
- * point to wake its eye; it plays while the cursor stays near, then dims and
- * fades back to black. For now only point 2 has an eye: the "Following" pair.
+ * A pitch-black stage laid out on a 4 × 3 grid: ten eye cells round the
+ * edge, "hi there!" across the two middle cells, cycling through five
+ * typefaces. Click (or tap) inside a cell to wake its eye pair; it plays
+ * while the cursor stays in the cell, then closes and disappears. For now
+ * only the top-left cell has a pair: "Following".
  *
- * Stage timings live in src/scripts/eyes/motion.ts; each eye keeps its own
- * tunables at the top of its component.
+ * The grid and stage timings live in src/scripts/eyes/motion.ts; each eye
+ * keeps its own tunables at the top of its component.
  */
 import { Font } from 'astro:assets';
 import Prototype from '../../../layouts/Prototype.astro';
 import EyeFollowing from '../../../components/eyes/EyeFollowing.astro';
+import { CELL_W, CELL_H, GREETING_W } from '../../../scripts/eyes/motion';
 
-const GREETING = 'Hi there!';
+const GREETING = 'hi there!';
 
-// One face per mood. `scale` evens out x-heights so the word reads the same size.
+// One face per mood. `scale` evens out x-heights so the word reads the same
+// width in every face.
 const moods = [
   { mood: 'fun', family: 'var(--font-fredoka)', scale: 1 },
   { mood: 'elegant', family: 'var(--font-cormorant)', scale: 1.2 },
@@ -25,19 +28,19 @@ const moods = [
   { mood: 'comic', family: 'var(--font-bangers)', scale: 0.92 },
 ];
 
-// Positions as % of the viewport: desktop (x, y) and under 600px (mx, my),
-// where the points stack two by five with the greeting between rows 2 and 3.
-const points = [
-  { n: 1, x: 12, y: 18, mx: 25, my: 10 },
-  { n: 2, x: 37, y: 18, mx: 75, my: 10, eye: EyeFollowing },
-  { n: 3, x: 62, y: 18, mx: 25, my: 26 },
-  { n: 4, x: 87, y: 18, mx: 75, my: 26 },
-  { n: 5, x: 12, y: 50, mx: 25, my: 60 },
-  { n: 6, x: 88, y: 50, mx: 75, my: 60 },
-  { n: 7, x: 12, y: 82, mx: 25, my: 75 },
-  { n: 8, x: 37, y: 82, mx: 75, my: 75 },
-  { n: 9, x: 62, y: 82, mx: 25, my: 90 },
-  { n: 10, x: 87, y: 82, mx: 75, my: 90 },
+// Grid cells: desktop column/row on the 4 × 3 grid, and (mc, mr) on the
+// two-column phone grid, where the greeting takes row 3.
+const cells = [
+  { n: 1, c: 1, r: 1, mc: 1, mr: 1, eye: EyeFollowing },
+  { n: 2, c: 2, r: 1, mc: 2, mr: 1 },
+  { n: 3, c: 3, r: 1, mc: 1, mr: 2 },
+  { n: 4, c: 4, r: 1, mc: 2, mr: 2 },
+  { n: 5, c: 1, r: 2, mc: 1, mr: 4 },
+  { n: 6, c: 4, r: 2, mc: 2, mr: 4 },
+  { n: 7, c: 1, r: 3, mc: 1, mr: 5 },
+  { n: 8, c: 2, r: 3, mc: 2, mr: 5 },
+  { n: 9, c: 3, r: 3, mc: 1, mr: 6 },
+  { n: 10, c: 4, r: 3, mc: 2, mr: 6 },
 ];
 ---
 
@@ -52,7 +55,7 @@ const points = [
     <Font cssVariable="--font-bangers" preload />
   </Fragment>
 
-  <main class="stage" data-stage>
+  <main class="stage" style={`--frame-cell-w: ${CELL_W}; --frame-cell-h: ${CELL_H}; --greeting-w: ${GREETING_W}`} data-stage>
     <h1 class="greeting" aria-label={GREETING} data-greeting>
       {moods.map((m, i) => (
         <span
@@ -65,12 +68,8 @@ const points = [
       ))}
     </h1>
 
-    {points.map(({ n, x, y, mx, my, eye: Eye }) => (
-      <div
-        class="point"
-        style={`--x: ${x}%; --y: ${y}%; --mx: ${mx}%; --my: ${my}%`}
-        data-point={n}
-      >
+    {cells.map(({ n, c, r, mc, mr, eye: Eye }) => (
+      <div class="cell" style={`--c: ${c}; --r: ${r}; --mc: ${mc}; --mr: ${mr}`} data-cell={n}>
         {Eye && <Eye />}
       </div>
     ))}
@@ -81,40 +80,57 @@ const points = [
   :global(html),
   :global(body.proto-body) {
     background: #000;
-    overflow: hidden;
-    height: 100%;
+    margin: 0;
+    min-height: 100%;
   }
+
+  /* The grid: four columns by three rows filling the viewport. --u is one
+     design px (the cell's width over its width in the 1440 frame). */
   .stage {
-    --eye-white: #ece8df;
-    position: fixed;
-    inset: 0;
-    background: #000;
+    --cell-w: 25vw;
+    --cell-h: calc(100vh / 3);
+    --u: calc(var(--cell-w) / var(--frame-cell-w));
+    display: grid;
+    grid-template-columns: repeat(4, var(--cell-w));
+    grid-template-rows: repeat(3, var(--cell-h));
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
+    background: #000;
+    color: #fff;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+  .cell {
+    grid-column: var(--c);
+    grid-row: var(--r);
+    display: grid;
+    place-items: center;
+  }
 
-  /* Greeting: every face stacked in one cell, clipped top and bottom so the
-     letters roll out of and into the line rather than crossing each other */
+  /* Greeting: across the two middle cells. Every face is stacked in one
+     spot and clipped top and bottom so the letters roll out of and into
+     the line rather than crossing each other. */
   .greeting {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    translate: -50% -50%;
+    grid-column: 2 / 4;
+    grid-row: 2;
+    align-self: center;
+    justify-self: center;
     display: grid;
     place-items: center;
     margin: 0;
     font-weight: normal;
-    color: var(--eye-white);
     white-space: nowrap;
     pointer-events: none;
     clip-path: inset(0 -50vw);
   }
   .face {
     grid-area: 1 / 1;
-    font-size: calc(clamp(44px, 6.5vw, 92px) * var(--scale));
+    /* Fredoka 600 "hi there!" is about --greeting-w wide at 0.26 px of
+       font size per px of width; the other faces are scaled to match */
+    font-size: calc(var(--greeting-w) * var(--u) * 0.26 * var(--scale));
     line-height: 1.3;
     visibility: hidden;
   }
@@ -131,24 +147,24 @@ const points = [
   .face[data-face='casual'] { font-weight: 600; }
   .face[data-face='comic'] { letter-spacing: 0.03em; }
 
-  /* Points: centred on their coordinates, invisible until woken. An eye too
-     big to sit there whole is nudged in (--keep-x/y are set by the script). */
-  .point {
-    position: absolute;
-    left: clamp(var(--keep-x, 0px), var(--x), calc(100% - var(--keep-x, 0px)));
-    top: clamp(var(--keep-y, 0px), var(--y), calc(100% - var(--keep-y, 0px)));
-    translate: -50% -50%;
-    opacity: 0;
-    pointer-events: none;
-  }
-
+  /* Phones: two columns, cells in the same proportions, the page scrolls */
   @media (max-width: 599.98px) {
-    .greeting {
-      top: 43%;
+    .stage {
+      --cell-w: 50vw;
+      --cell-h: calc(var(--cell-w) * var(--frame-cell-h) / var(--frame-cell-w));
+      grid-template-columns: repeat(2, var(--cell-w));
+      grid-template-rows: repeat(6, var(--cell-h));
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
     }
-    .point {
-      left: clamp(var(--keep-x, 0px), var(--mx), calc(100% - var(--keep-x, 0px)));
-      top: clamp(var(--keep-y, 0px), var(--my), calc(100% - var(--keep-y, 0px)));
+    .cell {
+      grid-column: var(--mc);
+      grid-row: var(--mr);
+    }
+    .greeting {
+      grid-column: 1 / 3;
+      grid-row: 3;
     }
   }
 </style>
@@ -156,14 +172,13 @@ const points = [
 <script>
   import { getEye } from '../../../scripts/eyes/registry';
   import {
-    WAKE_MS, FADE_MS, EASE_OUT, EASE_IN, FOCAL_RADIUS_PX, FOCAL_PAD_PX, TOUCH_HOLD_MS,
-    EDGE_PX, WAKE_SCALE, FADE_SCALE,
+    LEAVE_GRACE_MS, TOUCH_HOLD_MS,
     GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL,
   } from '../../../scripts/eyes/motion';
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const stage = document.querySelector<HTMLElement>('[data-stage]')!;
-  const points = [...stage.querySelectorAll<HTMLElement>('[data-point]')];
+  const cells = [...stage.querySelectorAll<HTMLElement>('[data-cell]')];
 
   // ── Greeting ────────────────────────────────────────────────────────
   // Letter by letter, the old face rolls up out of the line as the new one
@@ -201,116 +216,83 @@ const points = [
   }, GREETING_EVERY_MS);
 
   // ── Eyes ────────────────────────────────────────────────────────────
+  // One pair awake at a time. The focal area is the cell itself. With a
+  // mouse, the pair leaves once the cursor has been outside its cell for a
+  // grace period; on touch it leaves after a hold or when another cell is
+  // tapped.
   interface Awake {
-    point: HTMLElement;
-    timer?: number;
+    cell: HTMLElement;
+    root: HTMLElement;
+    grace?: number; // the leave timer, mouse
+    hold?: number; // the leave timer, touch
   }
   let awake: Awake | null = null;
 
-  const eyeOf = (point: HTMLElement) => point.querySelector<HTMLElement>('[data-eye-root]');
+  const eyeOf = (cell: HTMLElement) => cell.querySelector<HTMLElement>('[data-eye-root]');
 
-  // Keep a large eye whole on screen: its centre stays half its size plus a
-  // margin inside each edge. offsetWidth ignores the wake/fade scale.
-  function fit() {
-    for (const p of points) {
-      if (!eyeOf(p)) continue;
-      p.style.setProperty('--keep-x', `${p.offsetWidth / 2 + EDGE_PX}px`);
-      p.style.setProperty('--keep-y', `${p.offsetHeight / 2 + EDGE_PX}px`);
-    }
-  }
-  fit();
-  addEventListener('resize', fit);
-
-  /** A point's focal area: the standard radius, or wider for a large eye. */
-  const radius = (point: HTMLElement) =>
-    eyeOf(point) ? Math.max(FOCAL_RADIUS_PX, Math.max(point.offsetWidth, point.offsetHeight) / 2 + FOCAL_PAD_PX) : FOCAL_RADIUS_PX;
-
-  function centre(point: HTMLElement) {
-    const r = point.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  function cellAt(x: number, y: number) {
+    return cells.find((cell) => {
+      const r = cell.getBoundingClientRect();
+      return x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+    }) ?? null;
   }
 
-  function distance(point: HTMLElement, x: number, y: number) {
-    const c = centre(point);
-    return Math.hypot(c.x - x, c.y - y);
-  }
-
-  /** The nearest point whose focal area contains (x, y), if any. */
-  function pointAt(x: number, y: number) {
-    let best: HTMLElement | null = null;
-    let bestD = Infinity;
-    for (const p of points) {
-      const d = distance(p, x, y);
-      if (d <= radius(p) && d < bestD) {
-        best = p;
-        bestD = d;
-      }
-    }
-    return best;
-  }
-
-  function wake(point: HTMLElement) {
-    const root = eyeOf(point);
+  function wake(cell: HTMLElement) {
+    const root = eyeOf(cell);
     const eye = root && getEye(root.dataset.eyeRoot!);
     if (!root || !eye) return;
-
-    // If it was still fading out, pick up from where its opacity is now
-    const from = getComputedStyle(point).opacity;
-    point.getAnimations().forEach((a) => a.cancel());
     eye.reset(root);
-
-    const grow = reduced.matches ? 1 : WAKE_SCALE;
-    point.animate(
-      [{ opacity: from, transform: `scale(${grow})` }, { opacity: 1, transform: 'scale(1)' }],
-      { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' },
-    );
     eye.wake(root, reduced.matches);
-    awake = { point };
+    awake = { cell, root };
   }
 
-  function sleep() {
+  function leave() {
     if (!awake) return;
-    const { point, timer } = awake;
+    const { root, grace, hold } = awake;
     awake = null;
-    clearTimeout(timer);
-
-    const from = Number(getComputedStyle(point).opacity);
-    point.getAnimations().forEach((a) => a.cancel());
-    const fade = point.animate(
-      [{ opacity: from, transform: 'scale(1)' }, { opacity: 0, transform: `scale(${FADE_SCALE})` }],
-      { duration: FADE_MS, easing: EASE_IN, fill: 'forwards' },
-    );
-    fade.finished.then(() => {
-      const root = eyeOf(point);
-      if (root) getEye(root.dataset.eyeRoot!)?.reset(root);
-      fade.cancel();
-    }, () => {});
+    clearTimeout(grace);
+    clearTimeout(hold);
+    const eye = getEye(root.dataset.eyeRoot!)!;
+    eye.leave(root, reduced.matches).then(() => {
+      // unless it was woken again meanwhile
+      if (awake?.root !== root) eye.reset(root);
+    });
   }
 
   stage.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
-    const point = pointAt(e.clientX, e.clientY);
-    if (!point) return;
-    if (awake?.point === point) {
+    const cell = cellAt(e.clientX, e.clientY);
+    if (!cell || !eyeOf(cell)) return;
+    if (awake?.cell === cell) {
       if (e.pointerType === 'touch') holdFor(awake);
       return;
     }
-    sleep(); // only one eye awake at a time
-    wake(point);
+    leave();
+    wake(cell);
     if (awake && e.pointerType === 'touch') holdFor(awake);
   });
 
   function holdFor(a: Awake) {
-    clearTimeout(a.timer);
-    a.timer = window.setTimeout(() => awake === a && sleep(), TOUCH_HOLD_MS);
+    clearTimeout(a.hold);
+    a.hold = window.setTimeout(() => awake === a && leave(), TOUCH_HOLD_MS);
   }
 
-  // Mouse and pen: the eye stays awake while the cursor is in its focal area
+  function outside(a: Awake) {
+    if (a.grace) return;
+    a.grace = window.setTimeout(() => awake === a && leave(), LEAVE_GRACE_MS);
+  }
+
+  function inside(a: Awake) {
+    clearTimeout(a.grace);
+    a.grace = undefined;
+  }
+
   stage.addEventListener('pointermove', (e) => {
-    if (e.pointerType === 'touch' || !awake || awake.timer) return;
-    if (distance(awake.point, e.clientX, e.clientY) > radius(awake.point)) sleep();
+    if (e.pointerType === 'touch' || !awake || awake.hold) return;
+    if (cellAt(e.clientX, e.clientY) === awake.cell) inside(awake);
+    else outside(awake);
   });
   document.documentElement.addEventListener('pointerleave', (e) => {
-    if (e.pointerType !== 'touch' && awake && !awake.timer) sleep();
+    if (e.pointerType !== 'touch' && awake && !awake.hold) outside(awake);
   });
 </script>
