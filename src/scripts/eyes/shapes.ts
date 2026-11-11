@@ -21,7 +21,7 @@ export interface EyeShape {
 }
 
 // A disc pupil is this share of its eye's width (the slit keeps its slit)
-export const PUPIL_SHARE = 0.5;
+export const PUPIL_SHARE = 0.4;
 const disc = (w: number) => ({ kind: 'disc', d: Math.round(w * PUPIL_SHARE) }) as const;
 
 const pill = (w: number, h: number) => {

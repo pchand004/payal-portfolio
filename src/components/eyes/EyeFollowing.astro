@@ -1,14 +1,14 @@
 ---
 /**
- * Eye pair · "Following". Two solid white silhouettes (one of the shapes in
- * src/scripts/eyes/shapes.ts) with a plain pupil each, clipped to the white.
- * The pupils follow the cursor anywhere on screen on a soft lag, as far as
- * the shape's travel ellipse lets them, and settle at the shape's rest
- * position when the cursor has been still for a moment. The pair drifts a
- * few pixels so it is never frozen, and blinks every few seconds: the
- * silhouettes squash to a flat line and reopen. It wakes as a flat white
- * line that opens into the eyes, and leaves by closing back to a line that
- * disappears.
+ * Eye pair · "Following". Two off-white silhouettes (one of the shapes in
+ * src/scripts/eyes/shapes.ts) with a plain dark pupil each, clipped to the
+ * white. The pupils follow the cursor anywhere on screen on a short lag, as
+ * far as the shape's travel ellipse lets them, and settle at the shape's
+ * rest position when the cursor has been still for a moment; at rest they
+ * glance about a little now and then, so the pair is never frozen. A lid
+ * (black, clipped to the same silhouette) drops and lifts for blinks: quick,
+ * sometimes twice. The pair wakes by fading in as the lid lifts, and leaves
+ * by the lid dropping and the pair fading out.
  *
  * Each cell gives its pair a shape and a pupil colour (props). Every other
  * tunable value is here. Sizes are in px at the 1440 × 1024 design frame and
@@ -27,6 +27,7 @@ const PAIR_MAX_SHARE = 0.6; // the pair never spans more of its cell than this
 
 // ── Colours ────────────────────────────────────────────────────────────
 const EYE_WHITE = '#EDEAE2'; // off-white, never pure white
+const LID = '#000000'; // the lid is the dark of the room
 
 // ── Texture and light ──────────────────────────────────────────────────
 const EDGE_ROUGH_PX = 1.5; // the silhouette's edge wanders up to this far
@@ -35,25 +36,29 @@ const GLOW_BLUR_PX = 24; // the soft glow round an awake pair
 const GLOW_OPACITY = 0.12;
 
 // ── Following ──────────────────────────────────────────────────────────
-const PUPIL_LAG_MS = 260; // time constant of the follow: higher is lazier
+const PUPIL_LAG_MS = 110; // time constant of the follow: higher is lazier
 const PUPIL_GAIN = 0.14; // pupil offset per px of cursor offset, before the edge stops it
 const PUPIL_SETTLE_PX = 0.05; // closer than this to the target counts as settled
-const REST_AFTER_MS = 2000; // cursor still this long: pupils ease back to rest
+const REST_AFTER_MS = 1200; // cursor still this long: pupils ease back to rest
 
 // ── Life ───────────────────────────────────────────────────────────────
-const BLINK_EVERY_MS = [6000, 10000]; // random interval between blinks
-const BLINK_DOWN_MS = 220;
-const BLINK_UP_MS = 380;
-const LINE = 0.03; // a closed eye's height, as a share of its open height
-const DRIFT_PX = 4; // how far the pair wanders (design px)
-const DRIFT_MS = 12000; // one wander loop
+const BLINK_EVERY_MS = [4000, 8000]; // random interval between blinks
+const BLINK_DOWN_MS = 80; // the lid dropping…
+const BLINK_HOLD_MS = 30; // …resting closed…
+const BLINK_UP_MS = 130; // …and lifting
+const DOUBLE_BLINK_CHANCE = 0.25; // some blinks come twice
+const DOUBLE_BLINK_GAP_MS = 160;
+const GLANCE_EVERY_MS = [1500, 4000]; // at rest, the pupils glance a little
+const GLANCE_PX = 3; // how far a glance goes (design px)
 
 // ── Wake and leave ─────────────────────────────────────────────────────
-const WAKE_MS = 900; // the pair fading in as the line opens into the eyes
-const LEAVE_CLOSE_MS = 400; // the eyes closing to a line…
-const LEAVE_FADE_MS = 500; // …and the line disappearing (900 in all)
-const EASE_OPEN = 'cubic-bezier(0.33, 1, 0.68, 1)'; // a gentle ease-out, so the whole 900ms reads
-const EASE_CLOSE = 'cubic-bezier(0.55, 0, 0.75, 0.2)';
+const WAKE_FADE_MS = 400; // the pair fading in, lid down…
+const WAKE_LID_DELAY_MS = 120; // …then, after a beat…
+const WAKE_LID_MS = 320; // …the lid lifting
+const LEAVE_LID_MS = 140; // the lid dropping…
+const LEAVE_FADE_MS = 260; // …and the pair fading out
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const EASE_IN = 'cubic-bezier(0.64, 0, 0.78, 0)';
 
 const { shape: shapeName, pupil: pupilColour } = Astro.props;
 const shape = SHAPES[shapeName];
@@ -66,18 +71,22 @@ const eyes = [
 ];
 const pairW = shape.w * (1 + (shape.rightScale ?? 1)) + shape.gap;
 const flip = `translate(${shape.w} 0) scale(-1 1)`;
+const PAD = 6; // the lid overhangs the box so the roughened edge never shows a gap
+const lidDrop = shape.h + PAD; // how far the lid travels from lifted to closed
 
 const config = {
-  w: shape.w, h: shape.h, pupil: shape.pupil, travel: shape.travel, rest: shape.rest,
+  w: shape.w, h: shape.h, lidDrop, travel: shape.travel, rest: shape.rest,
   PUPIL_LAG_MS, PUPIL_GAIN, PUPIL_SETTLE_PX, REST_AFTER_MS,
-  BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_UP_MS, LINE, DRIFT_PX, DRIFT_MS,
-  WAKE_MS, LEAVE_CLOSE_MS, LEAVE_FADE_MS, EASE_OPEN, EASE_CLOSE,
+  BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_HOLD_MS, BLINK_UP_MS, DOUBLE_BLINK_CHANCE, DOUBLE_BLINK_GAP_MS,
+  GLANCE_EVERY_MS, GLANCE_PX,
+  WAKE_FADE_MS, WAKE_LID_DELAY_MS, WAKE_LID_MS, LEAVE_LID_MS, LEAVE_FADE_MS, EASE_OUT, EASE_IN,
 };
 const vars = [
   `--pair-w: ${pairW}`,
   `--gap: ${shape.gap}`,
   `--pair-max: ${PAIR_MAX_SHARE}`,
   `--white: ${EYE_WHITE}`,
+  `--lid: ${LID}`,
   `--pupil-colour: ${pupilColour}`,
   `--glow-blur: ${GLOW_BLUR_PX}px`,
   `--glow-opacity: ${GLOW_OPACITY}`,
@@ -85,43 +94,46 @@ const vars = [
 ---
 
 <div class="pair-root" style={vars} data-eye-root="following" data-config={JSON.stringify(config)}>
-  <div class="drift" data-drift>
-    <div class="pair">
-      {eyes.map(({ scale, mirror }, i) => {
-        const t = shape.travel;
-        const cx = mirror ? shape.w - t.cx : t.cx;
-        return (
-          <div class="eye" style={`--ew: ${shape.w * scale}; --eh: ${shape.h * scale}`} data-eye data-scale={scale}>
-            <svg viewBox={`0 0 ${shape.w} ${shape.h}`} aria-hidden="true">
-              <defs>
-                <clipPath id={`${uid}-${i}`}>
-                  <path d={shape.path} transform={mirror ? flip : undefined} />
-                </clipPath>
-                {/* the edge wanders by a px or so: noise pushes the whole eye about */}
-                <filter id={`${uid}-rough-${i}`} x="-10%" y="-10%" width="120%" height="120%">
-                  <feTurbulence type="fractalNoise" baseFrequency={EDGE_ROUGH_FREQ} numOctaves="2" seed={i + 1} result="noise" />
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale={EDGE_ROUGH_PX * 2} xChannelSelector="R" yChannelSelector="G" />
-                </filter>
-              </defs>
-              <g filter={`url(#${uid}-rough-${i})`}>
-                <path d={shape.path} transform={mirror ? flip : undefined} class="white" />
-                <g clip-path={`url(#${uid}-${i})`}>
-                  {shape.pupil.kind === 'disc' ? (
-                    <circle cx={cx} cy={t.cy} r={shape.pupil.d / 2} class="pupil" data-pupil />
-                  ) : (
-                    <rect
-                      x={cx - shape.pupil.w / 2} y={t.cy - shape.pupil.h / 2}
-                      width={shape.pupil.w} height={shape.pupil.h} rx={shape.pupil.w / 2}
-                      class="pupil" data-pupil
-                    />
-                  )}
-                </g>
+  <div class="pair">
+    {eyes.map(({ scale, mirror }, i) => {
+      const t = shape.travel;
+      const cx = mirror ? shape.w - t.cx : t.cx;
+      return (
+        <div class="eye" style={`--ew: ${shape.w * scale}; --eh: ${shape.h * scale}`} data-eye data-scale={scale}>
+          <svg viewBox={`0 0 ${shape.w} ${shape.h}`} aria-hidden="true">
+            <defs>
+              <clipPath id={`${uid}-${i}`}>
+                <path d={shape.path} transform={mirror ? flip : undefined} />
+              </clipPath>
+              {/* the edge wanders by a px or so: noise pushes the whole eye about */}
+              <filter id={`${uid}-rough-${i}`} x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency={EDGE_ROUGH_FREQ} numOctaves="2" seed={i + 1} result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale={EDGE_ROUGH_PX * 2} xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </defs>
+            <g filter={`url(#${uid}-rough-${i})`}>
+              <path d={shape.path} transform={mirror ? flip : undefined} class="white" />
+              <g clip-path={`url(#${uid}-${i})`}>
+                {shape.pupil.kind === 'disc' ? (
+                  <circle cx={cx} cy={t.cy} r={shape.pupil.d / 2} class="pupil" data-pupil />
+                ) : (
+                  <rect
+                    x={cx - shape.pupil.w / 2} y={t.cy - shape.pupil.h / 2}
+                    width={shape.pupil.w} height={shape.pupil.h} rx={shape.pupil.w / 2}
+                    class="pupil" data-pupil
+                  />
+                )}
+                {/* the lid sits above the eye and drops over it; closed to begin with */}
+                <rect
+                  x={-PAD} y={-lidDrop} width={shape.w + PAD * 2} height={lidDrop}
+                  class="lid" style={`transform: translateY(${lidDrop}px)`} data-lid
+                />
               </g>
-            </svg>
-          </div>
-        );
-      })}
-    </div>
+            </g>
+          </svg>
+        </div>
+      );
+    })}
   </div>
 </div>
 
@@ -135,6 +147,10 @@ const vars = [
   [data-state='awake'] {
     opacity: 1;
   }
+  /* reduced motion: open and still, lid lifted */
+  [data-state='open'] [data-lid] {
+    transform: none !important;
+  }
   .pair {
     display: flex;
     align-items: center;
@@ -145,10 +161,6 @@ const vars = [
   .eye {
     width: calc(var(--ew) * var(--s));
     height: calc(var(--eh) * var(--s));
-    transform: scaleY(0.03);
-  }
-  [data-state='open'] .eye {
-    transform: none;
   }
   .eye svg {
     display: block;
@@ -162,19 +174,24 @@ const vars = [
   .pupil {
     fill: var(--pupil-colour);
   }
+  .lid {
+    fill: var(--lid);
+  }
 </style>
 
 <script>
   import { registerEye, cancelAll } from '../../scripts/eyes/registry';
 
   interface Config {
-    w: number; h: number;
+    w: number; h: number; lidDrop: number;
     travel: { cx: number; cy: number; rx: number; ry: number };
     rest: [number, number];
     PUPIL_LAG_MS: number; PUPIL_GAIN: number; PUPIL_SETTLE_PX: number; REST_AFTER_MS: number;
-    BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_UP_MS: number; LINE: number;
-    DRIFT_PX: number; DRIFT_MS: number;
-    WAKE_MS: number; LEAVE_CLOSE_MS: number; LEAVE_FADE_MS: number; EASE_OPEN: string; EASE_CLOSE: string;
+    BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_HOLD_MS: number; BLINK_UP_MS: number;
+    DOUBLE_BLINK_CHANCE: number; DOUBLE_BLINK_GAP_MS: number;
+    GLANCE_EVERY_MS: [number, number]; GLANCE_PX: number;
+    WAKE_FADE_MS: number; WAKE_LID_DELAY_MS: number; WAKE_LID_MS: number;
+    LEAVE_LID_MS: number; LEAVE_FADE_MS: number; EASE_OUT: string; EASE_IN: string;
   }
 
   interface Run {
@@ -184,6 +201,9 @@ const vars = [
   const cfg = (el: HTMLElement): Config => JSON.parse(el.dataset.config!);
   const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
   const eyesOf = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('[data-eye]')];
+  const lidsOf = (el: HTMLElement) => [...el.querySelectorAll<SVGElement>('[data-lid]')];
+  const lifted = 'translateY(0)';
+  const closed = (c: Config) => `translateY(${c.lidDrop}px)`;
 
   /** One design px of this eye in real px: how big it came out. */
   const unit = (eye: HTMLElement, c: Config) => eye.offsetWidth / (c.w * Number(eye.dataset.scale));
@@ -198,41 +218,55 @@ const vars = [
   function start(el: HTMLElement, c: Config): Run {
     const eyes = eyesOf(el);
     const pupils = eyes.map((e) => e.querySelector<SVGElement>('[data-pupil]')!);
+    const lids = lidsOf(el);
     const rest = { x: c.rest[0], y: c.rest[1] };
+    const glance = { x: 0, y: 0 }; // where the pupils are looking at rest, off the rest point
     const pos = eyes.map(() => ({ ...rest }));
     let cursor: { x: number; y: number } | null = null;
     let lastMove = 0;
     let frame = 0;
     let last = 0;
     let blinkTimer = 0;
+    let glanceTimer = 0;
 
-    // ── Life: the drift loops on its own layer; blinks squash the eyes
-    const d = c.DRIFT_PX * unit(eyes[0], c);
-    el.querySelector('[data-drift]')!.animate([
-      { transform: 'translate(0, 0)' },
-      { transform: `translate(${d}px, ${-d * 0.6}px)` },
-      { transform: `translate(${-d * 0.5}px, ${d * 0.8}px)` },
-      { transform: `translate(${-d}px, ${-d * 0.3}px)` },
-      { transform: 'translate(0, 0)' },
-    ], { duration: c.DRIFT_MS, easing: 'ease-in-out', iterations: Infinity });
-
-    function blink() {
-      const total = c.BLINK_DOWN_MS + c.BLINK_UP_MS;
-      for (const eye of eyes) {
-        eye.animate([
-          { transform: 'scaleY(1)', easing: 'cubic-bezier(0.55, 0, 1, 0.45)' },
-          { transform: `scaleY(${c.LINE})`, offset: c.BLINK_DOWN_MS / total, easing: 'cubic-bezier(0, 0.55, 0.45, 1)' },
-          { transform: 'scaleY(1)' },
+    // ── Blink: the lid drops, rests a beat, lifts; now and then twice
+    function blinkOnce() {
+      const total = c.BLINK_DOWN_MS + c.BLINK_HOLD_MS + c.BLINK_UP_MS;
+      for (const lid of lids) {
+        lid.animate([
+          { transform: lifted, easing: c.EASE_IN },
+          { transform: closed(c), offset: c.BLINK_DOWN_MS / total },
+          { transform: closed(c), offset: (c.BLINK_DOWN_MS + c.BLINK_HOLD_MS) / total, easing: c.EASE_OUT },
+          { transform: lifted },
         ], { duration: total });
       }
-      blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
+      return total;
+    }
+    function blink() {
+      const took = blinkOnce();
+      const again = Math.random() < c.DOUBLE_BLINK_CHANCE;
+      blinkTimer = window.setTimeout(() => {
+        if (again) blinkOnce();
+        blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
+      }, again ? took + c.DOUBLE_BLINK_GAP_MS : 0);
     }
     blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
 
+    // ── Glance: at rest, the pupils shift a little to a new spot now and then
+    function reglance() {
+      const a = Math.random() * Math.PI * 2;
+      const r = c.GLANCE_PX * (0.4 + Math.random() * 0.6);
+      glance.x = Math.cos(a) * r;
+      glance.y = Math.sin(a) * r;
+      if (!frame) frame = requestAnimationFrame(tick);
+      glanceTimer = window.setTimeout(reglance, between(c.GLANCE_EVERY_MS));
+    }
+    glanceTimer = window.setTimeout(reglance, between(c.GLANCE_EVERY_MS));
+
     // ── Following: each pupil eases toward a point inside its shape's
     // travel ellipse, from wherever the cursor is on screen. Eye centres
-    // come from layout, not from the drifting or blinking boxes, so a still
-    // cursor gives a still target.
+    // come from layout, not from the blinking boxes, so a still cursor gives
+    // a still target.
     function centreOf(eye: HTMLElement) {
       const root = el.getBoundingClientRect();
       return {
@@ -241,12 +275,14 @@ const vars = [
       };
     }
 
+    const resting = (now: number) => !cursor || now - lastMove > c.REST_AFTER_MS;
+
     function target(eye: HTMLElement, now: number) {
-      if (!cursor || now - lastMove > c.REST_AFTER_MS) return rest;
+      if (resting(now)) return { x: rest.x + glance.x, y: rest.y + glance.y };
       const centre = centreOf(eye);
       const s = unit(eye, c);
-      let x = ((cursor.x - centre.x) * c.PUPIL_GAIN) / s;
-      let y = ((cursor.y - centre.y) * c.PUPIL_GAIN) / s;
+      let x = ((cursor!.x - centre.x) * c.PUPIL_GAIN) / s;
+      let y = ((cursor!.y - centre.y) * c.PUPIL_GAIN) / s;
       const { rx, ry } = c.travel;
       const t = Math.hypot(x / rx, y / ry);
       if (t > 1) {
@@ -275,8 +311,7 @@ const vars = [
         pupils[i].style.transform = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px)`;
       });
       // keep ticking while something moves, or until the rest timer can fire
-      const resting = !cursor || now - lastMove > c.REST_AFTER_MS;
-      frame = moving || !resting ? requestAnimationFrame(tick) : 0;
+      frame = moving || !resting(now) ? requestAnimationFrame(tick) : 0;
       if (!frame) last = 0;
     }
 
@@ -295,6 +330,7 @@ const vars = [
         window.removeEventListener('pointerdown', follow);
         cancelAnimationFrame(frame);
         clearTimeout(blinkTimer);
+        clearTimeout(glanceTimer);
       },
     };
   }
@@ -308,11 +344,11 @@ const vars = [
         return;
       }
       el.dataset.state = 'awake';
-      // the pair fades in while the line opens into the eyes
-      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: c.WAKE_MS, easing: c.EASE_OPEN });
-      for (const eye of eyesOf(el)) {
-        eye.animate([{ transform: `scaleY(${c.LINE})` }, { transform: 'scaleY(1)' }],
-          { duration: c.WAKE_MS, easing: c.EASE_OPEN, fill: 'forwards' });
+      // the pair fades in with its lids down, then the lids lift
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: c.WAKE_FADE_MS, easing: c.EASE_OUT });
+      for (const lid of lidsOf(el)) {
+        lid.animate([{ transform: closed(c) }, { transform: lifted }],
+          { duration: c.WAKE_LID_MS, delay: c.WAKE_LID_DELAY_MS, easing: c.EASE_OUT, fill: 'forwards' });
       }
       runs.set(el, start(el, c));
     },
@@ -325,17 +361,17 @@ const vars = [
         await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: c.LEAVE_FADE_MS, fill: 'forwards' }).finished;
         return;
       }
-      // close from wherever the eyes are (mid-open, mid-blink), then fade the line
+      // the lids drop from wherever they are (mid-lift, mid-blink), then the pair fades
       el.getAnimations().forEach((a) => a.cancel()); // a wake fade still running
-      const closes = eyesOf(el).map((eye) => {
-        const from = getComputedStyle(eye).transform;
-        eye.getAnimations().forEach((a) => a.cancel());
-        return eye.animate([{ transform: from }, { transform: `scaleY(${c.LINE})` }],
-          { duration: c.LEAVE_CLOSE_MS, easing: c.EASE_CLOSE, fill: 'forwards' }).finished;
+      const drops = lidsOf(el).map((lid) => {
+        const from = getComputedStyle(lid).transform;
+        lid.getAnimations().forEach((a) => a.cancel());
+        return lid.animate([{ transform: from }, { transform: closed(c) }],
+          { duration: c.LEAVE_LID_MS, easing: c.EASE_IN, fill: 'forwards' }).finished;
       });
-      await Promise.all(closes);
+      await Promise.all(drops);
       await el.animate([{ opacity: 1 }, { opacity: 0 }],
-        { duration: c.LEAVE_FADE_MS, easing: c.EASE_CLOSE, fill: 'forwards' }).finished;
+        { duration: c.LEAVE_FADE_MS, easing: c.EASE_IN, fill: 'forwards' }).finished;
     },
 
     reset(el) {

@@ -29,6 +29,6 @@ export const GRAIN_FREQ = 0.9; // noise frequency: higher is finer
 // ── Greeting ───────────────────────────────────────────────────────────
 export const GREETING_W = 320; // width at the design frame, roughly
 export const GREETING_EVERY_MS = 2500;
-export const GREETING_ROLL_MS = 420; // one letter rolling out / in
-export const GREETING_STAGGER_MS = 35; // each letter a beat behind the last
+export const GREETING_ROLL_MS = 300; // one letter rolling out / in
+export const GREETING_STAGGER_MS = 18; // each letter a beat behind the last
 export const EASE_ROLL = 'cubic-bezier(0.76, 0, 0.24, 1)';
