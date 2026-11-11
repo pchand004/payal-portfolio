@@ -18,10 +18,16 @@ export const FOCAL_RADIUS_PX = 160; // click within this of a point to wake it
 export const TOUCH_HOLD_MS = 4000; // on touch, an eye stays awake this long
 export const DIM_OPACITY = 0.35; // the "dims" beat before the fade to black
 export const DIM_SHARE = 0.3; // how far into FADE_MS the dim beat lands
+export const WAKE_SCALE = 0.86; // a tile pops up from this size as it appears
+export const FADE_SCALE = 0.94; // and settles back to this as it fades
 
 // ── Greeting ───────────────────────────────────────────────────────────
+// The one exception to MIN_MS: each letter's roll is quick so the change
+// reads as a snap, not a dissolve. Faces never overlap; the line is clipped.
 export const GREETING_EVERY_MS = 2500;
-export const GREETING_CROSSFADE_MS = 600;
+export const GREETING_ROLL_MS = 420; // one letter rolling out / in
+export const GREETING_STAGGER_MS = 35; // each letter a beat behind the last
+export const EASE_ROLL = 'cubic-bezier(0.76, 0, 0.24, 1)';
 
 // ── Eye 1 · narrow ─────────────────────────────────────────────────────
 export const NARROW_CLOSED_SCALE = 0.04; // the lid as a single line
@@ -42,3 +48,4 @@ export const PSY_HUE_STEP = 40; // degrees between successive palettes
 export const PSY_HUE_FADE_MS = 3200; // one palette dissolving into the next
 export const PSY_BREATHE_SCALE = 1.04; // a few percent
 export const PSY_BREATHE_MS = 4200; // one half-breath
+export const PSY_RAYS_TURN_MS = 60000; // the rays behind it make one full turn

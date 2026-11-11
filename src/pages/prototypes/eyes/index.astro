@@ -15,6 +15,8 @@ import EyeNarrow from '../../../components/eyes/EyeNarrow.astro';
 import EyeLooksAround from '../../../components/eyes/EyeLooksAround.astro';
 import EyePsychedelic from '../../../components/eyes/EyePsychedelic.astro';
 
+const GREETING = 'Hi there!';
+
 // One face per mood. `scale` evens out x-heights so the word reads the same size.
 const moods = [
   { mood: 'fun', family: 'var(--font-fredoka)', scale: 1 },
@@ -52,15 +54,15 @@ const points = [
   </Fragment>
 
   <main class="stage" data-stage>
-    <h1 class="greeting" data-greeting>
+    <h1 class="greeting" aria-label={GREETING} data-greeting>
       {moods.map((m, i) => (
         <span
           class="face"
           style={`font-family: ${m.family}; --scale: ${m.scale}`}
           data-face={m.mood}
-          aria-hidden={i === 0 ? undefined : 'true'}
+          aria-hidden="true"
           data-on={i === 0 ? '' : undefined}
-        >Hi there!</span>
+        >{[...GREETING].map((ch) => <span class="ch">{ch}</span>)}</span>
       ))}
     </h1>
 
@@ -84,7 +86,7 @@ const points = [
     height: 100%;
   }
   .stage {
-    --eye: clamp(92px, 9vw, 140px);
+    --eye: clamp(150px, 15vw, 230px);
     --eye-white: #ece8df;
     position: fixed;
     inset: 0;
@@ -96,7 +98,8 @@ const points = [
     touch-action: manipulation;
   }
 
-  /* Greeting: every face stacked in one cell; only one is opaque at a time */
+  /* Greeting: every face stacked in one cell, clipped top and bottom so the
+     letters roll out of and into the line rather than crossing each other */
   .greeting {
     position: absolute;
     left: 50%;
@@ -109,15 +112,20 @@ const points = [
     color: var(--eye-white);
     white-space: nowrap;
     pointer-events: none;
+    clip-path: inset(0 -50vw);
   }
   .face {
     grid-area: 1 / 1;
     font-size: calc(clamp(44px, 6.5vw, 92px) * var(--scale));
-    line-height: 1;
-    opacity: 0;
+    line-height: 1.3;
+    visibility: hidden;
   }
   .face[data-on] {
-    opacity: 1;
+    visibility: visible;
+  }
+  .ch {
+    display: inline-block;
+    white-space: pre;
   }
   .face[data-face='fun'] { font-weight: 600; }
   .face[data-face='elegant'] { font-weight: 500; font-style: italic; }
@@ -150,7 +158,8 @@ const points = [
   import { getEye } from '../../../scripts/eyes/registry';
   import {
     WAKE_MS, FADE_MS, EASE_OUT, EASE_IN, FOCAL_RADIUS_PX, TOUCH_HOLD_MS,
-    DIM_OPACITY, DIM_SHARE, GREETING_EVERY_MS, GREETING_CROSSFADE_MS,
+    DIM_OPACITY, DIM_SHARE, WAKE_SCALE, FADE_SCALE,
+    GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL,
   } from '../../../scripts/eyes/motion';
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -158,24 +167,38 @@ const points = [
   const points = [...stage.querySelectorAll<HTMLElement>('[data-point]')];
 
   // ── Greeting ────────────────────────────────────────────────────────
-  const faces = [...stage.querySelectorAll<HTMLElement>('[data-face]')];
+  // Letter by letter, the old face rolls up out of the line as the new one
+  // rolls up into it, each letter a beat behind the one before.
+  const greeting = stage.querySelector<HTMLElement>('[data-greeting]')!;
+  const faces = [...greeting.querySelectorAll<HTMLElement>('[data-face]')];
   let face = 0;
 
-  function fadeTo(el: HTMLElement, to: number, easing: string) {
-    const from = getComputedStyle(el).opacity;
-    el.getAnimations().forEach((a) => a.cancel());
-    el.style.opacity = String(to);
-    el.animate([{ opacity: from }, { opacity: to }], { duration: GREETING_CROSSFADE_MS, easing });
+  function roll(out: HTMLElement, next: HTMLElement) {
+    next.dataset.on = '';
+    if (reduced.matches) {
+      delete out.dataset.on;
+      return;
+    }
+    const h = greeting.offsetHeight;
+    const letters = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('.ch')];
+    const timing = (i: number): KeyframeAnimationOptions =>
+      ({ duration: GREETING_ROLL_MS, delay: i * GREETING_STAGGER_MS, easing: EASE_ROLL, fill: 'both' });
+
+    const leaving = letters(out).map((ch, i) =>
+      ch.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-h}px)` }], timing(i)));
+    const arriving = letters(next).map((ch, i) =>
+      ch.animate([{ transform: `translateY(${h}px)` }, { transform: 'translateY(0)' }], timing(i)));
+
+    Promise.all([...leaving, ...arriving].map((a) => a.finished)).then(() => {
+      delete out.dataset.on;
+      [...leaving, ...arriving].forEach((a) => a.cancel());
+    }, () => {});
   }
 
   setInterval(() => {
     const out = faces[face];
     face = (face + 1) % faces.length;
-    const next = faces[face];
-    fadeTo(out, 0, EASE_IN);
-    fadeTo(next, 1, EASE_OUT);
-    out.setAttribute('aria-hidden', 'true');
-    next.removeAttribute('aria-hidden');
+    roll(out, faces[face]);
   }, GREETING_EVERY_MS);
 
   // ── Eyes ────────────────────────────────────────────────────────────
@@ -221,7 +244,10 @@ const points = [
     point.getAnimations().forEach((a) => a.cancel());
     eye.reset(root);
 
-    point.animate([{ opacity: from }, { opacity: 1 }], { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' });
+    point.animate(
+      [{ opacity: from, transform: `scale(${WAKE_SCALE})` }, { opacity: 1, transform: 'scale(1)' }],
+      { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' },
+    );
     eye.wake(root, reduced.matches);
     awake = { point };
   }
@@ -235,7 +261,11 @@ const points = [
     const from = Number(getComputedStyle(point).opacity);
     point.getAnimations().forEach((a) => a.cancel());
     const fade = point.animate(
-      [{ opacity: from }, { opacity: Math.min(from, DIM_OPACITY), offset: DIM_SHARE }, { opacity: 0 }],
+      [
+        { opacity: from, transform: 'scale(1)' },
+        { opacity: Math.min(from, DIM_OPACITY), offset: DIM_SHARE },
+        { opacity: 0, transform: `scale(${FADE_SCALE})` },
+      ],
       { duration: FADE_MS, easing: EASE_IN, fill: 'forwards' },
     );
     fade.finished.then(() => {

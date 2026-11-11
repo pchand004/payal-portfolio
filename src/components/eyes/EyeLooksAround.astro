@@ -1,31 +1,42 @@
 ---
 /**
- * Eye 2 · "looks around". Opens round; the pupil drifts left, then right,
- * then circles the rim once; then the whole eye rolls 180° and settles
- * upside down. The crease and lashes above it make the turn readable.
+ * Eye 2 · "looks around". A big eyeball with a lime iris and a coral lid on
+ * a grainy plum tile with a small yellow moon. Opens round; the pupil drifts
+ * left, then right, then circles the rim once; then the whole eye rolls 180°
+ * and settles upside down, lid at the bottom.
  */
 ---
 
 <div class="eye eye-look" data-eye-root="look">
-  <svg viewBox="0 0 120 120" aria-hidden="true">
+  <svg viewBox="0 0 200 200" aria-hidden="true">
     <defs>
-      <clipPath id="look-ball">
-        <circle cx="60" cy="64" r="34" />
-      </clipPath>
+      <clipPath id="look-tile"><rect width="200" height="200" rx="46" /></clipPath>
+      <clipPath id="look-ball"><circle cx="100" cy="104" r="60" /></clipPath>
+      <filter id="look-grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
     </defs>
+
+    <g clip-path="url(#look-tile)">
+      <rect width="200" height="200" class="tile" />
+      <circle cx="160" cy="38" r="13" class="moon" />
+      <rect width="200" height="200" filter="url(#look-grain)" class="grain" />
+    </g>
+
     <g class="turn" data-turn>
       <g class="lid" data-lid>
-        <path d="M22 30 Q60 4 98 30" class="line" />
-        <path d="M44 15 L41 7 M60 11 L60 2 M76 15 L79 7" class="line" />
         <g clip-path="url(#look-ball)">
-          <rect x="20" y="24" width="80" height="80" class="white" />
+          <rect x="40" y="44" width="120" height="120" class="white" />
+          <circle cx="80" cy="84" r="64" class="shade" />
           <g class="iris" data-iris>
-            <circle cx="60" cy="64" r="15" class="iris-fill" />
-            <circle cx="60" cy="64" r="7" class="pupil" />
-            <circle cx="55.5" cy="59.5" r="2.2" class="white" />
+            <circle cx="100" cy="104" r="27" class="iris-fill" />
+            <circle cx="100" cy="104" r="14" class="pupil" />
+            <path d="M92 92 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z" class="white" />
           </g>
+          <path d="M36 40 H164 V78 Q100 98 36 78 Z" class="cap" />
         </g>
-        <circle cx="60" cy="64" r="34" class="line" />
+        <circle cx="100" cy="104" r="60" class="rim" />
       </g>
     </g>
   </svg>
@@ -34,9 +45,14 @@
 <style>
   .eye-look svg {
     display: block;
-    width: calc(var(--eye) * 0.95);
+    width: var(--eye);
     height: auto;
-    overflow: visible;
+  }
+  .tile { fill: #45206a; }
+  .moon { fill: #f6dc3a; }
+  .grain {
+    opacity: 0.35;
+    mix-blend-mode: soft-light;
   }
   .turn,
   .lid,
@@ -44,29 +60,29 @@
     transform-box: view-box;
   }
   .turn {
-    transform-origin: 60px 60px;
+    transform-origin: 100px 104px;
   }
   .lid {
-    transform-origin: 60px 64px;
+    transform-origin: 100px 104px;
     transform: scaleY(0.04);
   }
   [data-state='open'] .lid {
     transform: none;
   }
-  .white {
-    fill: var(--eye-white);
-  }
-  .iris-fill {
-    fill: #3f5560;
-  }
-  .pupil {
-    fill: #000;
-  }
-  .line {
+  .white { fill: #fbf6ec; }
+  .shade {
     fill: none;
-    stroke: var(--eye-white);
-    stroke-width: 1.5;
-    stroke-linecap: round;
+    stroke: #e3d6c4;
+    stroke-width: 26;
+    opacity: 0.7;
+  }
+  .iris-fill { fill: #c4ec3a; }
+  .pupil { fill: #14121c; }
+  .cap { fill: #ff7a5c; }
+  .rim {
+    fill: none;
+    stroke: #fbf6ec;
+    stroke-width: 3;
     vector-effect: non-scaling-stroke;
   }
 </style>
@@ -78,8 +94,8 @@
     LOOK_DRIFT_MS, LOOK_HOLD_MS, LOOK_CIRCLE_MS, LOOK_TURN_MS,
   } from '../../scripts/eyes/motion';
 
-  // ball r 34, iris r 15: the iris has 19 units of room to travel
-  const REACH = 19 * LOOK_REACH;
+  // ball r 60, iris r 27: the iris has 33 units of room to travel
+  const REACH = 33 * LOOK_REACH;
   const at = (x: number, y = 0) => ({ transform: `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)` });
   const runs = new WeakMap<HTMLElement, AbortController>();
 

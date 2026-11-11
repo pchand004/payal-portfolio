@@ -1,76 +1,93 @@
 ---
 /**
- * Eye 5 · "psychedelic". A lid line parts (clip-path) onto concentric iris
- * rings. The rings breathe a few percent in scale while their hue cycles:
- * two stacked ring sets take turns dissolving into the next palette, so the
- * colour change is done with opacity alone.
+ * Eye 5 · "psychedelic". A coral tile with pink rays turning slowly round
+ * an almond of concentric iris rings. The lid line opens onto the rings,
+ * which breathe a few percent in scale while their hue cycles: two stacked
+ * ring sets take turns dissolving into the next palette, so the colour change
+ * is done with opacity alone.
  */
-const RINGS = [46, 39, 32, 25, 18, 11];
+const RINGS = [56, 48, 40, 32, 24, 16];
+const RAYS = Array.from({ length: 24 }, (_, i) => i * 15);
 ---
 
 <div class="eye eye-psy" data-eye-root="psy">
-  <span class="lid-line" data-line></span>
-  <div class="opening" data-opening>
-    <svg viewBox="0 0 160 100" aria-hidden="true">
-      <defs>
-        <clipPath id="psy-almond">
-          <path d="M6 50 C44 8 116 8 154 50 C116 92 44 92 6 50 Z" />
-        </clipPath>
-      </defs>
+  <svg viewBox="0 0 200 200" aria-hidden="true">
+    <defs>
+      <clipPath id="psy-tile"><rect width="200" height="200" rx="46" /></clipPath>
+      <clipPath id="psy-almond">
+        <path d="M14 100 C58 44 142 44 186 100 C142 156 58 156 14 100 Z" />
+      </clipPath>
+      <filter id="psy-grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+    </defs>
+
+    <g clip-path="url(#psy-tile)">
+      <rect width="200" height="200" class="tile" />
+      <g class="rays" data-rays>
+        {RAYS.map((deg) => (
+          <line x1="100" y1="100" x2="100" y2="-60" transform={`rotate(${deg} 100 100)`} />
+        ))}
+      </g>
+      <rect width="200" height="200" filter="url(#psy-grain)" class="grain" />
+    </g>
+
+    <g class="lid" data-lid>
       <g clip-path="url(#psy-almond)">
-        <rect x="0" y="0" width="160" height="100" fill="#000" />
+        <rect x="0" y="40" width="200" height="120" class="deep" />
         <g class="breathe" data-breathe>
           {['a', 'b'].map((set) => (
             <g class={`set set-${set}`} data-set={set}>
-              {RINGS.map((r) => <circle cx="80" cy="50" r={r} />)}
+              {RINGS.map((r) => <circle cx="100" cy="100" r={r} />)}
             </g>
           ))}
-          <circle cx="80" cy="50" r="5" fill="#000" />
+          <circle cx="100" cy="100" r="8" class="pupil" />
+          <circle cx="94" cy="94" r="3" class="glint" />
         </g>
       </g>
-      <path d="M6 50 C44 8 116 8 154 50 C116 92 44 92 6 50 Z" class="rim" />
-    </svg>
-  </div>
+      <path d="M14 100 C58 44 142 44 186 100 C142 156 58 156 14 100 Z" class="rim" />
+    </g>
+  </svg>
 </div>
 
 <style>
-  .eye-psy {
-    position: relative;
-  }
   .eye-psy svg {
     display: block;
-    width: calc(var(--eye) * 1.15);
+    width: var(--eye);
     height: auto;
   }
-  .lid-line {
-    position: absolute;
-    left: 3.75%;
-    right: 3.75%;
-    top: 50%;
-    height: 1.5px;
-    margin-top: -0.75px;
-    background: var(--eye-white);
+  .tile { fill: #f06e6a; }
+  .rays line {
+    stroke: #ffc0dc;
+    stroke-width: 4;
+    opacity: 0.75;
   }
-  .opening {
-    clip-path: ellipse(50% 0.75% at 50% 50%);
-  }
-  [data-state='open'] .opening {
-    clip-path: ellipse(75% 75% at 50% 50%);
-  }
-  [data-state='open'] .lid-line {
-    opacity: 0;
-  }
+  .rays,
+  .lid,
   .breathe {
     transform-box: view-box;
-    transform-origin: 80px 50px;
+    transform-origin: 100px 100px;
   }
-  .set-b {
-    opacity: 0;
+  .grain {
+    opacity: 0.35;
+    mix-blend-mode: soft-light;
   }
+  .lid {
+    transform: scaleY(0.04);
+  }
+  [data-state='open'] .lid {
+    transform: none;
+  }
+  .deep { fill: #1c1452; }
+  .set-b { opacity: 0; }
+  .pupil { fill: #0d0a26; }
+  .glint { fill: #fff; }
   .rim {
     fill: none;
-    stroke: var(--eye-white);
-    stroke-width: 1.5;
+    stroke: #fff4f8;
+    stroke-width: 3.5;
+    vector-effect: non-scaling-stroke;
   }
 </style>
 
@@ -78,18 +95,16 @@ const RINGS = [46, 39, 32, 25, 18, 11];
   import { registerEye, cancelAll, wait, done } from '../../scripts/eyes/registry';
   import {
     WAKE_MS, EASE_OUT, EASE_IN_OUT,
-    PSY_HUE_STEP, PSY_HUE_FADE_MS, PSY_BREATHE_SCALE, PSY_BREATHE_MS,
+    PSY_HUE_STEP, PSY_HUE_FADE_MS, PSY_BREATHE_SCALE, PSY_BREATHE_MS, PSY_RAYS_TURN_MS,
   } from '../../scripts/eyes/motion';
 
-  const CLOSED = 'ellipse(50% 0.75% at 50% 50%)';
-  const OPEN = 'ellipse(75% 75% at 50% 50%)';
   const runs = new WeakMap<HTMLElement, AbortController>();
 
   /** Palette k: each ring a step round the wheel from the last. */
   function paint(set: SVGGElement, k: number) {
-    const base = 200 + k * PSY_HUE_STEP;
+    const base = 250 + k * PSY_HUE_STEP;
     set.querySelectorAll('circle').forEach((c, i) => {
-      c.setAttribute('fill', `hsl(${(base + i * 52) % 360} 75% ${i % 2 ? 46 : 60}%)`);
+      c.setAttribute('fill', `hsl(${(base + i * 48) % 360} 88% ${i % 2 ? 52 : 66}%)`);
     });
   }
 
@@ -99,14 +114,15 @@ const RINGS = [46, 39, 32, 25, 18, 11];
   }
 
   async function loop(el: HTMLElement, signal: AbortSignal) {
-    const opening = el.querySelector<HTMLElement>('[data-opening]')!;
-    const line = el.querySelector<HTMLElement>('[data-line]')!;
+    const lid = el.querySelector<SVGGElement>('[data-lid]')!;
+    const rays = el.querySelector<SVGGElement>('[data-rays]')!;
     const a = el.querySelector<SVGGElement>('[data-set="a"]')!;
     const b = el.querySelector<SVGGElement>('[data-set="b"]')!;
     const breathe = el.querySelector<SVGGElement>('[data-breathe]')!;
 
-    line.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' });
-    await done(opening.animate([{ clipPath: CLOSED }, { clipPath: OPEN }],
+    rays.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+      { duration: PSY_RAYS_TURN_MS, iterations: Infinity });
+    await done(lid.animate([{ transform: 'scaleY(0.04)' }, { transform: 'scaleY(1)' }],
       { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' }), signal);
 
     breathe.animate([{ transform: 'scale(1)' }, { transform: `scale(${PSY_BREATHE_SCALE})` }],
