@@ -21,7 +21,7 @@ export interface EyeShape {
 }
 
 // A disc pupil is this share of its eye's width (the slit keeps its slit)
-export const PUPIL_SHARE = 0.4;
+export const PUPIL_SHARE = 0.36;
 const disc = (w: number) => ({ kind: 'disc', d: Math.round(w * PUPIL_SHARE) }) as const;
 
 const pill = (w: number, h: number) => {
@@ -36,7 +36,7 @@ export const SHAPES = {
     path: pill(67, 118),
     pupil: disc(67),
     travel: { cx: 33.5, cy: 59, rx: 16, ry: 41 },
-    rest: [-15, 12],
+    rest: [-11, 9],
   },
 
   // 2 · round circles, the pupil rests at the top, cut by the edge
@@ -44,8 +44,8 @@ export const SHAPES = {
     w: 90, h: 90, gap: 20,
     path: 'M45 0 A45 45 0 1 1 45 90 A45 45 0 1 1 45 0 Z',
     pupil: disc(90),
-    travel: { cx: 45, cy: 45, rx: 30, ry: 30 },
-    rest: [0, -30],
+    travel: { cx: 45, cy: 45, rx: 28, ry: 28 },
+    rest: [0, -16],
   },
 
   // 3 · circles cut by a slanted flat top, sloping down toward the nose
@@ -66,13 +66,13 @@ export const SHAPES = {
     rest: [10, 4],
   },
 
-  // 5 · angular faceted polygons leaning toward each other, nearly touching
+  // 5 · angular lids: six straight edges, leaning toward each other
   facets: {
-    w: 80, h: 110, gap: 6, mirror: true,
-    path: 'M10 0 L70 8 L80 60 L62 110 L14 100 L0 50 Z',
-    pupil: disc(80),
-    travel: { cx: 42, cy: 55, rx: 18, ry: 28 },
-    rest: [12, 2],
+    w: 96, h: 46, gap: 10, mirror: true,
+    path: 'M0 23 L30 2 L80 0 L96 20 L74 46 L24 44 Z',
+    pupil: disc(96),
+    travel: { cx: 50, cy: 23, rx: 24, ry: 7 },
+    rest: [10, 2],
   },
 
   // 6 · half-moons: flat top, round bottom; pupil rests low
@@ -111,13 +111,13 @@ export const SHAPES = {
     rest: [-30, 0],
   },
 
-  // 10 · mismatched: a large circle, and one 60% of its size
+  // 10 · mismatched: an almond, and one 60% of its size
   mismatched: {
-    w: 100, h: 100, gap: 18, rightScale: 0.6,
-    path: 'M50 0 A50 50 0 1 1 50 100 A50 50 0 1 1 50 0 Z',
+    w: 100, h: 46, gap: 16, rightScale: 0.6,
+    path: 'M0 23 Q50 -8 100 23 Q50 54 0 23 Z',
     pupil: disc(100),
-    travel: { cx: 50, cy: 50, rx: 30, ry: 30 },
-    rest: [20, -20],
+    travel: { cx: 50, cy: 23, rx: 28, ry: 6 },
+    rest: [14, -3],
   },
 } satisfies Record<string, EyeShape>;
 
