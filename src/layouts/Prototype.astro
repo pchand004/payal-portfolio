@@ -32,6 +32,7 @@ const { title, description = '', image } = Astro.props;
     <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
     {image && <meta name="twitter:image" content={image} />}
     <Font cssVariable="--font-inter" preload />
+    <slot name="head" />
   </head>
   <body class="proto-body">
     <slot />

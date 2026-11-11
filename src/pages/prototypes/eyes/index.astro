@@ -1,0 +1,274 @@
+---
+/**
+ * Eyes — a live prototype.
+ *
+ * A pitch-black stage with "Hi there!" in the middle, cycling through five
+ * typefaces, and ten invisible eye points around it. Click (or tap) near a
+ * point to wake its eye; it plays while the cursor stays near, then dims and
+ * fades back to black. Batch 1: eyes 1, 2 and 5. The rest are placeholders.
+ *
+ * Timings live in src/scripts/eyes/motion.ts.
+ */
+import { Font } from 'astro:assets';
+import Prototype from '../../../layouts/Prototype.astro';
+import EyeNarrow from '../../../components/eyes/EyeNarrow.astro';
+import EyeLooksAround from '../../../components/eyes/EyeLooksAround.astro';
+import EyePsychedelic from '../../../components/eyes/EyePsychedelic.astro';
+
+// One face per mood. `scale` evens out x-heights so the word reads the same size.
+const moods = [
+  { mood: 'fun', family: 'var(--font-fredoka)', scale: 1 },
+  { mood: 'elegant', family: 'var(--font-cormorant)', scale: 1.2 },
+  { mood: 'professional', family: 'var(--font-inter)', scale: 0.94 },
+  { mood: 'casual', family: 'var(--font-caveat)', scale: 1.18 },
+  { mood: 'comic', family: 'var(--font-bangers)', scale: 0.92 },
+];
+
+// Positions as % of the viewport: desktop (x, y) and under 600px (mx, my),
+// where the points stack two by five with the greeting between rows 2 and 3.
+const points = [
+  { n: 1, x: 12, y: 18, mx: 25, my: 10, eye: EyeNarrow },
+  { n: 2, x: 37, y: 18, mx: 75, my: 10, eye: EyeLooksAround },
+  { n: 3, x: 62, y: 18, mx: 25, my: 26 },
+  { n: 4, x: 87, y: 18, mx: 75, my: 26 },
+  { n: 5, x: 12, y: 50, mx: 25, my: 60, eye: EyePsychedelic },
+  { n: 6, x: 88, y: 50, mx: 75, my: 60 },
+  { n: 7, x: 12, y: 82, mx: 25, my: 75 },
+  { n: 8, x: 37, y: 82, mx: 75, my: 75 },
+  { n: 9, x: 62, y: 82, mx: 25, my: 90 },
+  { n: 10, x: 87, y: 82, mx: 75, my: 90 },
+];
+---
+
+<Prototype
+  title="Eyes · a prototype by Payal Chand"
+  description="A dark room that says hello. Click near the edges and something looks back."
+>
+  <Fragment slot="head">
+    <Font cssVariable="--font-fredoka" preload />
+    <Font cssVariable="--font-cormorant" preload />
+    <Font cssVariable="--font-caveat" preload />
+    <Font cssVariable="--font-bangers" preload />
+  </Fragment>
+
+  <main class="stage" data-stage>
+    <h1 class="greeting" data-greeting>
+      {moods.map((m, i) => (
+        <span
+          class="face"
+          style={`font-family: ${m.family}; --scale: ${m.scale}`}
+          data-face={m.mood}
+          aria-hidden={i === 0 ? undefined : 'true'}
+          data-on={i === 0 ? '' : undefined}
+        >Hi there!</span>
+      ))}
+    </h1>
+
+    {points.map(({ n, x, y, mx, my, eye: Eye }) => (
+      <div
+        class="point"
+        style={`--x: ${x}%; --y: ${y}%; --mx: ${mx}%; --my: ${my}%`}
+        data-point={n}
+      >
+        {Eye && <Eye />}
+      </div>
+    ))}
+  </main>
+</Prototype>
+
+<style>
+  :global(html),
+  :global(body.proto-body) {
+    background: #000;
+    overflow: hidden;
+    height: 100%;
+  }
+  .stage {
+    --eye: clamp(92px, 9vw, 140px);
+    --eye-white: #ece8df;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Greeting: every face stacked in one cell; only one is opaque at a time */
+  .greeting {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-weight: normal;
+    color: var(--eye-white);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .face {
+    grid-area: 1 / 1;
+    font-size: calc(clamp(44px, 6.5vw, 92px) * var(--scale));
+    line-height: 1;
+    opacity: 0;
+  }
+  .face[data-on] {
+    opacity: 1;
+  }
+  .face[data-face='fun'] { font-weight: 600; }
+  .face[data-face='elegant'] { font-weight: 500; font-style: italic; }
+  .face[data-face='professional'] { font-weight: 600; letter-spacing: -0.02em; }
+  .face[data-face='casual'] { font-weight: 600; }
+  .face[data-face='comic'] { letter-spacing: 0.03em; }
+
+  /* Points: centred on their coordinates, invisible until woken */
+  .point {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    translate: -50% -50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 599.98px) {
+    .greeting {
+      top: 43%;
+    }
+    .point {
+      left: var(--mx);
+      top: var(--my);
+    }
+  }
+</style>
+
+<script>
+  import { getEye } from '../../../scripts/eyes/registry';
+  import {
+    WAKE_MS, FADE_MS, EASE_OUT, EASE_IN, FOCAL_RADIUS_PX, TOUCH_HOLD_MS,
+    DIM_OPACITY, DIM_SHARE, GREETING_EVERY_MS, GREETING_CROSSFADE_MS,
+  } from '../../../scripts/eyes/motion';
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const stage = document.querySelector<HTMLElement>('[data-stage]')!;
+  const points = [...stage.querySelectorAll<HTMLElement>('[data-point]')];
+
+  // ── Greeting ────────────────────────────────────────────────────────
+  const faces = [...stage.querySelectorAll<HTMLElement>('[data-face]')];
+  let face = 0;
+
+  function fadeTo(el: HTMLElement, to: number, easing: string) {
+    const from = getComputedStyle(el).opacity;
+    el.getAnimations().forEach((a) => a.cancel());
+    el.style.opacity = String(to);
+    el.animate([{ opacity: from }, { opacity: to }], { duration: GREETING_CROSSFADE_MS, easing });
+  }
+
+  setInterval(() => {
+    const out = faces[face];
+    face = (face + 1) % faces.length;
+    const next = faces[face];
+    fadeTo(out, 0, EASE_IN);
+    fadeTo(next, 1, EASE_OUT);
+    out.setAttribute('aria-hidden', 'true');
+    next.removeAttribute('aria-hidden');
+  }, GREETING_EVERY_MS);
+
+  // ── Eyes ────────────────────────────────────────────────────────────
+  interface Awake {
+    point: HTMLElement;
+    timer?: number;
+  }
+  let awake: Awake | null = null;
+
+  const eyeOf = (point: HTMLElement) => point.querySelector<HTMLElement>('[data-eye-root]');
+
+  function centre(point: HTMLElement) {
+    const r = point.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function distance(point: HTMLElement, x: number, y: number) {
+    const c = centre(point);
+    return Math.hypot(c.x - x, c.y - y);
+  }
+
+  /** The nearest point whose focal area contains (x, y), if any. */
+  function pointAt(x: number, y: number) {
+    let best: HTMLElement | null = null;
+    let bestD = FOCAL_RADIUS_PX;
+    for (const p of points) {
+      const d = distance(p, x, y);
+      if (d <= bestD) {
+        best = p;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  function wake(point: HTMLElement) {
+    const root = eyeOf(point);
+    const eye = root && getEye(root.dataset.eyeRoot!);
+    if (!root || !eye) return;
+
+    // If it was still fading out, pick up from where its opacity is now
+    const from = getComputedStyle(point).opacity;
+    point.getAnimations().forEach((a) => a.cancel());
+    eye.reset(root);
+
+    point.animate([{ opacity: from }, { opacity: 1 }], { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' });
+    eye.wake(root, reduced.matches);
+    awake = { point };
+  }
+
+  function sleep() {
+    if (!awake) return;
+    const { point, timer } = awake;
+    awake = null;
+    clearTimeout(timer);
+
+    const from = Number(getComputedStyle(point).opacity);
+    point.getAnimations().forEach((a) => a.cancel());
+    const fade = point.animate(
+      [{ opacity: from }, { opacity: Math.min(from, DIM_OPACITY), offset: DIM_SHARE }, { opacity: 0 }],
+      { duration: FADE_MS, easing: EASE_IN, fill: 'forwards' },
+    );
+    fade.finished.then(() => {
+      const root = eyeOf(point);
+      if (root) getEye(root.dataset.eyeRoot!)?.reset(root);
+      fade.cancel();
+    }, () => {});
+  }
+
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const point = pointAt(e.clientX, e.clientY);
+    if (!point) return;
+    if (awake?.point === point) {
+      if (e.pointerType === 'touch') holdFor(awake);
+      return;
+    }
+    sleep(); // only one eye awake at a time
+    wake(point);
+    if (awake && e.pointerType === 'touch') holdFor(awake);
+  });
+
+  function holdFor(a: Awake) {
+    clearTimeout(a.timer);
+    a.timer = window.setTimeout(() => awake === a && sleep(), TOUCH_HOLD_MS);
+  }
+
+  // Mouse and pen: the eye stays awake while the cursor is in its focal area
+  stage.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch' || !awake || awake.timer) return;
+    if (distance(awake.point, e.clientX, e.clientY) > FOCAL_RADIUS_PX) sleep();
+  });
+  document.documentElement.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'touch' && awake && !awake.timer) sleep();
+  });
+</script>

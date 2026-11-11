@@ -1,0 +1,136 @@
+---
+/**
+ * Eye 2 · "looks around". Opens round; the pupil drifts left, then right,
+ * then circles the rim once; then the whole eye rolls 180° and settles
+ * upside down. The crease and lashes above it make the turn readable.
+ */
+---
+
+<div class="eye eye-look" data-eye-root="look">
+  <svg viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <clipPath id="look-ball">
+        <circle cx="60" cy="64" r="34" />
+      </clipPath>
+    </defs>
+    <g class="turn" data-turn>
+      <g class="lid" data-lid>
+        <path d="M22 30 Q60 4 98 30" class="line" />
+        <path d="M44 15 L41 7 M60 11 L60 2 M76 15 L79 7" class="line" />
+        <g clip-path="url(#look-ball)">
+          <rect x="20" y="24" width="80" height="80" class="white" />
+          <g class="iris" data-iris>
+            <circle cx="60" cy="64" r="15" class="iris-fill" />
+            <circle cx="60" cy="64" r="7" class="pupil" />
+            <circle cx="55.5" cy="59.5" r="2.2" class="white" />
+          </g>
+        </g>
+        <circle cx="60" cy="64" r="34" class="line" />
+      </g>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .eye-look svg {
+    display: block;
+    width: calc(var(--eye) * 0.95);
+    height: auto;
+    overflow: visible;
+  }
+  .turn,
+  .lid,
+  .iris {
+    transform-box: view-box;
+  }
+  .turn {
+    transform-origin: 60px 60px;
+  }
+  .lid {
+    transform-origin: 60px 64px;
+    transform: scaleY(0.04);
+  }
+  [data-state='open'] .lid {
+    transform: none;
+  }
+  .white {
+    fill: var(--eye-white);
+  }
+  .iris-fill {
+    fill: #3f5560;
+  }
+  .pupil {
+    fill: #000;
+  }
+  .line {
+    fill: none;
+    stroke: var(--eye-white);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+</style>
+
+<script>
+  import { registerEye, cancelAll, wait, done } from '../../scripts/eyes/registry';
+  import {
+    WAKE_MS, EASE_OUT, EASE_IN_OUT, LOOK_REACH,
+    LOOK_DRIFT_MS, LOOK_HOLD_MS, LOOK_CIRCLE_MS, LOOK_TURN_MS,
+  } from '../../scripts/eyes/motion';
+
+  // ball r 34, iris r 15: the iris has 19 units of room to travel
+  const REACH = 19 * LOOK_REACH;
+  const at = (x: number, y = 0) => ({ transform: `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)` });
+  const runs = new WeakMap<HTMLElement, AbortController>();
+
+  async function loop(el: HTMLElement, signal: AbortSignal) {
+    const lid = el.querySelector<SVGGElement>('[data-lid]')!;
+    const iris = el.querySelector<SVGGElement>('[data-iris]')!;
+    const turn = el.querySelector<SVGGElement>('[data-turn]')!;
+    const move = (frames: Keyframe[], duration: number, easing = EASE_IN_OUT) =>
+      done(iris.animate(frames, { duration, easing, fill: 'forwards' }), signal);
+
+    await done(lid.animate([{ transform: 'scaleY(0.04)' }, { transform: 'scaleY(1)' }],
+      { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' }), signal);
+    await wait(LOOK_HOLD_MS, signal);
+
+    await move([at(0), at(-REACH)], LOOK_DRIFT_MS);
+    await wait(LOOK_HOLD_MS, signal);
+    await move([at(-REACH), at(REACH)], LOOK_DRIFT_MS * 1.4);
+    await wait(LOOK_HOLD_MS, signal);
+
+    // one lap of the rim, starting from the right and going up and over
+    const lap: Keyframe[] = [];
+    for (let deg = 0; deg <= 360; deg += 10) {
+      const r = (deg * Math.PI) / 180;
+      lap.push(at(Math.cos(r) * REACH, -Math.sin(r) * REACH));
+    }
+    await move(lap, LOOK_CIRCLE_MS);
+
+    // the pupil comes home while the eye rolls over, overshoots a touch, settles
+    iris.animate([at(REACH), at(0)], { duration: LOOK_TURN_MS * 0.6, easing: EASE_IN_OUT, fill: 'forwards' });
+    await done(turn.animate([
+      { transform: 'rotate(0deg)' },
+      { transform: 'rotate(188deg)', offset: 0.72 },
+      { transform: 'rotate(180deg)' },
+    ], { duration: LOOK_TURN_MS, easing: EASE_IN_OUT, fill: 'forwards' }), signal);
+  }
+
+  registerEye('look', {
+    wake(el, still) {
+      if (still) {
+        el.dataset.state = 'open';
+        return;
+      }
+      const run = new AbortController();
+      runs.set(el, run);
+      loop(el, run.signal).catch(() => {});
+    },
+    reset(el) {
+      runs.get(el)?.abort();
+      runs.delete(el);
+      cancelAll(el);
+      delete el.dataset.state;
+    },
+  });
+</script>

@@ -48,5 +48,30 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin'],
     },
+    // /prototypes/eyes: the greeting cycles through one face per mood
+    {
+      provider: fontProviders.google(),
+      name: 'Fredoka',
+      cssVariable: '--font-fredoka',
+      weights: ['600'],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+    {
+      provider: fontProviders.google(),
+      name: 'Cormorant Garamond',
+      cssVariable: '--font-cormorant',
+      weights: ['500'],
+      styles: ['italic'],
+      subsets: ['latin'],
+    },
+    {
+      provider: fontProviders.google(),
+      name: 'Bangers',
+      cssVariable: '--font-bangers',
+      weights: ['400'],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
   ],
 });

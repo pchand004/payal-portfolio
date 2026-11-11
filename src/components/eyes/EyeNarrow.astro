@@ -1,0 +1,103 @@
+---
+/**
+ * Eye 1 · "narrow". Rests as a single closed lid line, opens to a narrow
+ * slit, holds, then slow-blinks at a random interval of 3–5s.
+ */
+---
+
+<div class="eye eye-narrow" data-eye-root="narrow">
+  <svg viewBox="0 0 160 80" aria-hidden="true">
+    <defs>
+      <clipPath id="narrow-slit">
+        <path d="M8 40 C44 26 116 26 152 40 C116 54 44 54 8 40 Z" />
+      </clipPath>
+    </defs>
+    <g class="lid" data-lid>
+      <g clip-path="url(#narrow-slit)">
+        <rect x="0" y="0" width="160" height="80" class="white" />
+        <circle cx="80" cy="40" r="15" class="iris" />
+        <circle cx="80" cy="40" r="7" class="pupil" />
+        <circle cx="75.5" cy="36" r="2" class="white" />
+      </g>
+      <path d="M8 40 C44 26 116 26 152 40 C116 54 44 54 8 40 Z" class="rim" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .eye-narrow svg {
+    display: block;
+    width: calc(var(--eye) * 1.1);
+    height: auto;
+    overflow: visible;
+  }
+  .lid {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transform: scaleY(0.04);
+  }
+  [data-state='open'] .lid {
+    transform: none;
+  }
+  .white {
+    fill: var(--eye-white);
+  }
+  .iris {
+    fill: #8a6a3e;
+  }
+  .pupil {
+    fill: #000;
+  }
+  .rim {
+    fill: none;
+    stroke: var(--eye-white);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+</style>
+
+<script>
+  import { registerEye, cancelAll, wait, done } from '../../scripts/eyes/registry';
+  import {
+    WAKE_MS, EASE_OUT, EASE_IN, NARROW_CLOSED_SCALE,
+    NARROW_BLINK_EVERY_MS, NARROW_BLINK_CLOSE_MS, NARROW_BLINK_HOLD_MS, NARROW_BLINK_OPEN_MS,
+  } from '../../scripts/eyes/motion';
+
+  const runs = new WeakMap<HTMLElement, AbortController>();
+  const closed = `scaleY(${NARROW_CLOSED_SCALE})`;
+  const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
+
+  async function loop(el: HTMLElement, signal: AbortSignal) {
+    const lid = el.querySelector<SVGGElement>('[data-lid]')!;
+    // the closed line fades in first (the stage does that), then the lid opens
+    await wait(WAKE_MS, signal);
+    await done(lid.animate([{ transform: closed }, { transform: 'scaleY(1)' }],
+      { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' }), signal);
+    for (;;) {
+      await wait(between(NARROW_BLINK_EVERY_MS), signal);
+      await done(lid.animate([{ transform: 'scaleY(1)' }, { transform: closed }],
+        { duration: NARROW_BLINK_CLOSE_MS, easing: EASE_IN, fill: 'forwards' }), signal);
+      await wait(NARROW_BLINK_HOLD_MS, signal);
+      await done(lid.animate([{ transform: closed }, { transform: 'scaleY(1)' }],
+        { duration: NARROW_BLINK_OPEN_MS, easing: EASE_OUT, fill: 'forwards' }), signal);
+    }
+  }
+
+  registerEye('narrow', {
+    wake(el, still) {
+      if (still) {
+        el.dataset.state = 'open';
+        return;
+      }
+      const run = new AbortController();
+      runs.set(el, run);
+      loop(el, run.signal).catch(() => {});
+    },
+    reset(el) {
+      runs.get(el)?.abort();
+      runs.delete(el);
+      cancelAll(el);
+      delete el.dataset.state;
+    },
+  });
+</script>
