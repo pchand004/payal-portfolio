@@ -26,27 +26,33 @@ interface Props {
 const PAIR_MAX_SHARE = 0.6; // the pair never spans more of its cell than this
 
 // ── Colours ────────────────────────────────────────────────────────────
-const WHITE = '#FFFFFF';
+const EYE_WHITE = '#EDEAE2'; // off-white, never pure white
+
+// ── Texture and light ──────────────────────────────────────────────────
+const EDGE_ROUGH_PX = 1.5; // the silhouette's edge wanders up to this far
+const EDGE_ROUGH_FREQ = 0.08; // noise frequency along the edge: higher is busier
+const GLOW_BLUR_PX = 24; // the soft glow round an awake pair
+const GLOW_OPACITY = 0.12;
 
 // ── Following ──────────────────────────────────────────────────────────
-const PUPIL_LAG_MS = 160; // time constant of the follow: higher is lazier
+const PUPIL_LAG_MS = 260; // time constant of the follow: higher is lazier
 const PUPIL_GAIN = 0.14; // pupil offset per px of cursor offset, before the edge stops it
 const PUPIL_SETTLE_PX = 0.05; // closer than this to the target counts as settled
 const REST_AFTER_MS = 2000; // cursor still this long: pupils ease back to rest
 
 // ── Life ───────────────────────────────────────────────────────────────
-const BLINK_EVERY_MS = [4000, 7000]; // random interval between blinks
-const BLINK_DOWN_MS = 150;
-const BLINK_UP_MS = 250;
+const BLINK_EVERY_MS = [6000, 10000]; // random interval between blinks
+const BLINK_DOWN_MS = 220;
+const BLINK_UP_MS = 380;
 const LINE = 0.03; // a closed eye's height, as a share of its open height
 const DRIFT_PX = 4; // how far the pair wanders (design px)
 const DRIFT_MS = 12000; // one wander loop
 
 // ── Wake and leave ─────────────────────────────────────────────────────
-const WAKE_MS = 700; // the line opening into the eyes
-const LEAVE_CLOSE_MS = 300; // the eyes closing to a line…
-const LEAVE_FADE_MS = 500; // …and the line disappearing (800 in all)
-const EASE_OPEN = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const WAKE_MS = 900; // the pair fading in as the line opens into the eyes
+const LEAVE_CLOSE_MS = 400; // the eyes closing to a line…
+const LEAVE_FADE_MS = 500; // …and the line disappearing (900 in all)
+const EASE_OPEN = 'cubic-bezier(0.33, 1, 0.68, 1)'; // a gentle ease-out, so the whole 900ms reads
 const EASE_CLOSE = 'cubic-bezier(0.55, 0, 0.75, 0.2)';
 
 const { shape: shapeName, pupil: pupilColour } = Astro.props;
@@ -71,8 +77,10 @@ const vars = [
   `--pair-w: ${pairW}`,
   `--gap: ${shape.gap}`,
   `--pair-max: ${PAIR_MAX_SHARE}`,
-  `--white: ${WHITE}`,
+  `--white: ${EYE_WHITE}`,
   `--pupil-colour: ${pupilColour}`,
+  `--glow-blur: ${GLOW_BLUR_PX}px`,
+  `--glow-opacity: ${GLOW_OPACITY}`,
 ].join('; ');
 ---
 
@@ -89,18 +97,25 @@ const vars = [
                 <clipPath id={`${uid}-${i}`}>
                   <path d={shape.path} transform={mirror ? flip : undefined} />
                 </clipPath>
+                {/* the edge wanders by a px or so: noise pushes the whole eye about */}
+                <filter id={`${uid}-rough-${i}`} x="-10%" y="-10%" width="120%" height="120%">
+                  <feTurbulence type="fractalNoise" baseFrequency={EDGE_ROUGH_FREQ} numOctaves="2" seed={i + 1} result="noise" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale={EDGE_ROUGH_PX * 2} xChannelSelector="R" yChannelSelector="G" />
+                </filter>
               </defs>
-              <path d={shape.path} transform={mirror ? flip : undefined} class="white" />
-              <g clip-path={`url(#${uid}-${i})`}>
-                {shape.pupil.kind === 'disc' ? (
-                  <circle cx={cx} cy={t.cy} r={shape.pupil.d / 2} class="pupil" data-pupil />
-                ) : (
-                  <rect
-                    x={cx - shape.pupil.w / 2} y={t.cy - shape.pupil.h / 2}
-                    width={shape.pupil.w} height={shape.pupil.h} rx={shape.pupil.w / 2}
-                    class="pupil" data-pupil
-                  />
-                )}
+              <g filter={`url(#${uid}-rough-${i})`}>
+                <path d={shape.path} transform={mirror ? flip : undefined} class="white" />
+                <g clip-path={`url(#${uid}-${i})`}>
+                  {shape.pupil.kind === 'disc' ? (
+                    <circle cx={cx} cy={t.cy} r={shape.pupil.d / 2} class="pupil" data-pupil />
+                  ) : (
+                    <rect
+                      x={cx - shape.pupil.w / 2} y={t.cy - shape.pupil.h / 2}
+                      width={shape.pupil.w} height={shape.pupil.h} rx={shape.pupil.w / 2}
+                      class="pupil" data-pupil
+                    />
+                  )}
+                </g>
               </g>
             </svg>
           </div>
@@ -124,6 +139,8 @@ const vars = [
     display: flex;
     align-items: center;
     gap: calc(var(--gap) * var(--s));
+    /* a faint glow round the pair, in the eye white's own colour */
+    filter: drop-shadow(0 0 var(--glow-blur) rgb(from var(--white) r g b / var(--glow-opacity)));
   }
   .eye {
     width: calc(var(--ew) * var(--s));
@@ -291,6 +308,8 @@ const vars = [
         return;
       }
       el.dataset.state = 'awake';
+      // the pair fades in while the line opens into the eyes
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: c.WAKE_MS, easing: c.EASE_OPEN });
       for (const eye of eyesOf(el)) {
         eye.animate([{ transform: `scaleY(${c.LINE})` }, { transform: 'scaleY(1)' }],
           { duration: c.WAKE_MS, easing: c.EASE_OPEN, fill: 'forwards' });
@@ -307,6 +326,7 @@ const vars = [
         return;
       }
       // close from wherever the eyes are (mid-open, mid-blink), then fade the line
+      el.getAnimations().forEach((a) => a.cancel()); // a wake fade still running
       const closes = eyesOf(el).map((eye) => {
         const from = getComputedStyle(eye).transform;
         eye.getAnimations().forEach((a) => a.cancel());

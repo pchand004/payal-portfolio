@@ -15,37 +15,46 @@
 import { Font } from 'astro:assets';
 import Prototype from '../../../layouts/Prototype.astro';
 import EyeFollowing from '../../../components/eyes/EyeFollowing.astro';
-import { CELL_W, CELL_H, GREETING_W } from '../../../scripts/eyes/motion';
+import {
+  CELL_W, CELL_H, BLACK, INK, GRAIN_OPACITY, GRAIN_FPS, GRAIN_TILE_PX, GRAIN_FREQ, GREETING_W,
+} from '../../../scripts/eyes/motion';
 import type { ShapeName } from '../../../scripts/eyes/shapes';
 
 // ── The ten pairs: silhouette and pupil colour ─────────────────────────
 // Numbered left to right, top to bottom: four in the top row, the far-left
 // and far-right of the middle row, four in the bottom row. The shapes, with
 // each one's pupil size and rest position, are in src/scripts/eyes/shapes.ts.
+// Pupils are very dark jewel tones that read as near-black.
 const pairs: { shape: ShapeName; pupil: string }[] = [
-  { shape: 'pills', pupil: '#2B5BD7' }, // 1 cobalt
-  { shape: 'circles', pupil: '#FF5A4E' }, // 2 coral
-  { shape: 'cutCircles', pupil: '#7A3FF2' }, // 3 violet
-  { shape: 'almonds', pupil: '#12A150' }, // 4 emerald
-  { shape: 'facets', pupil: '#F2A100' }, // 5 amber
-  { shape: 'halfMoons', pupil: '#F0388C' }, // 6 pink
-  { shape: 'teardrops', pupil: '#0FA3A3' }, // 7 teal
-  { shape: 'slivers', pupil: '#0A1118' }, // 8 near-black
-  { shape: 'slits', pupil: '#FF7A1A' }, // 9 orange
-  { shape: 'mismatched', pupil: '#7DBB00' }, // 10 lime
+  { shape: 'pills', pupil: '#14213D' }, // 1 navy
+  { shape: 'circles', pupil: '#4A0F17' }, // 2 oxblood
+  { shape: 'cutCircles', pupil: '#0F3D2E' }, // 3 forest
+  { shape: 'almonds', pupil: '#2E1437' }, // 4 aubergine
+  { shape: 'facets', pupil: '#0E3A40' }, // 5 ink teal
+  { shape: 'halfMoons', pupil: '#3B2414' }, // 6 umber
+  { shape: 'teardrops', pupil: '#1B1B4B' }, // 7 indigo
+  { shape: 'slivers', pupil: '#2A3312' }, // 8 moss
+  { shape: 'slits', pupil: '#3D0F2B' }, // 9 wine
+  { shape: 'mismatched', pupil: '#141414' }, // 10 charcoal
 ];
 
 const GREETING = 'hi there!';
 
-// One face per mood. `scale` evens out x-heights so the word reads the same
-// width in every face.
-const moods = [
-  { mood: 'fun', family: 'var(--font-fredoka)', scale: 1 },
-  { mood: 'elegant', family: 'var(--font-cormorant)', scale: 1.2 },
-  { mood: 'professional', family: 'var(--font-inter)', scale: 0.94 },
-  { mood: 'casual', family: 'var(--font-caveat)', scale: 1.18 },
-  { mood: 'comic', family: 'var(--font-bangers)', scale: 0.92 },
+// Three faces. `scale` evens them out so the word reads the same width in
+// each: a refined serif italic, a light grotesque sans, a monospace.
+const faces = [
+  { face: 'serif', family: 'var(--font-cormorant)', scale: 1.32 },
+  { face: 'sans', family: 'var(--font-inter)', scale: 1.04 },
+  { face: 'mono', family: 'var(--font-jetbrains-mono)', scale: 0.715 },
 ];
+
+// The film grain: one tile of noise, drawn by the browser
+const grainTile = encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${GRAIN_TILE_PX}" height="${GRAIN_TILE_PX}">` +
+    `<filter id="n"><feTurbulence type="fractalNoise" baseFrequency="${GRAIN_FREQ}" numOctaves="2" stitchTiles="stitch"/>` +
+    `<feColorMatrix type="saturate" values="0"/></filter>` +
+    `<rect width="100%" height="100%" filter="url(#n)"/></svg>`,
+);
 
 // Grid cells: desktop column/row on the 4 × 3 grid, and (mc, mr) on the
 // two-column phone grid, where the greeting takes row 3.
@@ -68,19 +77,21 @@ const cells = [
   description="A dark room that says hello. Click near the edges and something looks back."
 >
   <Fragment slot="head">
-    <Font cssVariable="--font-fredoka" preload />
     <Font cssVariable="--font-cormorant" preload />
-    <Font cssVariable="--font-caveat" preload />
-    <Font cssVariable="--font-bangers" preload />
+    <Font cssVariable="--font-jetbrains-mono" preload />
   </Fragment>
 
-  <main class="stage" style={`--frame-cell-w: ${CELL_W}; --frame-cell-h: ${CELL_H}; --greeting-w: ${GREETING_W}`} data-stage>
+  <main
+    class="stage"
+    style={`--frame-cell-w: ${CELL_W}; --frame-cell-h: ${CELL_H}; --greeting-w: ${GREETING_W}; --black: ${BLACK}; --ink: ${INK}; --grain-opacity: ${GRAIN_OPACITY}; --grain-step: ${1 / GRAIN_FPS}s; --grain-tile: url("data:image/svg+xml,${grainTile}")`}
+    data-stage
+  >
     <h1 class="greeting" aria-label={GREETING} data-greeting>
-      {moods.map((m, i) => (
+      {faces.map((f, i) => (
         <span
           class="face"
-          style={`font-family: ${m.family}; --scale: ${m.scale}`}
-          data-face={m.mood}
+          style={`font-family: ${f.family}; --scale: ${f.scale}`}
+          data-face={f.face}
           aria-hidden="true"
           data-on={i === 0 ? '' : undefined}
         >{[...GREETING].map((ch) => <span class="ch">{ch}</span>)}</span>
@@ -92,6 +103,8 @@ const cells = [
         <EyeFollowing {...pairs[n - 1]} />
       </div>
     ))}
+
+    <div class="grain" aria-hidden="true"></div>
   </main>
 </Prototype>
 
@@ -115,8 +128,8 @@ const cells = [
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: #000;
-    color: #fff;
+    background: var(--black);
+    color: var(--ink);
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -147,8 +160,8 @@ const cells = [
   }
   .face {
     grid-area: 1 / 1;
-    /* Fredoka 600 "hi there!" is about --greeting-w wide at 0.26 px of
-       font size per px of width; the other faces are scaled to match */
+    /* 0.26 px of font size per px of width gives about --greeting-w at
+       scale 1; each face's scale evens out its own width */
     font-size: calc(var(--greeting-w) * var(--u) * 0.26 * var(--scale));
     line-height: 1.3;
     visibility: hidden;
@@ -160,11 +173,36 @@ const cells = [
     display: inline-block;
     white-space: pre;
   }
-  .face[data-face='fun'] { font-weight: 600; }
-  .face[data-face='elegant'] { font-weight: 500; font-style: italic; }
-  .face[data-face='professional'] { font-weight: 600; letter-spacing: -0.02em; }
-  .face[data-face='casual'] { font-weight: 600; }
-  .face[data-face='comic'] { letter-spacing: 0.03em; }
+  .face[data-face='serif'] { font-weight: 500; font-style: italic; }
+  .face[data-face='sans'] { font-weight: 300; letter-spacing: -0.01em; }
+  .face[data-face='mono'] { font-weight: 400; }
+
+  /* Film grain over everything: a tile of noise, shifting a few times a
+     second. It sits above the eyes and takes no clicks. */
+  .grain {
+    position: fixed;
+    inset: -50%;
+    background: var(--grain-tile) 0 0 / 256px 256px repeat;
+    opacity: var(--grain-opacity);
+    pointer-events: none;
+    z-index: 2;
+    animation: grain calc(var(--grain-step) * 8) steps(1, end) infinite;
+  }
+  @keyframes grain {
+    0% { transform: translate(0, 0); }
+    12.5% { transform: translate(-7%, 4%); }
+    25% { transform: translate(3%, -9%); }
+    37.5% { transform: translate(-5%, -3%); }
+    50% { transform: translate(8%, 6%); }
+    62.5% { transform: translate(-2%, 9%); }
+    75% { transform: translate(6%, -5%); }
+    87.5% { transform: translate(-9%, -7%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .grain {
+      animation: none;
+    }
+  }
 
   /* Phones: two columns, cells in the same proportions, the page scrolls */
   @media (max-width: 599.98px) {

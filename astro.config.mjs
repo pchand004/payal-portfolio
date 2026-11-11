@@ -28,7 +28,7 @@ export default defineConfig({
       provider: fontProviders.google(),
       name: 'Inter',
       cssVariable: '--font-inter',
-      weights: ['400', '500', '600', '700'],
+      weights: ['300', '400', '500', '600', '700'],
       styles: ['normal'],
       subsets: ['latin'],
     },
@@ -48,15 +48,7 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin'],
     },
-    // /prototypes/eyes: the greeting cycles through one face per mood
-    {
-      provider: fontProviders.google(),
-      name: 'Fredoka',
-      cssVariable: '--font-fredoka',
-      weights: ['600'],
-      styles: ['normal'],
-      subsets: ['latin'],
-    },
+    // /prototypes/eyes: the greeting cycles through three faces
     {
       provider: fontProviders.google(),
       name: 'Cormorant Garamond',
@@ -67,8 +59,8 @@ export default defineConfig({
     },
     {
       provider: fontProviders.google(),
-      name: 'Bangers',
-      cssVariable: '--font-bangers',
+      name: 'JetBrains Mono',
+      cssVariable: '--font-jetbrains-mono',
       weights: ['400'],
       styles: ['normal'],
       subsets: ['latin'],

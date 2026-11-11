@@ -1,6 +1,7 @@
 /**
- * Eyes: the stage's grid and timings. Each eye keeps its own tunables at the
- * top of its component file.
+ * Eyes: the stage's grid, palette, grain and greeting. Each eye keeps its
+ * own tunables at the top of its component file; the silhouettes are in
+ * shapes.ts.
  */
 
 // ── Grid ───────────────────────────────────────────────────────────────
@@ -15,8 +16,18 @@ export const CELL_W = FRAME_W / COLS; // 360
 export const CELL_H = Math.round(FRAME_H / ROWS); // 341
 export const NARROW_MAX_PX = 599.98; // below this, two columns
 
+// ── Palette ────────────────────────────────────────────────────────────
+export const BLACK = '#000000';
+export const INK = '#EDEAE2'; // off-white: the greeting and the eye whites
+
+// ── Film grain over the whole page ─────────────────────────────────────
+export const GRAIN_OPACITY = 0.04;
+export const GRAIN_FPS = 8; // the grain shifts this many times a second
+export const GRAIN_TILE_PX = 256; // one tile of noise
+export const GRAIN_FREQ = 0.9; // noise frequency: higher is finer
+
 // ── Greeting ───────────────────────────────────────────────────────────
-export const GREETING_W = 400; // width at the design frame, roughly
+export const GREETING_W = 320; // width at the design frame, roughly
 export const GREETING_EVERY_MS = 2500;
 export const GREETING_ROLL_MS = 420; // one letter rolling out / in
 export const GREETING_STAGGER_MS = 35; // each letter a beat behind the last
