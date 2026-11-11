@@ -15,10 +15,6 @@ export const CELL_W = FRAME_W / COLS; // 360
 export const CELL_H = Math.round(FRAME_H / ROWS); // 341
 export const NARROW_MAX_PX = 599.98; // below this, two columns
 
-// ── Wake and leave ─────────────────────────────────────────────────────
-export const LEAVE_GRACE_MS = 600; // cursor outside the cell this long before the eye leaves
-export const TOUCH_HOLD_MS = 4000; // on touch, an eye stays awake this long
-
 // ── Greeting ───────────────────────────────────────────────────────────
 export const GREETING_W = 400; // width at the design frame, roughly
 export const GREETING_EVERY_MS = 2500;

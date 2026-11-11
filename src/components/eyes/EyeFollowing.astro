@@ -1,16 +1,41 @@
 ---
 /**
- * Eye pair · "Following". Two solid white upright pills with a near-black
- * pupil each. The pupils follow the cursor on a soft lag, all the way out to
- * the pill's edge, and sit low and to the left when the cursor is still or
- * far away. The pair drifts a few pixels so it is never frozen, and blinks
- * every few seconds. It wakes as a flat white line that opens into the pills,
- * and leaves by closing back to a line that disappears.
+ * Eye pair · "Following". Two solid white upright pills with a plain pupil
+ * each. The pupils follow the cursor anywhere on screen on a soft lag, all
+ * the way out to the pill's edge, and settle in the pair's own rest direction
+ * when the cursor has been still for a moment. The pair drifts a few pixels
+ * so it is never frozen, and blinks every few seconds. It wakes as a flat
+ * white line that opens into the pills, and leaves by closing back to a line
+ * that disappears.
  *
- * Every tunable value is here. Sizes are in px at the 1440 × 1024 design
- * frame and scale with the cell (--u is one design px). The script reads
- * timings and ratios from data-config.
+ * Each cell gives its pair a pupil colour and a rest direction (props).
+ * Every other tunable value is here. Sizes are in px at the 1440 × 1024
+ * design frame and scale with the cell (--u is one design px). The script
+ * reads timings and ratios from data-config.
  */
+export type RestDirection = keyof typeof REST;
+
+interface Props {
+  pupil: string; // the pupil colour
+  rest: RestDirection; // where the pupils settle
+}
+
+// ── Rest positions (design px from the pill's centre) ──────────────────
+// Sideways travel is short (16 at most) and vertical travel long (41), so
+// the straight directions reach further up and down than the diagonals.
+const REST = {
+  'low-left': [-15, 12],
+  'low-right': [15, 12],
+  'up-left': [-15, -12],
+  'up-right': [15, -12],
+  left: [-15, 0],
+  right: [15, 0],
+  up: [0, -26],
+  down: [0, 26],
+} as const;
+
+const { pupil: pupilColour, rest } = Astro.props;
+const [REST_X, REST_Y] = REST[rest];
 
 // ── Shape (design px) ──────────────────────────────────────────────────
 const PILL_W = 67;
@@ -21,16 +46,12 @@ const PUPIL = 35;
 
 // ── Colours ────────────────────────────────────────────────────────────
 const WHITE = '#FFFFFF';
-const PUPIL_COLOUR = '#0A1118';
 
 // ── Following ──────────────────────────────────────────────────────────
 const PUPIL_LAG_MS = 160; // time constant of the follow: higher is lazier
 const PUPIL_GAIN = 0.14; // pupil offset per px of cursor offset, before the edge stops it
 const PUPIL_SETTLE_PX = 0.05; // closer than this to the target counts as settled
-const REST_X = -15; // where the pupils sit at rest, from the pill's centre (design px)
-const REST_Y = 12;
-const REST_AFTER_MS = 1800; // cursor still this long: pupils ease back to rest
-const FAR_PX = 700; // cursor further than this from the pair counts as far away
+const REST_AFTER_MS = 2000; // cursor still this long: pupils ease back to rest
 
 // ── Life ───────────────────────────────────────────────────────────────
 const BLINK_EVERY_MS = [4000, 7000]; // random interval between blinks
@@ -48,7 +69,7 @@ const EASE_OPEN = 'cubic-bezier(0.16, 1, 0.3, 1)';
 const EASE_CLOSE = 'cubic-bezier(0.55, 0, 0.75, 0.2)';
 
 const config = {
-  PUPIL_LAG_MS, PUPIL_GAIN, PUPIL_SETTLE_PX, REST_X, REST_Y, REST_AFTER_MS, FAR_PX,
+  PILL_W, PUPIL_LAG_MS, PUPIL_GAIN, PUPIL_SETTLE_PX, REST_X, REST_Y, REST_AFTER_MS,
   BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_UP_MS, LINE, DRIFT_PX, DRIFT_MS,
   WAKE_MS, LEAVE_CLOSE_MS, LEAVE_FADE_MS, EASE_OPEN, EASE_CLOSE,
 };
@@ -59,7 +80,7 @@ const vars = [
   `--pair-max: ${PAIR_MAX_SHARE}`,
   `--pupil: ${PUPIL}`,
   `--white: ${WHITE}`,
-  `--pupil-colour: ${PUPIL_COLOUR}`,
+  `--pupil-colour: ${pupilColour}`,
 ].join('; ');
 ---
 
@@ -117,8 +138,8 @@ const vars = [
   import { registerEye, cancelAll } from '../../scripts/eyes/registry';
 
   interface Config {
-    PUPIL_LAG_MS: number; PUPIL_GAIN: number; PUPIL_SETTLE_PX: number;
-    REST_X: number; REST_Y: number; REST_AFTER_MS: number; FAR_PX: number;
+    PILL_W: number; PUPIL_LAG_MS: number; PUPIL_GAIN: number; PUPIL_SETTLE_PX: number;
+    REST_X: number; REST_Y: number; REST_AFTER_MS: number;
     BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_UP_MS: number; LINE: number;
     DRIFT_PX: number; DRIFT_MS: number;
     WAKE_MS: number; LEAVE_CLOSE_MS: number; LEAVE_FADE_MS: number; EASE_OPEN: string; EASE_CLOSE: string;
@@ -132,11 +153,11 @@ const vars = [
   const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
   const pillsOf = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('[data-pill]')];
 
-  /** One design px in real px, read from the first pill. */
-  const unit = (el: HTMLElement) => parseFloat(getComputedStyle(el).getPropertyValue('--s')) || 1;
+  /** One design px in real px: how big the first pill came out. */
+  const unit = (el: HTMLElement, c: Config) => pillsOf(el)[0].offsetWidth / c.PILL_W;
 
   function restOf(el: HTMLElement, c: Config) {
-    const s = unit(el);
+    const s = unit(el, c);
     return { x: c.REST_X * s, y: c.REST_Y * s };
   }
 
@@ -158,7 +179,7 @@ const vars = [
     let blinkTimer = 0;
 
     // ── Life: the drift loops on its own layer; blinks squash the pills
-    const d = c.DRIFT_PX * unit(el);
+    const d = c.DRIFT_PX * unit(el, c);
     el.querySelector('[data-drift]')!.animate([
       { transform: 'translate(0, 0)' },
       { transform: `translate(${d}px, ${-d * 0.6}px)` },
@@ -180,9 +201,10 @@ const vars = [
     }
     blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
 
-    // ── Following: each pupil eases toward a point inside its pill
-    // Pill centres come from layout, not from the drifting or blinking
-    // boxes, so a still cursor gives a still target.
+    // ── Following: each pupil eases toward a point inside its pill, from
+    // wherever the cursor is on screen. Pill centres come from layout, not
+    // from the drifting or blinking boxes, so a still cursor gives a still
+    // target.
     function centreOf(pill: HTMLElement) {
       const root = el.getBoundingClientRect();
       return {
@@ -196,7 +218,6 @@ const vars = [
       const centre = centreOf(pill);
       const dx = cursor.x - centre.x;
       const dy = cursor.y - centre.y;
-      if (Math.hypot(dx, dy) > c.FAR_PX) return rest;
 
       // The pupil's centre may go anywhere inside an inner pill: the pill
       // shrunk by the pupil's radius all round. At the edge of that, the

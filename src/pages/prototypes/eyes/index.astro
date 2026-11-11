@@ -4,17 +4,34 @@
  *
  * A pitch-black stage laid out on a 4 × 3 grid: ten eye cells round the
  * edge, "hi there!" across the two middle cells, cycling through five
- * typefaces. Click (or tap) inside a cell to wake its eye pair; it plays
- * while the cursor stays in the cell, then closes and disappears. For now
- * only the top-left cell has a pair: "Following".
+ * typefaces. Click (or tap) inside a cell to wake its eye pair; it stays
+ * awake, its pupils following the cursor anywhere on screen, until you
+ * click somewhere else. While a pair is awake the greeting holds its
+ * typeface. Every cell has the same "Following" pair in its own colour.
  *
- * The grid and stage timings live in src/scripts/eyes/motion.ts; each eye
+ * The grid and stage timings live in src/scripts/eyes/motion.ts; the pair
  * keeps its own tunables at the top of its component.
  */
 import { Font } from 'astro:assets';
 import Prototype from '../../../layouts/Prototype.astro';
-import EyeFollowing from '../../../components/eyes/EyeFollowing.astro';
+import EyeFollowing, { type RestDirection } from '../../../components/eyes/EyeFollowing.astro';
 import { CELL_W, CELL_H, GREETING_W } from '../../../scripts/eyes/motion';
+
+// ── The ten pairs: pupil colour and where the pupils settle ────────────
+// Numbered left to right, top to bottom: four in the top row, the far-left
+// and far-right of the middle row, four in the bottom row.
+const pairs: { pupil: string; rest: RestDirection }[] = [
+  { pupil: '#2B5BD7', rest: 'low-left' }, // 1 cobalt
+  { pupil: '#FF5A4E', rest: 'up' }, // 2 coral
+  { pupil: '#7A3FF2', rest: 'right' }, // 3 violet
+  { pupil: '#12A150', rest: 'low-right' }, // 4 emerald
+  { pupil: '#F2A100', rest: 'right' }, // 5 amber, toward the greeting
+  { pupil: '#F0388C', rest: 'left' }, // 6 pink, toward the greeting
+  { pupil: '#0FA3A3', rest: 'up-left' }, // 7 teal
+  { pupil: '#0A1118', rest: 'down' }, // 8 near-black
+  { pupil: '#FF7A1A', rest: 'left' }, // 9 orange
+  { pupil: '#7DBB00', rest: 'up-right' }, // 10 lime
+];
 
 const GREETING = 'hi there!';
 
@@ -31,7 +48,7 @@ const moods = [
 // Grid cells: desktop column/row on the 4 × 3 grid, and (mc, mr) on the
 // two-column phone grid, where the greeting takes row 3.
 const cells = [
-  { n: 1, c: 1, r: 1, mc: 1, mr: 1, eye: EyeFollowing },
+  { n: 1, c: 1, r: 1, mc: 1, mr: 1 },
   { n: 2, c: 2, r: 1, mc: 2, mr: 1 },
   { n: 3, c: 3, r: 1, mc: 1, mr: 2 },
   { n: 4, c: 4, r: 1, mc: 2, mr: 2 },
@@ -68,9 +85,9 @@ const cells = [
       ))}
     </h1>
 
-    {cells.map(({ n, c, r, mc, mr, eye: Eye }) => (
+    {cells.map(({ n, c, r, mc, mr }) => (
       <div class="cell" style={`--c: ${c}; --r: ${r}; --mc: ${mc}; --mr: ${mr}`} data-cell={n}>
-        {Eye && <Eye />}
+        <EyeFollowing {...pairs[n - 1]} />
       </div>
     ))}
   </main>
@@ -171,10 +188,7 @@ const cells = [
 
 <script>
   import { getEye } from '../../../scripts/eyes/registry';
-  import {
-    LEAVE_GRACE_MS, TOUCH_HOLD_MS,
-    GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL,
-  } from '../../../scripts/eyes/motion';
+  import { GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL } from '../../../scripts/eyes/motion';
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const stage = document.querySelector<HTMLElement>('[data-stage]')!;
@@ -209,22 +223,22 @@ const cells = [
     }, () => {});
   }
 
+  // While a pair is awake the greeting holds whichever face is showing.
   setInterval(() => {
+    if (awake) return;
     const out = faces[face];
     face = (face + 1) % faces.length;
     roll(out, faces[face]);
   }, GREETING_EVERY_MS);
 
   // ── Eyes ────────────────────────────────────────────────────────────
-  // One pair awake at a time. The focal area is the cell itself. With a
-  // mouse, the pair leaves once the cursor has been outside its cell for a
-  // grace period; on touch it leaves after a hold or when another cell is
-  // tapped.
+  // One pair awake at a time. A click (or tap) in a cell wakes its pair,
+  // which then stays awake wherever the cursor goes. A click anywhere else
+  // closes it; if that click is in another eye cell, that pair wakes as the
+  // first one closes.
   interface Awake {
     cell: HTMLElement;
     root: HTMLElement;
-    grace?: number; // the leave timer, mouse
-    hold?: number; // the leave timer, touch
   }
   let awake: Awake | null = null;
 
@@ -248,10 +262,8 @@ const cells = [
 
   function leave() {
     if (!awake) return;
-    const { root, grace, hold } = awake;
+    const { root } = awake;
     awake = null;
-    clearTimeout(grace);
-    clearTimeout(hold);
     const eye = getEye(root.dataset.eyeRoot!)!;
     eye.leave(root, reduced.matches).then(() => {
       // unless it was woken again meanwhile
@@ -262,37 +274,8 @@ const cells = [
   stage.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const cell = cellAt(e.clientX, e.clientY);
-    if (!cell || !eyeOf(cell)) return;
-    if (awake?.cell === cell) {
-      if (e.pointerType === 'touch') holdFor(awake);
-      return;
-    }
+    if (awake?.cell === cell) return;
     leave();
-    wake(cell);
-    if (awake && e.pointerType === 'touch') holdFor(awake);
-  });
-
-  function holdFor(a: Awake) {
-    clearTimeout(a.hold);
-    a.hold = window.setTimeout(() => awake === a && leave(), TOUCH_HOLD_MS);
-  }
-
-  function outside(a: Awake) {
-    if (a.grace) return;
-    a.grace = window.setTimeout(() => awake === a && leave(), LEAVE_GRACE_MS);
-  }
-
-  function inside(a: Awake) {
-    clearTimeout(a.grace);
-    a.grace = undefined;
-  }
-
-  stage.addEventListener('pointermove', (e) => {
-    if (e.pointerType === 'touch' || !awake || awake.hold) return;
-    if (cellAt(e.clientX, e.clientY) === awake.cell) inside(awake);
-    else outside(awake);
-  });
-  document.documentElement.addEventListener('pointerleave', (e) => {
-    if (e.pointerType !== 'touch' && awake && !awake.hold) outside(awake);
+    if (cell && eyeOf(cell)) wake(cell);
   });
 </script>
