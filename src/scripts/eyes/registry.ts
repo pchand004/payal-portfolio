@@ -24,20 +24,3 @@ export function getEye(name: string): EyeBehaviour | undefined {
 export function cancelAll(el: Element) {
   for (const a of el.getAnimations({ subtree: true })) a.cancel();
 }
-
-export const wait = (ms: number, signal: AbortSignal) =>
-  new Promise<void>((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    signal.addEventListener('abort', () => {
-      clearTimeout(t);
-      reject(signal.reason);
-    }, { once: true });
-  });
-
-/** Resolve when the animation finishes; reject if the eye is reset first. */
-export function done(a: Animation, signal: AbortSignal) {
-  return new Promise<void>((resolve, reject) => {
-    a.finished.then(() => resolve(), () => reject(signal.reason));
-    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
-  });
-}

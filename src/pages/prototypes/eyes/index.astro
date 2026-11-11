@@ -5,15 +5,14 @@
  * A pitch-black stage with "Hi there!" in the middle, cycling through five
  * typefaces, and ten invisible eye points around it. Click (or tap) near a
  * point to wake its eye; it plays while the cursor stays near, then dims and
- * fades back to black. Batch 1: eyes 1, 2 and 5. The rest are placeholders.
+ * fades back to black. For now only point 2 has an eye: the "Following" pair.
  *
- * Timings live in src/scripts/eyes/motion.ts.
+ * Stage timings live in src/scripts/eyes/motion.ts; each eye keeps its own
+ * tunables at the top of its component.
  */
 import { Font } from 'astro:assets';
 import Prototype from '../../../layouts/Prototype.astro';
-import EyeNarrow from '../../../components/eyes/EyeNarrow.astro';
-import EyeLooksAround from '../../../components/eyes/EyeLooksAround.astro';
-import EyePsychedelic from '../../../components/eyes/EyePsychedelic.astro';
+import EyeFollowing from '../../../components/eyes/EyeFollowing.astro';
 
 const GREETING = 'Hi there!';
 
@@ -29,11 +28,11 @@ const moods = [
 // Positions as % of the viewport: desktop (x, y) and under 600px (mx, my),
 // where the points stack two by five with the greeting between rows 2 and 3.
 const points = [
-  { n: 1, x: 12, y: 18, mx: 25, my: 10, eye: EyeNarrow },
-  { n: 2, x: 37, y: 18, mx: 75, my: 10, eye: EyeLooksAround },
+  { n: 1, x: 12, y: 18, mx: 25, my: 10 },
+  { n: 2, x: 37, y: 18, mx: 75, my: 10, eye: EyeFollowing },
   { n: 3, x: 62, y: 18, mx: 25, my: 26 },
   { n: 4, x: 87, y: 18, mx: 75, my: 26 },
-  { n: 5, x: 12, y: 50, mx: 25, my: 60, eye: EyePsychedelic },
+  { n: 5, x: 12, y: 50, mx: 25, my: 60 },
   { n: 6, x: 88, y: 50, mx: 75, my: 60 },
   { n: 7, x: 12, y: 82, mx: 25, my: 75 },
   { n: 8, x: 37, y: 82, mx: 75, my: 75 },
@@ -86,7 +85,6 @@ const points = [
     height: 100%;
   }
   .stage {
-    --eye: clamp(150px, 15vw, 230px);
     --eye-white: #ece8df;
     position: fixed;
     inset: 0;
@@ -133,11 +131,12 @@ const points = [
   .face[data-face='casual'] { font-weight: 600; }
   .face[data-face='comic'] { letter-spacing: 0.03em; }
 
-  /* Points: centred on their coordinates, invisible until woken */
+  /* Points: centred on their coordinates, invisible until woken. An eye too
+     big to sit there whole is nudged in (--keep-x/y are set by the script). */
   .point {
     position: absolute;
-    left: var(--x);
-    top: var(--y);
+    left: clamp(var(--keep-x, 0px), var(--x), calc(100% - var(--keep-x, 0px)));
+    top: clamp(var(--keep-y, 0px), var(--y), calc(100% - var(--keep-y, 0px)));
     translate: -50% -50%;
     opacity: 0;
     pointer-events: none;
@@ -148,8 +147,8 @@ const points = [
       top: 43%;
     }
     .point {
-      left: var(--mx);
-      top: var(--my);
+      left: clamp(var(--keep-x, 0px), var(--mx), calc(100% - var(--keep-x, 0px)));
+      top: clamp(var(--keep-y, 0px), var(--my), calc(100% - var(--keep-y, 0px)));
     }
   }
 </style>
@@ -157,8 +156,8 @@ const points = [
 <script>
   import { getEye } from '../../../scripts/eyes/registry';
   import {
-    WAKE_MS, FADE_MS, EASE_OUT, EASE_IN, FOCAL_RADIUS_PX, TOUCH_HOLD_MS,
-    DIM_OPACITY, DIM_SHARE, WAKE_SCALE, FADE_SCALE,
+    WAKE_MS, FADE_MS, EASE_OUT, EASE_IN, FOCAL_RADIUS_PX, FOCAL_PAD_PX, TOUCH_HOLD_MS,
+    EDGE_PX, WAKE_SCALE, FADE_SCALE,
     GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL,
   } from '../../../scripts/eyes/motion';
 
@@ -210,6 +209,22 @@ const points = [
 
   const eyeOf = (point: HTMLElement) => point.querySelector<HTMLElement>('[data-eye-root]');
 
+  // Keep a large eye whole on screen: its centre stays half its size plus a
+  // margin inside each edge. offsetWidth ignores the wake/fade scale.
+  function fit() {
+    for (const p of points) {
+      if (!eyeOf(p)) continue;
+      p.style.setProperty('--keep-x', `${p.offsetWidth / 2 + EDGE_PX}px`);
+      p.style.setProperty('--keep-y', `${p.offsetHeight / 2 + EDGE_PX}px`);
+    }
+  }
+  fit();
+  addEventListener('resize', fit);
+
+  /** A point's focal area: the standard radius, or wider for a large eye. */
+  const radius = (point: HTMLElement) =>
+    eyeOf(point) ? Math.max(FOCAL_RADIUS_PX, Math.max(point.offsetWidth, point.offsetHeight) / 2 + FOCAL_PAD_PX) : FOCAL_RADIUS_PX;
+
   function centre(point: HTMLElement) {
     const r = point.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -223,10 +238,10 @@ const points = [
   /** The nearest point whose focal area contains (x, y), if any. */
   function pointAt(x: number, y: number) {
     let best: HTMLElement | null = null;
-    let bestD = FOCAL_RADIUS_PX;
+    let bestD = Infinity;
     for (const p of points) {
       const d = distance(p, x, y);
-      if (d <= bestD) {
+      if (d <= radius(p) && d < bestD) {
         best = p;
         bestD = d;
       }
@@ -244,8 +259,9 @@ const points = [
     point.getAnimations().forEach((a) => a.cancel());
     eye.reset(root);
 
+    const grow = reduced.matches ? 1 : WAKE_SCALE;
     point.animate(
-      [{ opacity: from, transform: `scale(${WAKE_SCALE})` }, { opacity: 1, transform: 'scale(1)' }],
+      [{ opacity: from, transform: `scale(${grow})` }, { opacity: 1, transform: 'scale(1)' }],
       { duration: WAKE_MS, easing: EASE_OUT, fill: 'forwards' },
     );
     eye.wake(root, reduced.matches);
@@ -261,11 +277,7 @@ const points = [
     const from = Number(getComputedStyle(point).opacity);
     point.getAnimations().forEach((a) => a.cancel());
     const fade = point.animate(
-      [
-        { opacity: from, transform: 'scale(1)' },
-        { opacity: Math.min(from, DIM_OPACITY), offset: DIM_SHARE },
-        { opacity: 0, transform: `scale(${FADE_SCALE})` },
-      ],
+      [{ opacity: from, transform: 'scale(1)' }, { opacity: 0, transform: `scale(${FADE_SCALE})` }],
       { duration: FADE_MS, easing: EASE_IN, fill: 'forwards' },
     );
     fade.finished.then(() => {
@@ -296,7 +308,7 @@ const points = [
   // Mouse and pen: the eye stays awake while the cursor is in its focal area
   stage.addEventListener('pointermove', (e) => {
     if (e.pointerType === 'touch' || !awake || awake.timer) return;
-    if (distance(awake.point, e.clientX, e.clientY) > FOCAL_RADIUS_PX) sleep();
+    if (distance(awake.point, e.clientX, e.clientY) > radius(awake.point)) sleep();
   });
   document.documentElement.addEventListener('pointerleave', (e) => {
     if (e.pointerType !== 'touch' && awake && !awake.timer) sleep();

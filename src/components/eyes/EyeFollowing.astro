@@ -1,0 +1,233 @@
+---
+/**
+ * Eye pair · "Following". Two solid white ovals, almost touching, with acid
+ * green pupils that follow the cursor on a soft lag and settle when it stops.
+ * The pair drifts a few pixels and breathes slightly so it is never frozen,
+ * and blinks every few seconds.
+ *
+ * Every tunable value is here. The script reads them from data-config.
+ */
+
+// ── Size ───────────────────────────────────────────────────────────────
+const PAIR_WIDTH_VW = 30; // the pair spans this much of the viewport width…
+const PAIR_MIN_PX = 260; // …but never less than this
+const EYE_GAP = 0.03; // space between the ovals, as a share of the pair width
+const EYE_ASPECT = 5 / 4; // height ÷ width: taller than wide, about 4:5
+const PUPIL_SIZE = 0.28; // pupil diameter, as a share of one eye's width
+const PUPIL_CORE = 0.42; // black centre, as a share of the pupil
+const PUPIL_MARGIN = 0.03; // white kept round the pupil at full reach, share of eye width
+
+// ── Colours ────────────────────────────────────────────────────────────
+const EYE_WHITE = '#FFFFFF';
+const PUPIL_COLOUR = '#B6F23A';
+const PUPIL_CORE_COLOUR = '#000000';
+
+// ── Following ──────────────────────────────────────────────────────────
+const PUPIL_LAG_MS = 140; // time constant of the follow: higher is lazier
+const PUPIL_REACH_PX = 320; // cursor this far from an eye pushes the pupil to the rim
+const PUPIL_SETTLE_PX = 0.05; // closer than this to the target counts as settled
+
+// ── Life ───────────────────────────────────────────────────────────────
+const BLINK_EVERY_MS = [3000, 7000]; // random interval between blinks
+const BLINK_DOWN_MS = 150;
+const BLINK_UP_MS = 250;
+const BLINK_FLAT = 0.04; // how flat the line gets, as a share of full height
+const DRIFT_PX = 4; // how far the pair wanders
+const DRIFT_MS = 11000; // one wander loop
+const BREATHE_SCALE = 1.012; // very slight
+const BREATHE_MS = 3600; // one half-breath
+
+const config = {
+  PUPIL_SIZE, PUPIL_MARGIN, PUPIL_LAG_MS, PUPIL_REACH_PX, PUPIL_SETTLE_PX,
+  BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_UP_MS, BLINK_FLAT,
+  DRIFT_PX, DRIFT_MS, BREATHE_SCALE, BREATHE_MS,
+};
+const vars = [
+  `--pair-w: max(${PAIR_MIN_PX}px, ${PAIR_WIDTH_VW}vw)`,
+  `--gap: ${EYE_GAP}`,
+  `--aspect: ${EYE_ASPECT}`,
+  `--pupil: ${PUPIL_SIZE}`,
+  `--core: ${PUPIL_CORE}`,
+  `--white: ${EYE_WHITE}`,
+  `--pupil-colour: ${PUPIL_COLOUR}`,
+  `--core-colour: ${PUPIL_CORE_COLOUR}`,
+].join('; ');
+---
+
+<div class="pair-root" style={vars} data-eye-root="following" data-config={JSON.stringify(config)}>
+  <div class="drift" data-drift>
+    <div class="pair" data-breathe>
+      {[0, 1].map(() => (
+        <div class="eye" data-eye>
+          <div class="pupil" data-pupil><span class="core"></span></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .pair-root {
+    --eye-w: calc(var(--pair-w) * (1 - var(--gap)) / 2);
+  }
+  .pair {
+    display: flex;
+    gap: calc(var(--pair-w) * var(--gap));
+    width: var(--pair-w);
+  }
+  .eye {
+    position: relative;
+    width: var(--eye-w);
+    height: calc(var(--eye-w) * var(--aspect));
+    border-radius: 50%;
+    background: var(--white);
+  }
+  .pupil {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--eye-w) * var(--pupil));
+    aspect-ratio: 1;
+    margin: calc(var(--eye-w) * var(--pupil) / -2) 0 0 calc(var(--eye-w) * var(--pupil) / -2);
+    border-radius: 50%;
+    background: var(--pupil-colour);
+    display: grid;
+    place-items: center;
+  }
+  .core {
+    width: calc(var(--core) * 100%);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--core-colour);
+  }
+</style>
+
+<script>
+  import { registerEye, cancelAll } from '../../scripts/eyes/registry';
+
+  interface Config {
+    PUPIL_SIZE: number; PUPIL_MARGIN: number;
+    PUPIL_LAG_MS: number; PUPIL_REACH_PX: number; PUPIL_SETTLE_PX: number;
+    BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_UP_MS: number; BLINK_FLAT: number;
+    DRIFT_PX: number; DRIFT_MS: number; BREATHE_SCALE: number; BREATHE_MS: number;
+  }
+
+  interface Run {
+    stop(): void;
+  }
+  const runs = new WeakMap<HTMLElement, Run>();
+  const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
+
+  function start(el: HTMLElement): Run {
+    const c: Config = JSON.parse(el.dataset.config!);
+    const eyes = [...el.querySelectorAll<HTMLElement>('[data-eye]')];
+    const pupils = eyes.map((e) => e.querySelector<HTMLElement>('[data-pupil]')!);
+    const pos = eyes.map(() => ({ x: 0, y: 0 }));
+    let cursor: { x: number; y: number } | null = null;
+    let frame = 0;
+    let last = 0;
+    let blinkTimer = 0;
+
+    // ── Life: drift and breathe run as two looping animations on two layers
+    const d = c.DRIFT_PX;
+    el.querySelector('[data-drift]')!.animate([
+      { transform: 'translate(0, 0)' },
+      { transform: `translate(${d}px, ${-d * 0.6}px)` },
+      { transform: `translate(${-d * 0.5}px, ${d * 0.8}px)` },
+      { transform: `translate(${-d}px, ${-d * 0.3}px)` },
+      { transform: 'translate(0, 0)' },
+    ], { duration: c.DRIFT_MS, easing: 'ease-in-out', iterations: Infinity });
+    el.querySelector('[data-breathe]')!.animate(
+      [{ transform: 'scale(1)' }, { transform: `scale(${c.BREATHE_SCALE})` }],
+      { duration: c.BREATHE_MS, easing: 'ease-in-out', direction: 'alternate', iterations: Infinity },
+    );
+
+    // ── Blink: both ovals squash to a line and reopen, then wait 3–7s
+    function blink() {
+      for (const eye of eyes) {
+        eye.animate([
+          { transform: 'scaleY(1)', easing: 'cubic-bezier(0.55, 0, 1, 0.45)' },
+          { transform: `scaleY(${c.BLINK_FLAT})`, offset: c.BLINK_DOWN_MS / (c.BLINK_DOWN_MS + c.BLINK_UP_MS), easing: 'cubic-bezier(0, 0.55, 0.45, 1)' },
+          { transform: 'scaleY(1)' },
+        ], { duration: c.BLINK_DOWN_MS + c.BLINK_UP_MS });
+      }
+      blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
+    }
+    blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
+
+    // ── Following: each pupil eases toward a point inside its oval
+    function target(eye: HTMLElement) {
+      if (!cursor) return { x: 0, y: 0 };
+      // Eye centres come from layout, not from the drifting, breathing,
+      // blinking boxes, so a still cursor gives a still target.
+      const root = el.getBoundingClientRect();
+      const w = eye.offsetWidth;
+      const h = eye.offsetHeight;
+      const dx = cursor.x - (root.left + root.width / 2 + eye.offsetLeft + w / 2 - el.offsetWidth / 2);
+      const dy = cursor.y - (root.top + root.height / 2 + eye.offsetTop + h / 2 - el.offsetHeight / 2);
+      const dist = Math.hypot(dx, dy);
+      if (dist < 0.5) return { x: 0, y: 0 };
+      // the pupil centre may travel anywhere inside an inner oval, so the
+      // whole disc (plus a margin of white) stays inside the eye
+      const keep = (c.PUPIL_SIZE / 2 + c.PUPIL_MARGIN) * w;
+      const a = w / 2 - keep;
+      const b = h / 2 - keep;
+      const cos = dx / dist;
+      const sin = dy / dist;
+      const rim = 1 / Math.hypot(cos / a, sin / b);
+      const reach = rim * Math.min(1, dist / c.PUPIL_REACH_PX);
+      return { x: cos * reach, y: sin * reach };
+    }
+
+    function tick(now: number) {
+      const dt = last ? Math.min(now - last, 64) : 16;
+      last = now;
+      const k = 1 - Math.exp(-dt / c.PUPIL_LAG_MS);
+      let moving = false;
+      eyes.forEach((eye, i) => {
+        const t = target(eye);
+        const p = pos[i];
+        p.x += (t.x - p.x) * k;
+        p.y += (t.y - p.y) * k;
+        if (Math.abs(t.x - p.x) < c.PUPIL_SETTLE_PX && Math.abs(t.y - p.y) < c.PUPIL_SETTLE_PX) {
+          p.x = t.x; // land exactly on the target, then stop: no jitter
+          p.y = t.y;
+        } else {
+          moving = true;
+        }
+        pupils[i].style.transform = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px)`;
+      });
+      frame = moving ? requestAnimationFrame(tick) : 0;
+      if (!moving) last = 0;
+    }
+
+    function follow(e: PointerEvent) {
+      cursor = { x: e.clientX, y: e.clientY };
+      if (!frame) frame = requestAnimationFrame(tick);
+    }
+    window.addEventListener('pointermove', follow);
+    window.addEventListener('pointerdown', follow);
+
+    return {
+      stop() {
+        window.removeEventListener('pointermove', follow);
+        window.removeEventListener('pointerdown', follow);
+        cancelAnimationFrame(frame);
+        clearTimeout(blinkTimer);
+      },
+    };
+  }
+
+  registerEye('following', {
+    wake(el, still) {
+      if (still) return; // reduced motion: open, pupils centred, still
+      runs.set(el, start(el));
+    },
+    reset(el) {
+      runs.get(el)?.stop();
+      runs.delete(el);
+      cancelAll(el);
+      el.querySelectorAll<HTMLElement>('[data-pupil]').forEach((p) => (p.style.transform = ''));
+    },
+  });
+</script>
