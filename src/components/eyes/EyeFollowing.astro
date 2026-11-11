@@ -1,48 +1,29 @@
 ---
 /**
- * Eye pair · "Following". Two solid white upright pills with a plain pupil
- * each. The pupils follow the cursor anywhere on screen on a soft lag, all
- * the way out to the pill's edge, and settle in the pair's own rest direction
- * when the cursor has been still for a moment. The pair drifts a few pixels
- * so it is never frozen, and blinks every few seconds. It wakes as a flat
- * white line that opens into the pills, and leaves by closing back to a line
- * that disappears.
+ * Eye pair · "Following". Two solid white silhouettes (one of the shapes in
+ * src/scripts/eyes/shapes.ts) with a plain pupil each, clipped to the white.
+ * The pupils follow the cursor anywhere on screen on a soft lag, as far as
+ * the shape's travel ellipse lets them, and settle at the shape's rest
+ * position when the cursor has been still for a moment. The pair drifts a
+ * few pixels so it is never frozen, and blinks every few seconds: the
+ * silhouettes squash to a flat line and reopen. It wakes as a flat white
+ * line that opens into the eyes, and leaves by closing back to a line that
+ * disappears.
  *
- * Each cell gives its pair a pupil colour and a rest direction (props).
- * Every other tunable value is here. Sizes are in px at the 1440 × 1024
- * design frame and scale with the cell (--u is one design px). The script
- * reads timings and ratios from data-config.
+ * Each cell gives its pair a shape and a pupil colour (props). Every other
+ * tunable value is here. Sizes are in px at the 1440 × 1024 design frame and
+ * scale with the cell (--u is one design px). The script reads timings and
+ * the shape's geometry from data-config.
  */
-export type RestDirection = keyof typeof REST;
+import { SHAPES, type ShapeName } from '../../scripts/eyes/shapes';
 
 interface Props {
+  shape: ShapeName;
   pupil: string; // the pupil colour
-  rest: RestDirection; // where the pupils settle
 }
 
-// ── Rest positions (design px from the pill's centre) ──────────────────
-// Sideways travel is short (16 at most) and vertical travel long (41), so
-// the straight directions reach further up and down than the diagonals.
-const REST = {
-  'low-left': [-15, 12],
-  'low-right': [15, 12],
-  'up-left': [-15, -12],
-  'up-right': [15, -12],
-  left: [-15, 0],
-  right: [15, 0],
-  up: [0, -26],
-  down: [0, 26],
-} as const;
-
-const { pupil: pupilColour, rest } = Astro.props;
-const [REST_X, REST_Y] = REST[rest];
-
-// ── Shape (design px) ──────────────────────────────────────────────────
-const PILL_W = 67;
-const PILL_H = 118;
-const GAP = 33; // between the pills; the pair is 167 wide, ~46% of a 360 cell
+// ── Size ───────────────────────────────────────────────────────────────
 const PAIR_MAX_SHARE = 0.6; // the pair never spans more of its cell than this
-const PUPIL = 35;
 
 // ── Colours ────────────────────────────────────────────────────────────
 const WHITE = '#FFFFFF';
@@ -57,28 +38,39 @@ const REST_AFTER_MS = 2000; // cursor still this long: pupils ease back to rest
 const BLINK_EVERY_MS = [4000, 7000]; // random interval between blinks
 const BLINK_DOWN_MS = 150;
 const BLINK_UP_MS = 250;
-const LINE = 0.03; // a closed pill's height, as a share of its open height
+const LINE = 0.03; // a closed eye's height, as a share of its open height
 const DRIFT_PX = 4; // how far the pair wanders (design px)
 const DRIFT_MS = 12000; // one wander loop
 
 // ── Wake and leave ─────────────────────────────────────────────────────
-const WAKE_MS = 700; // the line opening into the pills
-const LEAVE_CLOSE_MS = 300; // the pills closing to a line…
+const WAKE_MS = 700; // the line opening into the eyes
+const LEAVE_CLOSE_MS = 300; // the eyes closing to a line…
 const LEAVE_FADE_MS = 500; // …and the line disappearing (800 in all)
 const EASE_OPEN = 'cubic-bezier(0.16, 1, 0.3, 1)';
 const EASE_CLOSE = 'cubic-bezier(0.55, 0, 0.75, 0.2)';
 
+const { shape: shapeName, pupil: pupilColour } = Astro.props;
+const shape = SHAPES[shapeName];
+const uid = `eye-${shapeName}-${Math.random().toString(36).slice(2, 8)}`;
+
+// the two eyes: the right one may be mirrored, and may be a different size
+const eyes = [
+  { scale: 1, mirror: false },
+  { scale: shape.rightScale ?? 1, mirror: shape.mirror ?? false },
+];
+const pairW = shape.w * (1 + (shape.rightScale ?? 1)) + shape.gap;
+const flip = `translate(${shape.w} 0) scale(-1 1)`;
+
 const config = {
-  PILL_W, PUPIL_LAG_MS, PUPIL_GAIN, PUPIL_SETTLE_PX, REST_X, REST_Y, REST_AFTER_MS,
+  w: shape.w, h: shape.h, pupil: shape.pupil, travel: shape.travel, rest: shape.rest,
+  PUPIL_LAG_MS, PUPIL_GAIN, PUPIL_SETTLE_PX, REST_AFTER_MS,
   BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_UP_MS, LINE, DRIFT_PX, DRIFT_MS,
   WAKE_MS, LEAVE_CLOSE_MS, LEAVE_FADE_MS, EASE_OPEN, EASE_CLOSE,
 };
 const vars = [
-  `--pill-w: ${PILL_W}`,
-  `--pill-h: ${PILL_H}`,
-  `--gap: ${GAP}`,
+  `--pair-w: ${pairW}`,
+  `--gap: ${shape.gap}`,
   `--pair-max: ${PAIR_MAX_SHARE}`,
-  `--pupil: ${PUPIL}`,
   `--white: ${WHITE}`,
   `--pupil-colour: ${pupilColour}`,
 ].join('; ');
@@ -87,11 +79,33 @@ const vars = [
 <div class="pair-root" style={vars} data-eye-root="following" data-config={JSON.stringify(config)}>
   <div class="drift" data-drift>
     <div class="pair">
-      {[0, 1].map(() => (
-        <div class="pill" data-pill>
-          <div class="pupil" data-pupil></div>
-        </div>
-      ))}
+      {eyes.map(({ scale, mirror }, i) => {
+        const t = shape.travel;
+        const cx = mirror ? shape.w - t.cx : t.cx;
+        return (
+          <div class="eye" style={`--ew: ${shape.w * scale}; --eh: ${shape.h * scale}`} data-eye data-scale={scale}>
+            <svg viewBox={`0 0 ${shape.w} ${shape.h}`} aria-hidden="true">
+              <defs>
+                <clipPath id={`${uid}-${i}`}>
+                  <path d={shape.path} transform={mirror ? flip : undefined} />
+                </clipPath>
+              </defs>
+              <path d={shape.path} transform={mirror ? flip : undefined} class="white" />
+              <g clip-path={`url(#${uid}-${i})`}>
+                {shape.pupil.kind === 'disc' ? (
+                  <circle cx={cx} cy={t.cy} r={shape.pupil.d / 2} class="pupil" data-pupil />
+                ) : (
+                  <rect
+                    x={cx - shape.pupil.w / 2} y={t.cy - shape.pupil.h / 2}
+                    width={shape.pupil.w} height={shape.pupil.h} rx={shape.pupil.w / 2}
+                    class="pupil" data-pupil
+                  />
+                )}
+              </g>
+            </svg>
+          </div>
+        );
+      })}
     </div>
   </div>
 </div>
@@ -99,7 +113,7 @@ const vars = [
 <style>
   .pair-root {
     /* one design px, capped so the pair never passes --pair-max of the cell */
-    --s: min(var(--u), calc(var(--cell-w) * var(--pair-max) / (var(--pill-w) * 2 + var(--gap))));
+    --s: min(var(--u), calc(var(--cell-w) * var(--pair-max) / var(--pair-w)));
     opacity: 0;
   }
   [data-state='open'],
@@ -108,29 +122,28 @@ const vars = [
   }
   .pair {
     display: flex;
+    align-items: center;
     gap: calc(var(--gap) * var(--s));
   }
-  .pill {
-    position: relative;
-    width: calc(var(--pill-w) * var(--s));
-    height: calc(var(--pill-h) * var(--s));
-    border-radius: calc(var(--pill-w) * var(--s));
-    background: var(--white);
-    overflow: hidden;
+  .eye {
+    width: calc(var(--ew) * var(--s));
+    height: calc(var(--eh) * var(--s));
     transform: scaleY(0.03);
   }
-  [data-state='open'] .pill {
+  [data-state='open'] .eye {
     transform: none;
   }
+  .eye svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .white {
+    fill: var(--white);
+  }
   .pupil {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: calc(var(--pupil) * var(--s));
-    height: calc(var(--pupil) * var(--s));
-    margin: calc(var(--pupil) * var(--s) / -2) 0 0 calc(var(--pupil) * var(--s) / -2);
-    border-radius: 50%;
-    background: var(--pupil-colour);
+    fill: var(--pupil-colour);
   }
 </style>
 
@@ -138,8 +151,10 @@ const vars = [
   import { registerEye, cancelAll } from '../../scripts/eyes/registry';
 
   interface Config {
-    PILL_W: number; PUPIL_LAG_MS: number; PUPIL_GAIN: number; PUPIL_SETTLE_PX: number;
-    REST_X: number; REST_Y: number; REST_AFTER_MS: number;
+    w: number; h: number;
+    travel: { cx: number; cy: number; rx: number; ry: number };
+    rest: [number, number];
+    PUPIL_LAG_MS: number; PUPIL_GAIN: number; PUPIL_SETTLE_PX: number; REST_AFTER_MS: number;
     BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_UP_MS: number; LINE: number;
     DRIFT_PX: number; DRIFT_MS: number;
     WAKE_MS: number; LEAVE_CLOSE_MS: number; LEAVE_FADE_MS: number; EASE_OPEN: string; EASE_CLOSE: string;
@@ -151,35 +166,31 @@ const vars = [
   const runs = new WeakMap<HTMLElement, Run>();
   const cfg = (el: HTMLElement): Config => JSON.parse(el.dataset.config!);
   const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
-  const pillsOf = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('[data-pill]')];
+  const eyesOf = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('[data-eye]')];
 
-  /** One design px in real px: how big the first pill came out. */
-  const unit = (el: HTMLElement, c: Config) => pillsOf(el)[0].offsetWidth / c.PILL_W;
+  /** One design px of this eye in real px: how big it came out. */
+  const unit = (eye: HTMLElement, c: Config) => eye.offsetWidth / (c.w * Number(eye.dataset.scale));
 
-  function restOf(el: HTMLElement, c: Config) {
-    const s = unit(el, c);
-    return { x: c.REST_X * s, y: c.REST_Y * s };
-  }
-
+  /** Pupil offsets are in the shape's own units, so they scale with the eye. */
   function putPupils(el: HTMLElement, p: { x: number; y: number }) {
-    el.querySelectorAll<HTMLElement>('[data-pupil]').forEach((pupil) => {
+    el.querySelectorAll<SVGElement>('[data-pupil]').forEach((pupil) => {
       pupil.style.transform = `translate(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px)`;
     });
   }
 
   function start(el: HTMLElement, c: Config): Run {
-    const pills = pillsOf(el);
-    const pupils = pills.map((p) => p.querySelector<HTMLElement>('[data-pupil]')!);
-    const rest = restOf(el, c);
-    const pos = pills.map(() => ({ ...rest }));
+    const eyes = eyesOf(el);
+    const pupils = eyes.map((e) => e.querySelector<SVGElement>('[data-pupil]')!);
+    const rest = { x: c.rest[0], y: c.rest[1] };
+    const pos = eyes.map(() => ({ ...rest }));
     let cursor: { x: number; y: number } | null = null;
     let lastMove = 0;
     let frame = 0;
     let last = 0;
     let blinkTimer = 0;
 
-    // ── Life: the drift loops on its own layer; blinks squash the pills
-    const d = c.DRIFT_PX * unit(el, c);
+    // ── Life: the drift loops on its own layer; blinks squash the eyes
+    const d = c.DRIFT_PX * unit(eyes[0], c);
     el.querySelector('[data-drift]')!.animate([
       { transform: 'translate(0, 0)' },
       { transform: `translate(${d}px, ${-d * 0.6}px)` },
@@ -190,8 +201,8 @@ const vars = [
 
     function blink() {
       const total = c.BLINK_DOWN_MS + c.BLINK_UP_MS;
-      for (const pill of pills) {
-        pill.animate([
+      for (const eye of eyes) {
+        eye.animate([
           { transform: 'scaleY(1)', easing: 'cubic-bezier(0.55, 0, 1, 0.45)' },
           { transform: `scaleY(${c.LINE})`, offset: c.BLINK_DOWN_MS / total, easing: 'cubic-bezier(0, 0.55, 0.45, 1)' },
           { transform: 'scaleY(1)' },
@@ -201,39 +212,29 @@ const vars = [
     }
     blinkTimer = window.setTimeout(blink, between(c.BLINK_EVERY_MS));
 
-    // ── Following: each pupil eases toward a point inside its pill, from
-    // wherever the cursor is on screen. Pill centres come from layout, not
-    // from the drifting or blinking boxes, so a still cursor gives a still
-    // target.
-    function centreOf(pill: HTMLElement) {
+    // ── Following: each pupil eases toward a point inside its shape's
+    // travel ellipse, from wherever the cursor is on screen. Eye centres
+    // come from layout, not from the drifting or blinking boxes, so a still
+    // cursor gives a still target.
+    function centreOf(eye: HTMLElement) {
       const root = el.getBoundingClientRect();
       return {
-        x: root.left + root.width / 2 + pill.offsetLeft + pill.offsetWidth / 2 - el.offsetWidth / 2,
-        y: root.top + root.height / 2 + pill.offsetTop + pill.offsetHeight / 2 - el.offsetHeight / 2,
+        x: root.left + root.width / 2 + eye.offsetLeft + eye.offsetWidth / 2 - el.offsetWidth / 2,
+        y: root.top + root.height / 2 + eye.offsetTop + eye.offsetHeight / 2 - el.offsetHeight / 2,
       };
     }
 
-    function target(pill: HTMLElement, now: number) {
+    function target(eye: HTMLElement, now: number) {
       if (!cursor || now - lastMove > c.REST_AFTER_MS) return rest;
-      const centre = centreOf(pill);
-      const dx = cursor.x - centre.x;
-      const dy = cursor.y - centre.y;
-
-      // The pupil's centre may go anywhere inside an inner pill: the pill
-      // shrunk by the pupil's radius all round. At the edge of that, the
-      // pupil touches the pill's edge.
-      const w = pill.offsetWidth;
-      const h = pill.offsetHeight;
-      const r = pupils[0].offsetWidth / 2;
-      const R = w / 2 - r; // radius of the inner pill's rounded ends
-      const straight = Math.max(0, (h - w) / 2); // half the inner pill's straight part
-      let x = dx * c.PUPIL_GAIN;
-      let y = dy * c.PUPIL_GAIN;
-      const cy = Math.max(-straight, Math.min(straight, y)); // nearest end-circle centre
-      const dist = Math.hypot(x, y - cy);
-      if (dist > R) {
-        x *= R / dist;
-        y = cy + (y - cy) * (R / dist);
+      const centre = centreOf(eye);
+      const s = unit(eye, c);
+      let x = ((cursor.x - centre.x) * c.PUPIL_GAIN) / s;
+      let y = ((cursor.y - centre.y) * c.PUPIL_GAIN) / s;
+      const { rx, ry } = c.travel;
+      const t = Math.hypot(x / rx, y / ry);
+      if (t > 1) {
+        x /= t;
+        y /= t;
       }
       return { x, y };
     }
@@ -243,8 +244,8 @@ const vars = [
       last = now;
       const k = 1 - Math.exp(-dt / c.PUPIL_LAG_MS);
       let moving = false;
-      pills.forEach((pill, i) => {
-        const t = target(pill, now);
+      eyes.forEach((eye, i) => {
+        const t = target(eye, now);
         const p = pos[i];
         p.x += (t.x - p.x) * k;
         p.y += (t.y - p.y) * k;
@@ -284,14 +285,14 @@ const vars = [
   registerEye('following', {
     wake(el, still) {
       const c = cfg(el);
-      putPupils(el, restOf(el, c));
+      putPupils(el, { x: c.rest[0], y: c.rest[1] });
       if (still) {
         el.dataset.state = 'open';
         return;
       }
       el.dataset.state = 'awake';
-      for (const pill of pillsOf(el)) {
-        pill.animate([{ transform: `scaleY(${c.LINE})` }, { transform: 'scaleY(1)' }],
+      for (const eye of eyesOf(el)) {
+        eye.animate([{ transform: `scaleY(${c.LINE})` }, { transform: 'scaleY(1)' }],
           { duration: c.WAKE_MS, easing: c.EASE_OPEN, fill: 'forwards' });
       }
       runs.set(el, start(el, c));
@@ -305,11 +306,11 @@ const vars = [
         await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: c.LEAVE_FADE_MS, fill: 'forwards' }).finished;
         return;
       }
-      // close from wherever the pills are (mid-open, mid-blink), then fade the line
-      const closes = pillsOf(el).map((pill) => {
-        const from = getComputedStyle(pill).transform;
-        pill.getAnimations().forEach((a) => a.cancel());
-        return pill.animate([{ transform: from }, { transform: `scaleY(${c.LINE})` }],
+      // close from wherever the eyes are (mid-open, mid-blink), then fade the line
+      const closes = eyesOf(el).map((eye) => {
+        const from = getComputedStyle(eye).transform;
+        eye.getAnimations().forEach((a) => a.cancel());
+        return eye.animate([{ transform: from }, { transform: `scaleY(${c.LINE})` }],
           { duration: c.LEAVE_CLOSE_MS, easing: c.EASE_CLOSE, fill: 'forwards' }).finished;
       });
       await Promise.all(closes);

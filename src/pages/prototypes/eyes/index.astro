@@ -14,23 +14,25 @@
  */
 import { Font } from 'astro:assets';
 import Prototype from '../../../layouts/Prototype.astro';
-import EyeFollowing, { type RestDirection } from '../../../components/eyes/EyeFollowing.astro';
+import EyeFollowing from '../../../components/eyes/EyeFollowing.astro';
 import { CELL_W, CELL_H, GREETING_W } from '../../../scripts/eyes/motion';
+import type { ShapeName } from '../../../scripts/eyes/shapes';
 
-// ── The ten pairs: pupil colour and where the pupils settle ────────────
+// ── The ten pairs: silhouette and pupil colour ─────────────────────────
 // Numbered left to right, top to bottom: four in the top row, the far-left
-// and far-right of the middle row, four in the bottom row.
-const pairs: { pupil: string; rest: RestDirection }[] = [
-  { pupil: '#2B5BD7', rest: 'low-left' }, // 1 cobalt
-  { pupil: '#FF5A4E', rest: 'up' }, // 2 coral
-  { pupil: '#7A3FF2', rest: 'right' }, // 3 violet
-  { pupil: '#12A150', rest: 'low-right' }, // 4 emerald
-  { pupil: '#F2A100', rest: 'right' }, // 5 amber, toward the greeting
-  { pupil: '#F0388C', rest: 'left' }, // 6 pink, toward the greeting
-  { pupil: '#0FA3A3', rest: 'up-left' }, // 7 teal
-  { pupil: '#0A1118', rest: 'down' }, // 8 near-black
-  { pupil: '#FF7A1A', rest: 'left' }, // 9 orange
-  { pupil: '#7DBB00', rest: 'up-right' }, // 10 lime
+// and far-right of the middle row, four in the bottom row. The shapes, with
+// each one's pupil size and rest position, are in src/scripts/eyes/shapes.ts.
+const pairs: { shape: ShapeName; pupil: string }[] = [
+  { shape: 'pills', pupil: '#2B5BD7' }, // 1 cobalt
+  { shape: 'circles', pupil: '#FF5A4E' }, // 2 coral
+  { shape: 'cutCircles', pupil: '#7A3FF2' }, // 3 violet
+  { shape: 'almonds', pupil: '#12A150' }, // 4 emerald
+  { shape: 'facets', pupil: '#F2A100' }, // 5 amber
+  { shape: 'halfMoons', pupil: '#F0388C' }, // 6 pink
+  { shape: 'teardrops', pupil: '#0FA3A3' }, // 7 teal
+  { shape: 'slivers', pupil: '#0A1118' }, // 8 near-black
+  { shape: 'slits', pupil: '#FF7A1A' }, // 9 orange
+  { shape: 'mismatched', pupil: '#7DBB00' }, // 10 lime
 ];
 
 const GREETING = 'hi there!';
