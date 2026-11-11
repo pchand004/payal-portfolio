@@ -1,0 +1,62 @@
+[
+  {
+    "n": 1,
+    "src": "/prototypes/eyes-photo/cell-1.png",
+    "w": 189,
+    "h": 138
+  },
+  {
+    "n": 2,
+    "src": "/prototypes/eyes-photo/cell-2.png",
+    "w": 174,
+    "h": 73
+  },
+  {
+    "n": 3,
+    "src": "/prototypes/eyes-photo/cell-3.png",
+    "w": 271,
+    "h": 61
+  },
+  {
+    "n": 4,
+    "src": "/prototypes/eyes-photo/cell-4.png",
+    "w": 270,
+    "h": 78
+  },
+  {
+    "n": 5,
+    "src": "/prototypes/eyes-photo/cell-5.png",
+    "w": 145,
+    "h": 89
+  },
+  {
+    "n": 6,
+    "src": "/prototypes/eyes-photo/cell-6.png",
+    "w": 120,
+    "h": 98
+  },
+  {
+    "n": 7,
+    "src": "/prototypes/eyes-photo/cell-7.png",
+    "w": 270,
+    "h": 78
+  },
+  {
+    "n": 8,
+    "src": "/prototypes/eyes-photo/cell-8.png",
+    "w": 248,
+    "h": 57
+  },
+  {
+    "n": 9,
+    "src": "/prototypes/eyes-photo/cell-9.png",
+    "w": 174,
+    "h": 73
+  },
+  {
+    "n": 10,
+    "src": "/prototypes/eyes-photo/cell-10.png",
+    "w": 189,
+    "h": 138
+  }
+]

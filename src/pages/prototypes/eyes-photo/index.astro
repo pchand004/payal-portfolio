@@ -1,0 +1,279 @@
+---
+/**
+ * Eyes, photo version — a live prototype.
+ *
+ * The same stage as /prototypes/eyes (a 4 × 3 grid, ten eye cells round
+ * the edge, "hi there!" across the middle cycling through three typefaces,
+ * film grain), but each pair is a picture cut from the mockup rather than a
+ * drawing. A click inside a cell wakes its pair, and it stays: nothing
+ * closes it, and any number can be awake at once. The greeting keeps
+ * cycling.
+ *
+ * The pictures and their sizes come from src/data/eyes-photo.json, written
+ * by the crop script from the mockup. Grid and greeting constants live in
+ * src/scripts/eyes/motion.ts.
+ */
+import { Font } from 'astro:assets';
+import Prototype from '../../../layouts/Prototype.astro';
+import EyePhoto from '../../../components/eyes/EyePhoto.astro';
+import {
+  CELL_W, CELL_H, BLACK, INK, GRAIN_OPACITY, GRAIN_FPS, GRAIN_TILE_PX, GRAIN_FREQ, GREETING_W,
+} from '../../../scripts/eyes/motion';
+import photos from '../../../data/eyes-photo.json';
+
+const GREETING = 'hi there!';
+
+// Three faces. `scale` evens them out so the word reads the same width in
+// each: a refined serif italic, a light grotesque sans, a monospace.
+const faces = [
+  { face: 'serif', family: 'var(--font-cormorant)', scale: 1.32 },
+  { face: 'sans', family: 'var(--font-inter)', scale: 1.04 },
+  { face: 'mono', family: 'var(--font-jetbrains-mono)', scale: 0.715 },
+];
+
+// Grid cells: desktop column/row on the 4 × 3 grid, and (mc, mr) on the
+// two-column phone grid, where the greeting takes row 3.
+const cells = [
+  { n: 1, c: 1, r: 1, mc: 1, mr: 1 },
+  { n: 2, c: 2, r: 1, mc: 2, mr: 1 },
+  { n: 3, c: 3, r: 1, mc: 1, mr: 2 },
+  { n: 4, c: 4, r: 1, mc: 2, mr: 2 },
+  { n: 5, c: 1, r: 2, mc: 1, mr: 4 },
+  { n: 6, c: 4, r: 2, mc: 2, mr: 4 },
+  { n: 7, c: 1, r: 3, mc: 1, mr: 5 },
+  { n: 8, c: 2, r: 3, mc: 2, mr: 5 },
+  { n: 9, c: 3, r: 3, mc: 1, mr: 6 },
+  { n: 10, c: 4, r: 3, mc: 2, mr: 6 },
+];
+
+// The film grain: one tile of noise, drawn by the browser
+const grainTile = encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${GRAIN_TILE_PX}" height="${GRAIN_TILE_PX}">` +
+    `<filter id="n"><feTurbulence type="fractalNoise" baseFrequency="${GRAIN_FREQ}" numOctaves="2" stitchTiles="stitch"/>` +
+    `<feColorMatrix type="saturate" values="0"/></filter>` +
+    `<rect width="100%" height="100%" filter="url(#n)"/></svg>`,
+);
+---
+
+<Prototype
+  title="Eyes, photo · a prototype by Payal Chand"
+  description="A dark room that says hello. Click near the edges and something looks back, and keeps looking."
+>
+  <Fragment slot="head">
+    <Font cssVariable="--font-cormorant" preload />
+    <Font cssVariable="--font-jetbrains-mono" preload />
+  </Fragment>
+
+  <main
+    class="stage"
+    style={`--frame-cell-w: ${CELL_W}; --frame-cell-h: ${CELL_H}; --greeting-w: ${GREETING_W}; --black: ${BLACK}; --ink: ${INK}; --grain-opacity: ${GRAIN_OPACITY}; --grain-step: ${1 / GRAIN_FPS}s; --grain-tile: url("data:image/svg+xml,${grainTile}")`}
+    data-stage
+  >
+    <h1 class="greeting" aria-label={GREETING} data-greeting>
+      {faces.map((f, i) => (
+        <span
+          class="face"
+          style={`font-family: ${f.family}; --scale: ${f.scale}`}
+          data-face={f.face}
+          aria-hidden="true"
+          data-on={i === 0 ? '' : undefined}
+        >{[...GREETING].map((ch) => <span class="ch">{ch}</span>)}</span>
+      ))}
+    </h1>
+
+    {cells.map(({ n, c, r, mc, mr }) => {
+      const photo = photos.find((p) => p.n === n)!;
+      return (
+        <div class="cell" style={`--c: ${c}; --r: ${r}; --mc: ${mc}; --mr: ${mr}`} data-cell={n}>
+          <EyePhoto src={photo.src} w={photo.w} h={photo.h} />
+        </div>
+      );
+    })}
+
+    <div class="grain" aria-hidden="true"></div>
+  </main>
+</Prototype>
+
+<style>
+  :global(html),
+  :global(body.proto-body) {
+    background: #000;
+    margin: 0;
+    min-height: 100%;
+  }
+
+  /* The grid: four columns by three rows filling the viewport. --u is one
+     design px (the cell's width over its width in the 1440 frame). */
+  .stage {
+    --cell-w: 25vw;
+    --cell-h: calc(100vh / 3);
+    --u: calc(var(--cell-w) / var(--frame-cell-w));
+    display: grid;
+    grid-template-columns: repeat(4, var(--cell-w));
+    grid-template-rows: repeat(3, var(--cell-h));
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--black);
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .cell {
+    grid-column: var(--c);
+    grid-row: var(--r);
+    display: grid;
+    place-items: center;
+  }
+
+  /* Greeting: across the two middle cells. Every face is stacked in one
+     spot and clipped top and bottom so the letters roll out of and into
+     the line rather than crossing each other. */
+  .greeting {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    align-self: center;
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+    clip-path: inset(0 -50vw);
+  }
+  .face {
+    grid-area: 1 / 1;
+    font-size: calc(var(--greeting-w) * var(--u) * 0.26 * var(--scale));
+    line-height: 1.3;
+    visibility: hidden;
+  }
+  .face[data-on] {
+    visibility: visible;
+  }
+  .ch {
+    display: inline-block;
+    white-space: pre;
+  }
+  .face[data-face='serif'] { font-weight: 500; font-style: italic; }
+  .face[data-face='sans'] { font-weight: 300; letter-spacing: -0.01em; }
+  .face[data-face='mono'] { font-weight: 400; }
+
+  /* Film grain over everything: a tile of noise, shifting a few times a
+     second. It sits above the eyes and takes no clicks. */
+  .grain {
+    position: fixed;
+    inset: -50%;
+    background: var(--grain-tile) 0 0 / 256px 256px repeat;
+    opacity: var(--grain-opacity);
+    pointer-events: none;
+    z-index: 2;
+    animation: grain calc(var(--grain-step) * 8) steps(1, end) infinite;
+  }
+  @keyframes grain {
+    0% { transform: translate(0, 0); }
+    12.5% { transform: translate(-7%, 4%); }
+    25% { transform: translate(3%, -9%); }
+    37.5% { transform: translate(-5%, -3%); }
+    50% { transform: translate(8%, 6%); }
+    62.5% { transform: translate(-2%, 9%); }
+    75% { transform: translate(6%, -5%); }
+    87.5% { transform: translate(-9%, -7%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .grain {
+      animation: none;
+    }
+  }
+
+  /* Phones: two columns, cells in the same proportions, the page scrolls */
+  @media (max-width: 599.98px) {
+    .stage {
+      --cell-w: 50vw;
+      --cell-h: calc(var(--cell-w) * var(--frame-cell-h) / var(--frame-cell-w));
+      grid-template-columns: repeat(2, var(--cell-w));
+      grid-template-rows: repeat(6, var(--cell-h));
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
+    }
+    .cell {
+      grid-column: var(--mc);
+      grid-row: var(--mr);
+    }
+    .greeting {
+      grid-column: 1 / 3;
+      grid-row: 3;
+    }
+  }
+</style>
+
+<script>
+  import { getEye } from '../../../scripts/eyes/registry';
+  import { GREETING_EVERY_MS, GREETING_ROLL_MS, GREETING_STAGGER_MS, EASE_ROLL } from '../../../scripts/eyes/motion';
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const stage = document.querySelector<HTMLElement>('[data-stage]')!;
+  const cells = [...stage.querySelectorAll<HTMLElement>('[data-cell]')];
+
+  // ── Greeting ────────────────────────────────────────────────────────
+  // Letter by letter, the old face rolls up out of the line as the new one
+  // rolls up into it, each letter a beat behind the one before. It keeps
+  // cycling whatever the eyes are doing.
+  const greeting = stage.querySelector<HTMLElement>('[data-greeting]')!;
+  const faces = [...greeting.querySelectorAll<HTMLElement>('[data-face]')];
+  let face = 0;
+
+  function roll(out: HTMLElement, next: HTMLElement) {
+    next.dataset.on = '';
+    if (reduced.matches) {
+      delete out.dataset.on;
+      return;
+    }
+    const h = greeting.offsetHeight;
+    const letters = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('.ch')];
+    const timing = (i: number): KeyframeAnimationOptions =>
+      ({ duration: GREETING_ROLL_MS, delay: i * GREETING_STAGGER_MS, easing: EASE_ROLL, fill: 'both' });
+
+    const leaving = letters(out).map((ch, i) =>
+      ch.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-h}px)` }], timing(i)));
+    const arriving = letters(next).map((ch, i) =>
+      ch.animate([{ transform: `translateY(${h}px)` }, { transform: 'translateY(0)' }], timing(i)));
+
+    Promise.all([...leaving, ...arriving].map((a) => a.finished)).then(() => {
+      delete out.dataset.on;
+      [...leaving, ...arriving].forEach((a) => a.cancel());
+    }, () => {});
+  }
+
+  setInterval(() => {
+    const out = faces[face];
+    face = (face + 1) % faces.length;
+    roll(out, faces[face]);
+  }, GREETING_EVERY_MS);
+
+  // ── Eyes ────────────────────────────────────────────────────────────
+  // A click (or tap) in a cell wakes its pair, which then stays awake for
+  // good. Any number can be awake at once.
+  const awake = new Set<HTMLElement>();
+
+  function cellAt(x: number, y: number) {
+    return cells.find((cell) => {
+      const r = cell.getBoundingClientRect();
+      return x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+    }) ?? null;
+  }
+
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const cell = cellAt(e.clientX, e.clientY);
+    if (!cell || awake.has(cell)) return;
+    const root = cell.querySelector<HTMLElement>('[data-eye-root]');
+    const eye = root && getEye(root.dataset.eyeRoot!);
+    if (!root || !eye) return;
+    eye.wake(root, reduced.matches);
+    awake.add(cell);
+  });
+</script>

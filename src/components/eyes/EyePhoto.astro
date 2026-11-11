@@ -1,0 +1,155 @@
+---
+/**
+ * Eye pair · "Photo". A pair cut out of the mockup as a picture, shown at
+ * the size it was drawn (one design px = --u). A click fades it in as a
+ * lid lifts, and it stays: no tracking, no closing. It blinks now and then,
+ * a black lid dropping and lifting over the picture, so it is not frozen.
+ *
+ * Every tunable value is here. The script reads timings from data-config.
+ */
+interface Props {
+  src: string;
+  w: number; // the picture's size in design px (it is cut 1:1 from the frame)
+  h: number;
+  alt?: string;
+}
+
+// ── Size and light ─────────────────────────────────────────────────────
+const PHOTO_SCALE = 1; // shown at this share of the size it was drawn
+const GLOW_BLUR_PX = 28; // the soft glow round an awake pair
+const GLOW_OPACITY = 0.08;
+const GLOW_COLOUR = '#EDEAE2';
+const LID = '#000000'; // the lid is the dark of the room
+
+// ── Life ───────────────────────────────────────────────────────────────
+const BLINK_EVERY_MS = [4000, 8000]; // random interval between blinks
+const BLINK_DOWN_MS = 80; // the lid dropping…
+const BLINK_HOLD_MS = 30; // …resting closed…
+const BLINK_UP_MS = 130; // …and lifting
+const DOUBLE_BLINK_CHANCE = 0.25; // some blinks come twice
+const DOUBLE_BLINK_GAP_MS = 160;
+
+// ── Wake ───────────────────────────────────────────────────────────────
+const WAKE_FADE_MS = 400; // the pair fading in, lid down…
+const WAKE_LID_DELAY_MS = 120; // …then, after a beat…
+const WAKE_LID_MS = 320; // …the lid lifting
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const EASE_IN = 'cubic-bezier(0.64, 0, 0.78, 0)';
+
+const { src, w, h, alt = '' } = Astro.props;
+const config = {
+  BLINK_EVERY_MS, BLINK_DOWN_MS, BLINK_HOLD_MS, BLINK_UP_MS, DOUBLE_BLINK_CHANCE, DOUBLE_BLINK_GAP_MS,
+  WAKE_FADE_MS, WAKE_LID_DELAY_MS, WAKE_LID_MS, EASE_OUT, EASE_IN,
+};
+const vars = [
+  `--pw: ${w}`,
+  `--ph: ${h}`,
+  `--photo-scale: ${PHOTO_SCALE}`,
+  `--glow: rgb(from ${GLOW_COLOUR} r g b / ${GLOW_OPACITY})`,
+  `--glow-blur: ${GLOW_BLUR_PX}px`,
+  `--lid: ${LID}`,
+].join('; ');
+---
+
+<div class="photo-root" style={vars} data-eye-root="photo" data-config={JSON.stringify(config)}>
+  <div class="photo">
+    <img src={src} width={w} height={h} alt={alt} loading="lazy" decoding="async" />
+    <div class="lid" data-lid></div>
+  </div>
+</div>
+
+<style>
+  .photo-root {
+    opacity: 0;
+  }
+  [data-state='open'],
+  [data-state='awake'] {
+    opacity: 1;
+  }
+  /* reduced motion: open and still, lid lifted */
+  [data-state='open'] [data-lid] {
+    transform: translateY(-102%) !important;
+  }
+  .photo {
+    position: relative;
+    width: calc(var(--pw) * var(--u) * var(--photo-scale));
+    height: calc(var(--ph) * var(--u) * var(--photo-scale));
+    overflow: hidden;
+    filter: drop-shadow(0 0 var(--glow-blur) var(--glow));
+  }
+  .photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* the lid covers the picture to begin with and lifts out of the top */
+  .lid {
+    position: absolute;
+    inset: -2px;
+    background: var(--lid);
+    transform: translateY(0);
+  }
+</style>
+
+<script>
+  import { registerEye, cancelAll } from '../../scripts/eyes/registry';
+
+  interface Config {
+    BLINK_EVERY_MS: [number, number]; BLINK_DOWN_MS: number; BLINK_HOLD_MS: number; BLINK_UP_MS: number;
+    DOUBLE_BLINK_CHANCE: number; DOUBLE_BLINK_GAP_MS: number;
+    WAKE_FADE_MS: number; WAKE_LID_DELAY_MS: number; WAKE_LID_MS: number; EASE_OUT: string; EASE_IN: string;
+  }
+  const timers = new WeakMap<HTMLElement, number>();
+  const cfg = (el: HTMLElement): Config => JSON.parse(el.dataset.config!);
+  const between = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
+  const lidOf = (el: HTMLElement) => el.querySelector<HTMLElement>('[data-lid]')!;
+  const lifted = 'translateY(-102%)';
+  const closed = 'translateY(0)';
+
+  function blinkOnce(lid: HTMLElement, c: Config) {
+    const total = c.BLINK_DOWN_MS + c.BLINK_HOLD_MS + c.BLINK_UP_MS;
+    lid.animate([
+      { transform: lifted, easing: c.EASE_IN },
+      { transform: closed, offset: c.BLINK_DOWN_MS / total },
+      { transform: closed, offset: (c.BLINK_DOWN_MS + c.BLINK_HOLD_MS) / total, easing: c.EASE_OUT },
+      { transform: lifted },
+    ], { duration: total });
+    return total;
+  }
+
+  function blinkLoop(el: HTMLElement, c: Config) {
+    const lid = lidOf(el);
+    const blink = () => {
+      const took = blinkOnce(lid, c);
+      const again = Math.random() < c.DOUBLE_BLINK_CHANCE;
+      timers.set(el, window.setTimeout(() => {
+        if (again) blinkOnce(lid, c);
+        timers.set(el, window.setTimeout(blink, between(c.BLINK_EVERY_MS)));
+      }, again ? took + c.DOUBLE_BLINK_GAP_MS : 0));
+    };
+    timers.set(el, window.setTimeout(blink, between(c.BLINK_EVERY_MS)));
+  }
+
+  registerEye('photo', {
+    wake(el, still) {
+      const c = cfg(el);
+      if (still) {
+        el.dataset.state = 'open';
+        return;
+      }
+      el.dataset.state = 'awake';
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: c.WAKE_FADE_MS, easing: c.EASE_OUT });
+      lidOf(el).animate([{ transform: closed }, { transform: lifted }],
+        { duration: c.WAKE_LID_MS, delay: c.WAKE_LID_DELAY_MS, easing: c.EASE_OUT, fill: 'forwards' });
+      blinkLoop(el, c);
+    },
+    // an awake photo stays; nothing ever asks it to leave
+    async leave() {},
+    reset(el) {
+      clearTimeout(timers.get(el));
+      timers.delete(el);
+      cancelAll(el);
+      delete el.dataset.state;
+    },
+  });
+</script>
